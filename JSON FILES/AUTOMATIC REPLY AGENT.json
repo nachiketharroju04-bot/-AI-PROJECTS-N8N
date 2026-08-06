@@ -1,0 +1,200 @@
+{
+  "name": "AUTOMATIC REPLY AGENT",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c618546e-bff4-425b-8637-bdb8022d57bc",
+      "name": "When chat message received",
+      "webhookId": "28939fa9-4b8f-46d4-8558-8559c9856c53"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "9474320b-dcfb-4c09-bbf1-0258ca7818ba",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        240
+      ],
+      "id": "fef392d2-2d78-4e4e-9f2a-44509a50a183",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "mD8zZaZ8J1dun62A",
+          "name": "Google Gemini(PaLM) Api account 9"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        368,
+        240
+      ],
+      "id": "5ee48974-735b-430f-a665-987b82cc659b",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "15UXQ4awLlDi6LCiBd6SGRSD0oOdbf2vWVcm_dKUA5V4",
+          "mode": "list",
+          "cachedResultName": "RESTUARENT",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/15UXQ4awLlDi6LCiBd6SGRSD0oOdbf2vWVcm_dKUA5V4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "ITEMS ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/15UXQ4awLlDi6LCiBd6SGRSD0oOdbf2vWVcm_dKUA5V4/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        640,
+        160
+      ],
+      "id": "cc3e7e83-779c-4b95-b42e-f078ac9a785e",
+      "name": "ITEMS",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "EDTBBpD7m7fuoV2I",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "15UXQ4awLlDi6LCiBd6SGRSD0oOdbf2vWVcm_dKUA5V4",
+          "mode": "list",
+          "cachedResultName": "RESTUARENT",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/15UXQ4awLlDi6LCiBd6SGRSD0oOdbf2vWVcm_dKUA5V4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2009382905,
+          "mode": "list",
+          "cachedResultName": "FAQ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/15UXQ4awLlDi6LCiBd6SGRSD0oOdbf2vWVcm_dKUA5V4/edit#gid=2009382905"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        528,
+        208
+      ],
+      "id": "f70cb3a7-64d8-4060-baa3-701f5fb5797b",
+      "name": "FAQ",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HlAsjOG6L8RjCWX0",
+          "name": "Google Sheets account 4"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ITEMS": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FAQ": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "81dda377-08db-413c-93e7-48eb094b33a6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "biwxtmRJlDdoLmbb",
+  "tags": []
+}

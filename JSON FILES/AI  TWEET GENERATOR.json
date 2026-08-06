@@ -1,0 +1,92 @@
+{
+  "name": "AI  TWEET GENERATOR",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "6daae452-eefe-4202-bc2d-c98a0fd12aaa",
+      "name": "When chat message received",
+      "webhookId": "cfe545ab-4a87-4be9-aec9-1c40178c5bb6"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpYou are an AI Tweet Generator.\n\nYour task is to create engaging, concise, and impactful tweets (X posts).\n\nInstructions:\n\n- Understand the user's topic.\n- Keep the tweet under 280 characters unless the user requests a thread.\n- Write in a clear and engaging tone.\n- Use simple and powerful language.\n- Add 2 to 5 relevant hashtags.\n- Include emojis only when appropriate.\n- End with a question or call-to-action when suitable.\n- Return only the tweet.ful assistant"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "67ea47f4-64f2-49a4-b18d-d309d10058f6",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        80,
+        208
+      ],
+      "id": "fcd0bc3b-82a1-419f-be0b-230ebc9ac4ca",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "0709ab2c-1c8d-47c8-85c8-dd82361e3244",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "APheb099vRXwksif",
+  "tags": []
+}

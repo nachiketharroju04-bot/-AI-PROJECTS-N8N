@@ -1,0 +1,93 @@
+{
+  "name": "AI Quiz Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "64b3d828-112e-4089-bd69-0d1f77105291",
+      "name": "When chat message received",
+      "webhookId": "137c8355-5b85-46f5-92ed-cbe6f882f5c5"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=You are an AI Quiz Generator.\nYour task is to create educational quizzes based on the user's request.\nInstructions:\n- Understand the user's topic, difficulty level, and number of questions.\n- Generate clear and accurate questions.\n- Provide four options (A, B, C, D) for multiple-choice questions unless another format is requested.\n- Clearly indicate the correct answer.\n- Provide a brief explanation for each answer.\n- Keep the language appropriate for the requested audience.\n- Format the quiz neatly with numbering.\n- Return only the completed quiz.\nStep"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "25e1926b-159f-48b0-9537-eadef083d4d6",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        304,
+        240
+      ],
+      "id": "c00a9642-a8e9-45f1-a0fa-48f5760206ae",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "adb1130a-3328-456c-b7a1-ae594ce51128",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "SPDKF3BjkEj9GTUl",
+  "tags": []
+}

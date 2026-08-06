@@ -1,0 +1,205 @@
+{
+  "name": "Form submission system by webhook",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "7062efe5-71a5-4703-a9cf-fa6cb93912d0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "9cfa4ea4-310a-4118-8c0b-d8d09f4596d5",
+      "name": "Webhook",
+      "webhookId": "7062efe5-71a5-4703-a9cf-fa6cb93912d0"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "13bNM5BzXc_pxnhwKQFAnWINBLege8Zw7x0s67cnK4z0",
+          "mode": "list",
+          "cachedResultName": "student detailsName",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13bNM5BzXc_pxnhwKQFAnWINBLege8Zw7x0s67cnK4z0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13bNM5BzXc_pxnhwKQFAnWINBLege8Zw7x0s67cnK4z0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.name }}",
+            "age": "={{ $json.age }}",
+            "email": "={{ $json.email }}",
+            "phone number": "={{ $json.phone }}",
+            "semester marks": "={{ $json.marks }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "phone number",
+              "displayName": "phone number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "age",
+              "displayName": "age",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "semester marks",
+              "displayName": "semester marks",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        448,
+        0
+      ],
+      "id": "cbe85d3f-9cff-4105-94c5-7687754a874c",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "FJHcrRi4Dvlm6q5o",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $json.body;\n\n// If body is a string, parse it\nconst data = typeof input === \"string\" ? JSON.parse(input) : input;\n\nreturn [\n  {\n    json: {\n      name: data.fullName,\n      age: data.age,\n      email: data.email,\n      phone: data.phone,\n      marks: data.semesterMarks\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "56ea6341-1487-4dfc-8cdc-deb70c3d8ad9",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "student details",
+        "message": "=You have new message\n\n{{ $json.Name }}\n{{ $json.age }}\n{{ $json.email }}\n{{ $json['phone number'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        672,
+        0
+      ],
+      "id": "2d9df64d-5005-4327-832f-faf5361301dd",
+      "name": "Send a message",
+      "webhookId": "1e0de180-fdf2-49b2-895d-d28dd3f53f02",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7iRyEUu9T9cVwtRv",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "b782934b-7178-4aab-ab81-4cae7f9afc7f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "doh6YccG6gZ6tsol",
+  "tags": []
+}

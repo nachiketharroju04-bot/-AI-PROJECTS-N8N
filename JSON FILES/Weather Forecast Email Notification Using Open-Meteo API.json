@@ -1,0 +1,117 @@
+{
+  "name": "Weather Forecast Email Notification Using Open-Meteo API",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        -80
+      ],
+      "id": "c09b92de-0bcf-49cf-95ac-53746292b312",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&hourly=temperature_2m",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -48,
+        -80
+      ],
+      "id": "1fb4b9e2-edf6-4e60-bc20-62fdcdb22d2c",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the JSON from the previous node\nconst weather = $input.first().json;\n\n// Get the hourly temperature array\nconst temperatures = weather.hourly.temperature_2m;\n\n// Find the highest and lowest temperatures\nconst high = Math.max(...temperatures);\nconst low = Math.min(...temperatures);\n\n// Return the message\nreturn [\n  {\n    json: {\n      message: `In BANGLORE, the high today is ${high}°C and the low is ${low}°C.`\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        -80
+      ],
+      "id": "20ab6d3c-fb3a-4976-be02-a5e3317ec022",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "sendTo": "nachiketharroju04@gmail.com",
+        "subject": "hello",
+        "message": "={{ $json.message }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        400,
+        -80
+      ],
+      "id": "8f83fdac-c28e-4477-a8cb-62b9c9aca54d",
+      "name": "Send a message",
+      "webhookId": "f1e4aa1b-b59f-4297-8efe-6f09ae1507f3",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7iRyEUu9T9cVwtRv",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "954dd69d-8b3b-4a7f-a5ea-48d54aa20b46",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "ARu4VvU8bO0vBCDW",
+  "tags": []
+}

@@ -1,0 +1,298 @@
+{
+  "name": "News Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "id": "562013b0-7a12-42b7-a8f7-0d9637beba67",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://techcrunch.com/category/artificial-intelligence/feed/",
+        "options": {}
+      },
+      "id": "0fb54f5c-bbdf-485c-9333-600ce180da3e",
+      "name": "TechCrunch AI",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "id": "54cdf89e-4ace-46c1-8e22-c62a810ce456",
+      "name": "Merge Feeds",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        448,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
+        "options": {}
+      },
+      "id": "2beaabb4-d32a-4f5b-9ff4-b6e112d7a9f4",
+      "name": "The Verge AI",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        192
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000
+    },
+    {
+      "parameters": {
+        "url": "https://venturebeat.com/category/ai/feed/",
+        "options": {}
+      },
+      "id": "f2dac132-5c65-415c-9583-0fddd18f9f2a",
+      "name": "VentureBeat AI",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        384
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000
+    },
+    {
+      "parameters": {
+        "maxItems": 15
+      },
+      "id": "3f381cc9-5347-4e08-b307-0d26a413f3b9",
+      "name": "Limit",
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        672,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "id": "e562a76d-49b1-4e56-a946-60ebc0504a9d",
+      "name": "Aggregate",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        896,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI News Editor.\nRead the following AI news articles.\nSelect the TOP 5 most important news.\nIMPORTANT:\nReturn ONLY valid HTML.\nDo NOT use Markdown.\nDo NOT wrap the HTML in ```html or ```.\nUse this exact structure:\n<h1>📰 Today's Top 5 AI News</h1>\nFor each news:\n<div style=\"padding:15px; border:1px solid #ddd; border-radius:8px; margin-bottom:15px;\">\n<h2>News Title</h2>\n<p><strong>Summary:</strong><br>\nTwo line summary here.</p>\n<p><strong>Why it matters:</strong><br>\nExplain why this news is important.</p>\n<p><a href=\"NEWS_LINK\">Read Full Article →</a></p>\n</div>\nFinally add:\n<hr>\n<h2>🔥 Today's Biggest AI Trend</h2>\n<p>Trend explanation here.</p>\nNews:\t\n{{ JSON.stringify($json.data) }}\n",
+        "batching": {}
+      },
+      "id": "70c4cea7-aa54-4f74-9576-856552dd92c8",
+      "name": "Basic LLM Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1120,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "593c8023-70ad-486f-80fa-02b3f45ecbeb",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        416
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "UozLIJjVH1iTzBbL",
+          "name": "Google Gemini(PaLM) Api account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "vearroju@gmail.com",
+        "subject": "=Today's AI Summary -  {{ $now.format('dd-MMM-yyyy') }}",
+        "message": "={{ $json.text }}",
+        "options": {}
+      },
+      "id": "0f0baf3b-09b5-4adb-af5f-6b2fdc60fb90",
+      "name": "Send a message",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1472,
+        192
+      ],
+      "webhookId": "6a415fb6-59ae-4349-9628-50ad413c6664",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "iAbHVgxlTcDnKFlh",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "TechCrunch AI",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "The Verge AI",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "VentureBeat AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TechCrunch AI": {
+      "main": [
+        [
+          {
+            "node": "Merge Feeds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Feeds": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "The Verge AI": {
+      "main": [
+        [
+          {
+            "node": "Merge Feeds",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "VentureBeat AI": {
+      "main": [
+        [
+          {
+            "node": "Merge Feeds",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "c4af85ec-6697-4c92-8c7a-9fc559ff0666",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "08ca4f4a8c5aa673722e0657be86ea892c35043725bd1e2520a78bbc9a70fbb6"
+  },
+  "nodeGroups": [],
+  "id": "s09BO4ndK5fD17DW",
+  "tags": []
+}

@@ -1,0 +1,117 @@
+{
+  "name": "AI CALCULATOR",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "d534cc27-9c64-45c5-bcaa-e47959dc8bc3",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "d2b5f875-4eaa-441b-9a2e-4f06746dc64a"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are a helpful assisYou are an AI calculator.\n\nWhenever the user asks a mathematical question, use the Calculator tool.\n\nAlways return the final answer clearly.\n\nExamples:\nUser: 25*67\nAnswer: 1675\n\nUser: (45+78)/3\nAnswer: 41\n\nFor non-mathematical questions, politely say that you only perform calculations.ant"
+        }
+      },
+      "id": "621b5abb-631d-4880-9e59-ee222caa477c",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "bf74ab0a-ac43-4908-a044-a33c91d8aaad",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        232,
+        232
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "22d8c5b9-3341-4c52-bec4-0c9e4c8f8fa1",
+      "name": "Calculator",
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        360,
+        232
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "d3b57ad9-a983-4aa7-b64e-c5f8f6855a1c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "pQwrT3OYxbGfolt4",
+  "tags": []
+}

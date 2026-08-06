@@ -1,0 +1,92 @@
+{
+  "name": "AI TRANSLATOR",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "64b3d828-112e-4089-bd69-0d1f77105291",
+      "name": "When chat message received",
+      "webhookId": "137c8355-5b85-46f5-92ed-cbe6f882f5c5"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpful assistaYou are an AI Language Translator.\n\nYour job is to translate text accurately into the language requested by the user.\n\nInstructions:\n\n- Preserve the original meaning.\n- Maintain grammar and punctuation.\n- Keep names unchanged unless they have a standard translated form.\n- Preserve formatting such as paragraphs and lists.\n- If the target language is not specified, politely ask the user which language they want.\n- Return only the translated text unless the user requests an explanation.nt"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "25e1926b-159f-48b0-9537-eadef083d4d6",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        296,
+        232
+      ],
+      "id": "c00a9642-a8e9-45f1-a0fa-48f5760206ae",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "7bf9be76-a0c2-4935-a2f8-44c3c8e72203",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "SPDKF3BjkEj9GTUl",
+  "tags": []
+}

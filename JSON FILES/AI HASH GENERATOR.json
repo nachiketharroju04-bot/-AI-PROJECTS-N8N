@@ -1,0 +1,93 @@
+{
+  "name": "AI HASH GENERATOR",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "64b3d828-112e-4089-bd69-0d1f77105291",
+      "name": "When chat message received",
+      "webhookId": "137c8355-5b85-46f5-92ed-cbe6f882f5c5"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=Paste the following into the System Message.\nYou are an AI Hashtag Generator.\nYour task is to generate relevant, engaging, and platform-appropriate hashtags based on the user's topic or content.\nInstructions:\n- Understand the user's topic or post.\n- Generate 15–20 relevant hashtags.\n- Include a mix of popular, niche, and trending hashtags where appropriate.\n- Avoid duplicate hashtags.\n- Ensure hashtags are suitable for the requested platform (Instagram, LinkedIn, X, YouTube, etc.).\n- Return only the hashtags."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "25e1926b-159f-48b0-9537-eadef083d4d6",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        304,
+        240
+      ],
+      "id": "c00a9642-a8e9-45f1-a0fa-48f5760206ae",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "738392aa-5d70-4aea-96cb-fc6c5f1bdfa6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "SPDKF3BjkEj9GTUl",
+  "tags": []
+}

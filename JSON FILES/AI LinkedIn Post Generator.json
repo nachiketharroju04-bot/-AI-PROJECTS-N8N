@@ -1,0 +1,92 @@
+{
+  "name": "AI LinkedIn Post Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b0ddc9e1-3de3-4925-9bae-eff30963e8bf",
+      "name": "When chat message received",
+      "webhookId": "4ed15494-b1b5-46a2-9980-5eed6791feac"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a You are an AI LinkedIn Post Generator.\n\nYour task is to create professional, engaging, and well-structured LinkedIn posts.\n\nInstructions:\n\n- Understand the user's topic.\n- Write in a professional and engaging tone.\n- Start with a strong opening sentence.\n- Organize the post into short, readable paragraphs.\n- Include valuable insights or lessons where appropriate.\n- End with a question or call-to-action to encourage engagement.\n- Add 5–10 relevant hashtags.\n- Use emojis only when appropriate.\n- Keep the post between 150 and 300 words unless the user requests otherwise.\n- Return only the LinkedIn post.helpful assistant"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "5e9103eb-be8b-4e47-9128-9cae00249daa",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        296,
+        232
+      ],
+      "id": "7830dbdc-8df5-47c3-925e-b57decf5119a",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "4d37d1f1-08e3-4dbc-acd1-ea9fbec358ec",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "jJXuZ0PRqLPwsFUM",
+  "tags": []
+}
