@@ -1,0 +1,468 @@
+{
+  "name": "95-AI Refund Request Classifier",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        -96
+      ],
+      "id": "8bc5e5f7-34e5-4066-82c8-e967a4cd120a",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "355486f8-5423-4db1-a7be-a26e0822b864",
+              "leftValue": "={{ $json.data_valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "0d64d7ca-6308-4834-adde-a24730b70c31",
+      "name": "Is Data Valid?"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        144
+      ],
+      "id": "93928b4f-9149-4d77-b8cf-1453726fd059",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wkvPLR8iLkAneiWB",
+          "name": "Google Gemini(PaLM) Api account 32"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nlet result = data.output;\n\nif (typeof result !== \"string\") {\n  result = JSON.stringify(result);\n}\n\nresult = result\n  .replace(/```json/g, \"\")\n  .replace(/```/g, \"\")\n  .trim();\n\nlet parsed;\n\ntry {\n  parsed = JSON.parse(result);\n} catch (error) {\n  throw new Error(\"Invalid JSON returned by AI\");\n}\n\nreturn {\n  json: {\n    ...data,\n    ...parsed\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        -96
+      ],
+      "id": "07c8289f-a5bd-4887-a350-eccc9a0a57fb",
+      "name": "Parse AI Result"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1bn_fVlZXS6-zMS0BXPNH-bCLcsfNYxXyKcaCFksPKh8",
+          "mode": "list",
+          "cachedResultName": "Untitled spreadsheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bn_fVlZXS6-zMS0BXPNH-bCLcsfNYxXyKcaCFksPKh8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bn_fVlZXS6-zMS0BXPNH-bCLcsfNYxXyKcaCFksPKh8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Customer ID",
+              "displayName": "Customer ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Last Login",
+              "displayName": "Last Login",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Login Count",
+              "displayName": "Login Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Purchase Count",
+              "displayName": "Purchase Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Support Tickets",
+              "displayName": "Support Tickets",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Satisfaction",
+              "displayName": "Satisfaction",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Payment Failures",
+              "displayName": "Payment Failures",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Monthly Value",
+              "displayName": "Monthly Value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        -96
+      ],
+      "id": "cda3de4e-b09d-4a95-902f-788639720108",
+      "name": "Refund_Requests",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q524jgyHLO03nlDm",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst requiredFields = [\n  \"Request_ID\",\n  \"Customer_ID\",\n  \"Customer_Name\",\n  \"Customer_Email\",\n  \"Order_ID\",\n  \"Refund_Reason\",\n  \"Product_Category\",\n  \"Order_Amount\",\n  \"Days_Since_Order\",\n  \"Previous_Refunds\"\n];\n\nconst validItems = [];\nconst invalidItems = [];\n\nfor (const item of items) {\n\n  const data = item.json;\n\n  const missingFields = requiredFields.filter(\n    field =>\n      data[field] === undefined ||\n      data[field] === null ||\n      String(data[field]).trim() === \"\"\n  );\n\n  const orderAmount =\n    Number(data.Order_Amount);\n\n  const daysSinceOrder =\n    Number(data.Days_Since_Order);\n\n  const previousRefunds =\n    Number(data.Previous_Refunds);\n\n  if (\n    missingFields.length === 0 &&\n    !isNaN(orderAmount) &&\n    !isNaN(daysSinceOrder) &&\n    !isNaN(previousRefunds) &&\n    orderAmount >= 0 &&\n    daysSinceOrder >= 0 &&\n    previousRefunds >= 0\n  ) {\n\n    validItems.push({\n      ...data,\n\n      Order_Amount:\n        orderAmount,\n\n      Days_Since_Order:\n        daysSinceOrder,\n\n      Previous_Refunds:\n        previousRefunds\n    });\n\n  } else {\n\n    invalidItems.push({\n      request_id:\n        data.Request_ID || \"Unknown\",\n\n      missing_fields:\n        missingFields\n    });\n  }\n}\n\nreturn [\n  {\n    json: {\n\n      data_valid:\n        invalidItems.length === 0,\n\n      total_requests:\n        items.length,\n\n      valid_requests:\n        validItems.length,\n\n      invalid_requests:\n        invalidItems.length,\n\n      invalid_details:\n        invalidItems,\n\n      refund_data:\n        validItems\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        -96
+      ],
+      "id": "33ab0708-c9c9-49fb-b2ad-b989a0924e37",
+      "name": "Validate Refund Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "const requests = $json.refund_data;\n\nconst analyzedRequests = [];\n\nfor (const request of requests) {\n\n  const amount =\n    Number(request.Order_Amount);\n\n  const days =\n    Number(request.Days_Since_Order);\n\n  const previousRefunds =\n    Number(request.Previous_Refunds);\n\n  let reviewScore = 0;\n\n  // Refund amount\n  if (amount >= 10000) {\n    reviewScore += 3;\n  } else if (amount >= 5000) {\n    reviewScore += 2;\n  } else {\n    reviewScore += 1;\n  }\n\n  // Order age\n  if (days > 30) {\n    reviewScore += 3;\n  } else if (days > 15) {\n    reviewScore += 2;\n  }\n\n  // Previous refunds\n  if (previousRefunds >= 3) {\n    reviewScore += 3;\n  } else if (previousRefunds >= 1) {\n    reviewScore += 1;\n  }\n\n  let initialPriority;\n\n  if (reviewScore >= 6) {\n    initialPriority = \"HIGH\";\n  } else if (reviewScore >= 3) {\n    initialPriority = \"MEDIUM\";\n  } else {\n    initialPriority = \"LOW\";\n  }\n\n  analyzedRequests.push({\n    ...request,\n\n    Review_Score:\n      reviewScore,\n\n    Initial_Priority:\n      initialPriority\n  });\n}\n\nreturn [\n  {\n    json: {\n      analyzed_refunds:\n        analyzedRequests\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        -96
+      ],
+      "id": "98a7c3e0-a777-4a42-8a87-a08fdc50856a",
+      "name": "Analyze Refund Request1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze this refund request.\n\nRequest ID:\n{{ $json.Request_ID }}\n\nCustomer:\n{{ $json.Customer_Name }}\n\nOrder ID:\n{{ $json.Order_ID }}\n\nRefund Reason:\n{{ $json.Refund_Reason }}\n\nProduct Category:\n{{ $json.Product_Category }}\n\nOrder Amount:\n{{ $json.Order_Amount }}\n\nDays Since Order:\n{{ $json.Days_Since_Order }}\n\nPrevious Refunds:\n{{ $json.Previous_Refunds }}\n\nInitial Priority:\n{{ $json.Initial_Priority }}\n\nReview Score:\n{{ $json.Review_Score }}\n\nDetermine:\n\n1. Refund category\n2. Refund priority\n3. Whether manual review is required\n4. Assigned team\n5. Summary\n6. Recommended action\n\nDo not make a final refund approval or rejection decision.\n\nReturn ONLY valid JSON.",
+        "options": {
+          "systemMessage": "You are an AI Refund Request Analyst.\n\nYour task is to analyze customer refund requests and provide an initial classification.\n\nPossible refund categories include:\n\n- DAMAGED PRODUCT\n- DUPLICATE CHARGE\n- CANCELLATION\n- PRODUCT ISSUE\n- CUSTOMER CHANGE OF MIND\n- OTHER\n\nPriority levels:\n\nHIGH:\nThe request may require prompt attention because of the issue type, amount, repeated requests, or other provided information.\n\nMEDIUM:\nThe request requires normal review.\n\nLOW:\nThe request appears straightforward and does not indicate a significant issue.\n\nReview Required:\n\nSet to true when the request should receive manual review before a final refund decision.\n\nSet to false only when the request appears straightforward based on the provided information.\n\nImportant rules:\n\n- Do not automatically approve a refund.\n- Do not automatically reject a refund.\n- Do not make legal decisions.\n- Do not assume company refund policies that were not provided.\n- Do not assume fraud.\n- Do not assume financial loss beyond the provided amount.\n- Do not invent information.\n- Do not change the customer's reason.\n- Use only the provided information.\n\nThe AI is providing an initial classification, not a final financial decision.\n\nReturn ONLY valid JSON.\n\nUse exactly this structure:\n\n{\n  \"request_id\": \"\",\n  \"refund_category\": \"\",\n  \"refund_priority\": \"\",\n  \"review_required\": false,\n  \"assigned_team\": \"\",\n  \"summary\": \"\",\n  \"recommended_action\": \"\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1120,
+        -96
+      ],
+      "id": "ffdd78b6-7a97-4595-a21f-fa47866d5a7b",
+      "name": "AI Refund Analyst"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n\n      Report_ID:\n        `REF-${Date.now()}`,\n\n      Report_Date:\n        new Date()\n          .toISOString()\n          .split(\"T\")[0],\n\n      Request_ID:\n        $json.request_id,\n\n      Customer_ID:\n        $json.Customer_ID,\n\n      Customer_Name:\n        $json.Customer_Name,\n\n      Customer_Email:\n        $json.Customer_Email,\n\n      Order_ID:\n        $json.Order_ID,\n\n      Refund_Reason:\n        $json.Refund_Reason,\n\n      Product_Category:\n        $json.Product_Category,\n\n      Order_Amount:\n        $json.Order_Amount,\n\n      Days_Since_Order:\n        $json.Days_Since_Order,\n\n      Previous_Refunds:\n        $json.Previous_Refunds,\n\n      Refund_Category:\n        $json.refund_category,\n\n      Refund_Priority:\n        $json.refund_priority,\n\n      Review_Required:\n        $json.review_required,\n\n      Assigned_Team:\n        $json.assigned_team,\n\n      AI_Summary:\n        $json.summary,\n\n      Recommended_Action:\n        $json.recommended_action,\n\n      Created_At:\n        new Date().toISOString()\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1696,
+        -96
+      ],
+      "id": "07dda4fe-2198-4439-a10b-f0ab33c1ad69",
+      "name": "Create Refund Report"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7902e957-0876-4961-9c46-72a7b78636c9",
+              "leftValue": "={{ $json.Retention_Action_Required }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1920,
+        -96
+      ],
+      "id": "56cc0ff5-859f-4761-8a6e-cb63a6962719",
+      "name": "Is Review Required?"
+    },
+    {
+      "parameters": {
+        "sendTo": "nachiketharroju@gmail.com",
+        "subject": "=Refund Review Required - {{ $json.Refund_Priority }} - {{ $json.Request_ID }}",
+        "message": "=Hi Refund Support Team,\n\nA customer refund request requires review.\n\nRequest ID:\n{{ $json.Request_ID }}\n\nCustomer:\n{{ $json.Customer_Name }}\n\nCustomer Email:\n{{ $json.Customer_Email }}\n\nOrder ID:\n{{ $json.Order_ID }}\n\nRefund Reason:\n{{ $json.Refund_Reason }}\n\nOrder Amount:\n₹{{ $json.Order_Amount }}\n\nDays Since Order:\n{{ $json.Days_Since_Order }}\n\nPrevious Refunds:\n{{ $json.Previous_Refunds }}\n\nRefund Category:\n{{ $json.Refund_Category }}\n\nRefund Priority:\n{{ $json.Refund_Priority }}\n\nAssigned Team:\n{{ $json.Assigned_Team }}\n\nAI Summary:\n{{ $json.AI_Summary }}\n\nRecommended Action:\n{{ $json.Recommended_Action }}\n\nPlease review the request according to the company's refund policy.\n\nBest Regards,\nAI Refund Request Classifier",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2144,
+        -96
+      ],
+      "id": "4a0bc667-d46a-4957-9709-584f373a5061",
+      "name": "Send Refund Review Alert",
+      "webhookId": "a45851e0-9a76-4720-89fa-c30f2d7fd469",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "BhfiiIF56c1Uc6dC",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Refund_Requests",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Data Valid?": {
+      "main": [
+        [
+          {
+            "node": "Analyze Refund Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Refund Analyst",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Result": {
+      "main": [
+        [
+          {
+            "node": "Create Refund Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Refund_Requests": {
+      "main": [
+        [
+          {
+            "node": "Validate Refund Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Refund Data": {
+      "main": [
+        [
+          {
+            "node": "Is Data Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Refund Request1": {
+      "main": [
+        [
+          {
+            "node": "AI Refund Analyst",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Refund Analyst": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Refund Report": {
+      "main": [
+        [
+          {
+            "node": "Is Review Required?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Review Required?": {
+      "main": [
+        [
+          {
+            "node": "Send Refund Review Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "3ac8a3d8-f790-4cd0-a81f-de7b64739a9d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "edbb0d25bd7a66014faefe68083a8f89c418df33feee41a51636a861e015ce95"
+  },
+  "nodeGroups": [],
+  "id": "S5b18AiSGurgKQ5g",
+  "tags": []
+}

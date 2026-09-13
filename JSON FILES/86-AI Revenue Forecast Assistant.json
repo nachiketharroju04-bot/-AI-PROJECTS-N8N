@@ -1,0 +1,438 @@
+{
+  "name": "86-AI Revenue Forecast Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        -96
+      ],
+      "id": "fbd54941-d977-43d6-909a-1fa7750f4f42",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1bn_fVlZXS6-zMS0BXPNH-bCLcsfNYxXyKcaCFksPKh8",
+          "mode": "list",
+          "cachedResultName": "Untitled spreadsheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bn_fVlZXS6-zMS0BXPNH-bCLcsfNYxXyKcaCFksPKh8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bn_fVlZXS6-zMS0BXPNH-bCLcsfNYxXyKcaCFksPKh8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Customer ID",
+              "displayName": "Customer ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last Login",
+              "displayName": "Last Login",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Login Count",
+              "displayName": "Login Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Purchase Count",
+              "displayName": "Purchase Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Support Tickets",
+              "displayName": "Support Tickets",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Satisfaction",
+              "displayName": "Satisfaction",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Payment Failures",
+              "displayName": "Payment Failures",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Monthly Value",
+              "displayName": "Monthly Value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        -96
+      ],
+      "id": "a022f33d-32df-4d45-9a39-c535d26600a1",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q524jgyHLO03nlDm",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1416,
+        136
+      ],
+      "id": "863d891f-a1d4-4e85-9551-e5131404e447",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wkvPLR8iLkAneiWB",
+          "name": "Google Gemini(PaLM) Api account 32"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nlet result = data.output;\n\nif (typeof result !== \"string\") {\n  result = JSON.stringify(result);\n}\n\nresult = result\n  .replace(/```json/g, \"\")\n  .replace(/```/g, \"\")\n  .trim();\n\nlet parsed;\n\ntry {\n  parsed = JSON.parse(result);\n} catch (error) {\n  throw new Error(\"Invalid JSON returned by AI\");\n}\n\nreturn {\n  json: parsed\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1696,
+        -96
+      ],
+      "id": "96afe7f3-b96c-4837-b862-a6ac9b563a2c",
+      "name": "Parse AI Result"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst requiredFields = [\n  \"Month\",\n  \"Revenue\",\n  \"Target_Revenue\"\n];\n\nconst validItems = [];\nconst invalidItems = [];\n\nfor (const item of items) {\n\n  const data = item.json;\n\n  const missingFields = requiredFields.filter(\n    field =>\n      data[field] === undefined ||\n      data[field] === null ||\n      String(data[field]).trim() === \"\"\n  );\n\n  const revenue = Number(data.Revenue);\n\n  const target = Number(data.Target_Revenue);\n\n  if (\n    missingFields.length === 0 &&\n    !isNaN(revenue) &&\n    !isNaN(target)\n  ) {\n\n    validItems.push({\n      Month: data.Month,\n      Revenue: revenue,\n      Target_Revenue: target\n    });\n\n  } else {\n\n    invalidItems.push({\n      month: data.Month || \"Unknown\",\n      missing_fields: missingFields\n    });\n\n  }\n}\n\nreturn [\n  {\n    json: {\n      data_valid: invalidItems.length === 0,\n      total_records: items.length,\n      valid_records: validItems.length,\n      invalid_records: invalidItems.length,\n      invalid_details: invalidItems,\n      revenue_data: validItems\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        -96
+      ],
+      "id": "233d24a7-7cea-4166-8eb1-4b8fe4e24cfa",
+      "name": "Validate Revenue Data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a9ffa14d-3357-41a1-a022-0b9c90b50f98",
+              "leftValue": "={{ $json.data_valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "0b406a4a-5dc1-43d3-8240-e8daa6db9347",
+      "name": "Is Revenue Data Valid?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json.revenue_data;\n\nif (data.length < 2) {\n  throw new Error(\"At least 2 months of revenue data are required.\");\n}\n\nlet growthRates = [];\n\nfor (let i = 1; i < data.length; i++) {\n\n  const previousRevenue = Number(data[i - 1].Revenue);\n  const currentRevenue = Number(data[i].Revenue);\n\n  if (previousRevenue > 0) {\n\n    const growth =\n      ((currentRevenue - previousRevenue) / previousRevenue) * 100;\n\n    growthRates.push(growth);\n  }\n}\n\nconst averageGrowth =\n  growthRates.reduce((sum, value) => sum + value, 0)\n  / growthRates.length;\n\nconst latestRevenue =\n  Number(data[data.length - 1].Revenue);\n\nconst latestMonth =\n  data[data.length - 1].Month;\n\nlet trend;\n\nif (averageGrowth > 2) {\n  trend = \"INCREASING\";\n} else if (averageGrowth < -2) {\n  trend = \"DECREASING\";\n} else {\n  trend = \"STABLE\";\n}\n\nreturn [\n  {\n    json: {\n      revenue_data: data,\n      latest_month: latestMonth,\n      latest_revenue: latestRevenue,\n      average_growth: Number(averageGrowth.toFixed(2)),\n      trend: trend,\n      growth_rates: growthRates.map(\n        value => Number(value.toFixed(2))\n      )\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        -96
+      ],
+      "id": "d03f9e17-ef3b-4a39-945b-a2f895b0e782",
+      "name": "Calculate Revenue Trend"
+    },
+    {
+      "parameters": {
+        "jsCode": "const latestRevenue = Number($json.latest_revenue);\nconst averageGrowth = Number($json.average_growth);\n\nconst forecastRevenue =\n  latestRevenue * (1 + averageGrowth / 100);\n\nconst forecastMonth = \"Next Month\";\n\nconst latestTarget =\n  Number(\n    $json.revenue_data[\n      $json.revenue_data.length - 1\n    ].Target_Revenue\n  );\n\nconst forecastVsTarget =\n  forecastRevenue - latestTarget;\n\nlet forecastStatus;\n\nif (forecastRevenue >= latestTarget) {\n  forecastStatus = \"ABOVE TARGET\";\n} else {\n  forecastStatus = \"BELOW TARGET\";\n}\n\nreturn [\n  {\n    json: {\n      ...$json,\n\n      forecast_month: forecastMonth,\n\n      forecast_revenue:\n        Number(forecastRevenue.toFixed(2)),\n\n      target_revenue:\n        latestTarget,\n\n      forecast_vs_target:\n        Number(forecastVsTarget.toFixed(2)),\n\n      forecast_status:\n        forecastStatus\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        -96
+      ],
+      "id": "b17cf6cc-d495-45d6-8cdf-6886919456c5",
+      "name": "Calculate Revenue Forecast"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the following revenue forecast.\n\nHistorical Revenue Data:\n\n{{ JSON.stringify($json.revenue_data) }}\n\nLatest Month:\n\n{{ $json.latest_month }}\n\nLatest Revenue:\n\n{{ $json.latest_revenue }}\n\nAverage Historical Growth:\n\n{{ $json.average_growth }}%\n\nRevenue Trend:\n\n{{ $json.trend }}\n\nForecast Month:\n\n{{ $json.forecast_month }}\n\nForecast Revenue:\n\n{{ $json.forecast_revenue }}\n\nTarget Revenue:\n\n{{ $json.target_revenue }}\n\nForecast vs Target:\n\n{{ $json.forecast_vs_target }}\n\nForecast Status:\n\n{{ $json.forecast_status }}\n\nProvide:\n\n- Revenue performance summary\n- Forecast interpretation\n- Key observations\n- Potential risks\n- Recommendations\n- Overall status\n\nReturn ONLY valid JSON.",
+        "options": {
+          "systemMessage": "You are an AI Revenue Forecast Analyst.\n\nYour task is to analyze historical revenue performance and a calculated next-month revenue forecast.\n\nReview:\n\n1. Latest revenue\n2. Average historical growth\n3. Revenue trend\n4. Forecast revenue\n5. Target revenue\n6. Forecast versus target\n\nProvide:\n\n- Business summary\n- Forecast interpretation\n- Key observations\n- Potential risks\n- Practical recommendations\n\nImportant rules:\n\n- Use only the provided data.\n- Do not invent external market conditions.\n- Do not claim the forecast is guaranteed.\n- Clearly state that the forecast is an estimate based on historical growth.\n- Do not change the calculated forecast value.\n- Do not perform additional forecasting methods.\n\nReturn ONLY valid JSON.\n\nUse exactly this structure:\n\n{\n  \"summary\": \"\",\n  \"forecast_interpretation\": \"\",\n  \"key_observations\": [],\n  \"risks\": [],\n  \"recommendations\": [],\n  \"overall_status\": \"\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1344,
+        -96
+      ],
+      "id": "d06d0d19-cf7e-46d5-8fb1-b5ed58c5f3dd",
+      "name": "AI Revenue Forecast Analyst"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      report_id: `REV-${Date.now()}`,\n\n      report_date:\n        new Date().toISOString().split(\"T\")[0],\n\n      latest_month:\n        $json.latest_month,\n\n      latest_revenue:\n        $json.latest_revenue,\n\n      average_growth:\n        $json.average_growth,\n\n      trend:\n        $json.trend,\n\n      forecast_month:\n        $json.forecast_month,\n\n      forecast_revenue:\n        $json.forecast_revenue,\n\n      target_revenue:\n        $json.target_revenue,\n\n      forecast_vs_target:\n        $json.forecast_vs_target,\n\n      forecast_status:\n        $json.forecast_status,\n\n      summary:\n        $json.summary,\n\n      forecast_interpretation:\n        $json.forecast_interpretation,\n\n      key_observations:\n        Array.isArray($json.key_observations)\n          ? $json.key_observations.join(\", \")\n          : $json.key_observations,\n\n      risks:\n        Array.isArray($json.risks)\n          ? $json.risks.join(\", \")\n          : $json.risks,\n\n      recommendations:\n        Array.isArray($json.recommendations)\n          ? $json.recommendations.join(\", \")\n          : $json.recommendations,\n\n      overall_status:\n        $json.overall_status,\n\n      created_at:\n        new Date().toISOString()\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        -96
+      ],
+      "id": "b3487919-c6da-4e69-a076-2610bdadd3b8",
+      "name": "Create Forecast Report"
+    },
+    {
+      "parameters": {
+        "sendTo": "nachiketharroju@gmail.com ",
+        "subject": "=Revenue Forecast Report - {{ $json.forecast_status }}",
+        "message": "=Hi Team,\n\nThe latest AI revenue forecast has been generated.\n\nLatest Month:\n{{ $json.latest_month }}\n\nLatest Revenue:\n₹{{ $json.latest_revenue }}\n\nAverage Historical Growth:\n{{ $json.average_growth }}%\n\nRevenue Trend:\n{{ $json.trend }}\n\nForecast Month:\n{{ $json.forecast_month }}\n\nForecast Revenue:\n₹{{ $json.forecast_revenue }}\n\nTarget Revenue:\n₹{{ $json.target_revenue }}\n\nForecast vs Target:\n₹{{ $json.forecast_vs_target }}\n\nForecast Status:\n{{ $json.forecast_status }}\n\nSummary:\n{{ $json.summary }}\n\nForecast Interpretation:\n{{ $json.forecast_interpretation }}\n\nKey Observations:\n{{ $json.key_observations }}\n\nRisks:\n{{ $json.risks }}\n\nRecommendations:\n{{ $json.recommendations }}\n\nOverall Status:\n{{ $json.overall_status }}\n\nNote:\nThe revenue forecast is an estimate based on historical revenue growth and is not guaranteed.\n\nBest Regards,\nAI Revenue Forecast Assistant",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2144,
+        -96
+      ],
+      "id": "1d2d4569-e733-405d-9a78-4f496ea595b9",
+      "name": "Send Forecast Report",
+      "webhookId": "2627e8b6-f85d-4957-a1d4-2a39739be97c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "BhfiiIF56c1Uc6dC",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Validate Revenue Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Revenue Forecast Analyst",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Result": {
+      "main": [
+        [
+          {
+            "node": "Create Forecast Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Revenue Data": {
+      "main": [
+        [
+          {
+            "node": "Is Revenue Data Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Revenue Data Valid?": {
+      "main": [
+        [
+          {
+            "node": "Calculate Revenue Trend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Revenue Trend": {
+      "main": [
+        [
+          {
+            "node": "Calculate Revenue Forecast",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Revenue Forecast": {
+      "main": [
+        [
+          {
+            "node": "AI Revenue Forecast Analyst",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Revenue Forecast Analyst": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Forecast Report": {
+      "main": [
+        [
+          {
+            "node": "Send Forecast Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "e247e8a4-3cf8-4e21-8816-a637b76613c5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "edbb0d25bd7a66014faefe68083a8f89c418df33feee41a51636a861e015ce95"
+  },
+  "nodeGroups": [],
+  "id": "qxns7Ct8FqRo7qWU",
+  "tags": []
+}

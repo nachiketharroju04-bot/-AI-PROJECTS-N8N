@@ -1,0 +1,280 @@
+{
+  "name": "AI Bug Report Classifier",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": " AI Bug Report Classifier",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Reporter Name"
+            },
+            {
+              "fieldLabel": "Reporter Email",
+              "fieldType": "email"
+            },
+            {
+              "fieldLabel": "Bug Title"
+            },
+            {
+              "fieldLabel": "Bug Description",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Steps to Reproduce",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Expected Behavior",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Actual Behavior",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Environment"
+            },
+            {
+              "fieldLabel": "Application Version"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        -288
+      ],
+      "id": "ad83c24a-c2eb-4025-8e17-2445f4ea4916",
+      "name": "On form submission",
+      "webhookId": "7c229c46-da9a-469f-9e39-e61427b8f985"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nconst requiredFields = [\n  \"Reporter Name\",\n  \"Reporter Email\",\n  \"Bug Title\",\n  \"Bug Description\",\n  \"Steps to Reproduce\",\n  \"Expected Behavior\",\n  \"Actual Behavior\",\n  \"Environment\",\n  \"Application Version\"\n];\n\nconst missingFields = requiredFields.filter(\n  field =>\n    data[field] === undefined ||\n    data[field] === null ||\n    data[field] === \"\"\n);\n\nreturn {\n  json: {\n    ...data,\n    data_valid: missingFields.length === 0,\n    missing_fields: missingFields\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -288
+      ],
+      "id": "360b6890-be96-47bf-be6d-f51ab4929a1e",
+      "name": "Validate Bug Data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ab65b66a-1489-4675-abc3-41e92359cc9d",
+              "leftValue": "={{ $json.data_valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        -288
+      ],
+      "id": "25e36cd3-502e-464d-9414-2100bcec1b72",
+      "name": "Is Bug Data Valid?"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Classify this bug report.\n\nReporter:\n{{ $json[\"Reporter Name\"] }}\n\nBug Title:\n{{ $json[\"Bug Title\"] }}\n\nBug Description:\n{{ $json[\"Bug Description\"] }}\n\nSteps to Reproduce:\n{{ $json[\"Steps to Reproduce\"] }}\n\nExpected Behavior:\n{{ $json[\"Expected Behavior\"] }}\n\nActual Behavior:\n{{ $json[\"Actual Behavior\"] }}\n\nEnvironment:\n{{ $json[\"Environment\"] }}\n\nApplication Version:\n{{ $json[\"Application Version\"] }}\n\nAnalyze the bug and return the required JSON structure.",
+        "options": {
+          "systemMessage": "You are an AI Bug Report Classifier.\n\nYour task is to analyze software bug reports and classify them using only the information provided.\n\nEvaluate the bug based on:\n\n1. Bug category\n2. Severity\n3. Priority\n4. Suggested team\n5. Reproducibility\n6. Recommended action\n\nUse these severity levels:\n\nLOW:\nMinor issue with limited impact.\n\nMEDIUM:\nIssue affects functionality but does not significantly block users.\n\nHIGH:\nImportant functionality is affected or many users may be impacted.\n\nCRITICAL:\nCore functionality is unavailable, users are blocked, data may be at risk, or the issue could have serious business impact.\n\nUse these priority levels:\n\nLOW\nMEDIUM\nHIGH\nURGENT\n\nPossible bug categories include:\n\n- UI/UX\n- Authentication\n- Performance\n- Database\n- API\n- Functional\n- Security\n- Compatibility\n- Payment\n- Other\n\nPossible teams include:\n\n- Frontend\n- Backend\n- QA\n- DevOps\n- Security\n- Database\n- Product\n- Support\n\nDo not invent technical information.\n\nBase the classification only on the bug report.\n\nDo not make unsupported security claims.\n\nReturn ONLY valid JSON.\n\nUse exactly this structure:\n\n{\n  \"bug_category\": \"\",\n  \"severity\": \"\",\n  \"priority\": \"\",\n  \"suggested_team\": \"\",\n  \"reproducibility\": \"\",\n  \"recommended_action\": \"\",\n  \"reason\": \"\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        672,
+        -288
+      ],
+      "id": "38e0fb70-1865-4a3b-8295-2ef75307d814",
+      "name": "AI Bug Report Classifier"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        744,
+        -56
+      ],
+      "id": "25dce83e-fd54-4730-9308-32016a316f77",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "64YXTNLpwme70zgC",
+          "name": "Google Gemini(PaLM) Api account 14"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nlet result = data.output;\n\nif (typeof result === \"string\") {\n  result = result\n    .replace(/```json/g, \"\")\n    .replace(/```/g, \"\")\n    .trim();\n\n  result = JSON.parse(result);\n}\n\nreturn {\n  json: {\n    ...data,\n    ...result\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        -288
+      ],
+      "id": "0215f942-0a31-4dcf-bf41-2841b805417d",
+      "name": "Parse Bug Classification"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nreturn {\n  json: {\n    bug_id: `BUG-${Date.now()}`,\n\n    reporter_name: data[\"Reporter Name\"],\n    reporter_email: data[\"Reporter Email\"],\n\n    bug_title: data[\"Bug Title\"],\n    bug_description: data[\"Bug Description\"],\n    steps_to_reproduce: data[\"Steps to Reproduce\"],\n\n    expected_behavior: data[\"Expected Behavior\"],\n    actual_behavior: data[\"Actual Behavior\"],\n\n    environment: data[\"Environment\"],\n    application_version: data[\"Application Version\"],\n\n    bug_category: data.bug_category,\n    severity: data.severity,\n    priority: data.priority,\n    suggested_team: data.suggested_team,\n    reproducibility: data.reproducibility,\n\n    recommended_action: data.recommended_action,\n    reason: data.reason,\n\n    bug_status: \"New\",\n\n    created_at: new Date().toISOString()\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        -288
+      ],
+      "id": "924cd377-970a-4323-9002-63830c2e61fc",
+      "name": "Create Bug Record"
+    },
+    {
+      "parameters": {
+        "sendTo": "=nachiketharroju@gmail.com",
+        "subject": "=[{{ $json.severity }}]",
+        "message": "=Hi Team,  A new bug report has been classified.  Bug ID: {{ $json.bug_id }}    Category: {{ $json.bug_category }}  Severity: {{ $json.severity }}  Priority: {{ $json.priority }}  Suggested Team: {{ $json.suggested_team }}  Reproducibility: {{ $json.reproducibility }}    Recommended Action: {{ $json.recommended_action }}  Reason: {{ $json.reason }}   Best Regards, AI Bug Report Classifier",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1472,
+        -288
+      ],
+      "id": "51c620a0-5240-45cb-8e74-ad3f77d9a0f2",
+      "name": "Send a message",
+      "webhookId": "639a4290-4672-4615-b6cc-c3ea049f901b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "BhfiiIF56c1Uc6dC",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Validate Bug Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Bug Data": {
+      "main": [
+        [
+          {
+            "node": "Is Bug Data Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Bug Data Valid?": {
+      "main": [
+        [
+          {
+            "node": "AI Bug Report Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Bug Report Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Bug Report Classifier": {
+      "main": [
+        [
+          {
+            "node": "Parse Bug Classification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Bug Classification": {
+      "main": [
+        [
+          {
+            "node": "Create Bug Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Bug Record": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d7f8c034-5f40-476b-a46b-f2b10e3f2c2c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "edbb0d25bd7a66014faefe68083a8f89c418df33feee41a51636a861e015ce95"
+  },
+  "nodeGroups": [],
+  "id": "5opmfrcdqtjZmdVJ",
+  "tags": []
+}

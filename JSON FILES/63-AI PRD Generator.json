@@ -1,0 +1,609 @@
+{
+  "name": "AI PRD Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI PRD Generator",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Product Name",
+              "fieldName": "product_name"
+            },
+            {
+              "fieldLabel": "Product Idea",
+              "fieldType": "textarea",
+              "fieldName": "product_idea"
+            },
+            {
+              "fieldLabel": "Business Problem",
+              "fieldType": "textarea",
+              "fieldName": "business_problem"
+            },
+            {
+              "fieldLabel": "Target Users",
+              "fieldName": "target_users"
+            },
+            {
+              "fieldLabel": "Business Goal",
+              "fieldName": "business_goal"
+            },
+            {
+              "fieldLabel": "Main Features",
+              "fieldName": "main_features"
+            },
+            {
+              "fieldLabel": "Platform",
+              "fieldName": "platform"
+            },
+            {
+              "fieldLabel": "Priority",
+              "fieldType": "dropdown",
+              "fieldName": "priority",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Easy"
+                  },
+                  {
+                    "option": "Medium"
+                  },
+                  {
+                    "option": "Hard"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Timeline",
+              "fieldName": "timeline"
+            },
+            {
+              "fieldLabel": "Additional Requirements",
+              "fieldType": "textarea",
+              "fieldName": "additional_requirements"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f6ce560f-0bec-4b6e-bb1e-e7c74800e13b",
+      "name": "On form submission",
+      "webhookId": "0785b353-b18d-4cb3-a7f0-9404d45930f5"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\n\nreturn [\n  {\n    json: {\n      product_name: data.product_name || \"\",\n      product_idea: data.product_idea || \"\",\n      business_problem: data.business_problem || \"\",\n      target_users: data.target_users || \"\",\n      business_goal: data.business_goal || \"\",\n      main_features: data.main_features || \"\",\n      platform: data.platform || \"\",\n      priority: data.priority || \"\",\n      timeline: data.timeline || \"\",\n      additional_requirements: data.additional_requirements || \"\",\n      submitted_at: new Date().toISOString()\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "fb4d82ab-c2de-415e-ada8-afb34fce7c0f",
+      "name": "Normalize Product Requirements"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the following raw product requirements.\n\nPRODUCT NAME:\n{{ $(\"Normalize Product Requirements\").first().json.product_name }}\n\nPRODUCT IDEA:\n{{ $(\"Normalize Product Requirements\").first().json.product_idea }}\n\nBUSINESS PROBLEM:\n{{ $(\"Normalize Product Requirements\").first().json.business_problem }}\n\nBUSINESS GOAL:\n{{ $(\"Normalize Product Requirements\").first().json.business_goal }}\n\nTARGET USERS:\n{{ $(\"Normalize Product Requirements\").first().json.target_users }}\n\nMAIN FEATURES:\n{{ $(\"Normalize Product Requirements\").first().json.main_features }}\n\nPLATFORM:\n{{ $(\"Normalize Product Requirements\").first().json.platform }}\n\nPRIORITY:\n{{ $(\"Normalize Product Requirements\").first().json.priority }}\n\nTIMELINE:\n{{ $(\"Normalize Product Requirements\").first().json.timeline }}\n\nADDITIONAL REQUIREMENTS:\n{{ $(\"Normalize Product Requirements\").first().json.additional_requirements }}\n\nIdentify:\n\n1. Core product problem\n2. User problems\n3. Business objectives\n4. Product objectives\n5. Functional requirements\n6. Non-functional requirements\n7. Assumptions\n8. Constraints\n9. Missing information\n10. Open questions\n\nDo not invent facts.\n\nClearly distinguish between:\n- Explicit requirements\n- Reasonable inference\n- Missing information\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Senior Product Manager and Business Analyst.\n\nYour job is to transform raw product ideas into structured product requirements.\n\nAnalyze requirements critically.\n\nNever invent business requirements.\n\nSeparate:\n- Confirmed requirements\n- Inferred requirements\n- Unknown information\n\nIdentify ambiguity and missing information.\n\nFocus on business value, user needs, scope and measurable outcomes.\n\nReturn valid JSON only."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "48028497-d778-4875-8575-1cf1c92dc9ab",
+      "name": "Requirements Analysis Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        520,
+        232
+      ],
+      "id": "257c6e65-601f-4169-beaf-61924e40d089",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "gQWOyqIFllnkFyVS",
+          "name": "Google Gemini(PaLM) Api account 16"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create a professional user and persona analysis.\n\nPRODUCT:\n{{ $(\"Normalize Product Requirements\").first().json.product_name }}\n\nPRODUCT IDEA:\n{{ $(\"Normalize Product Requirements\").first().json.product_idea }}\n\nTARGET USERS:\n{{ $(\"Normalize Product Requirements\").first().json.target_users }}\n\nBUSINESS PROBLEM:\n{{ $(\"Normalize Product Requirements\").first().json.business_problem }}\n\nREQUIREMENTS ANALYSIS:\n{{ $(\"Requirements Analysis Agent\").first().json.output }}\n\nIdentify:\n\n1. Primary users\n2. Secondary users\n3. User personas\n4. User goals\n5. User pain points\n6. User behaviors\n7. User needs\n8. User permissions\n9. User journeys\n10. Key user stories\n\nFor every user story use:\n\nAs a [user],\nI want [capability],\nSo that [benefit].\n\nDo not invent demographic information.\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Senior UX Product Manager.\n\nAnalyze users based only on the supplied product information.\n\nCreate useful personas without inventing unsupported personal details.\n\nFocus on:\n\n- User goals\n- Pain points\n- Jobs-to-be-done\n- User journeys\n- Product interactions\n\nEvery user story must have a clear user and business purpose.\n\nReturn JSON only."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        800,
+        0
+      ],
+      "id": "bee549c2-f271-44f6-be57-eceb58555375",
+      "name": "User & Persona Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        872,
+        232
+      ],
+      "id": "390edc20-07a1-4900-8aae-5f3f1a34a99b",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ZVYY2gTsLsp8dHUW",
+          "name": "Google Gemini(PaLM) Api account 17"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Perform feature and product-scope analysis.\n\nPRODUCT:\n{{ $(\"Normalize Product Requirements\").first().json.product_name }}\n\nMAIN FEATURES:\n{{ $(\"Normalize Product Requirements\").first().json.main_features }}\n\nREQUIREMENTS ANALYSIS:\n{{ $(\"Requirements Analysis Agent\").first().json.output }}\n\nUSER ANALYSIS:\n{{ $(\"User & Persona Agent\").first().json.output }}\n\nDetermine:\n\n1. Core features\n2. Supporting features\n3. MVP features\n4. Phase 2 features\n5. Out-of-scope features\n6. Feature dependencies\n7. Feature priorities\n8. Feature descriptions\n9. User stories\n10. Acceptance criteria\n\nUse priorities:\n\nMUST_HAVE\nSHOULD_HAVE\nCOULD_HAVE\nWONT_HAVE\n\nDo not add features simply because they are common in similar products.\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Principal Product Manager specializing in product strategy and scope management.\n\nYour responsibility is to prevent scope creep.\n\nPrioritize features based on:\n\n- User value\n- Business value\n- Product objective\n- Dependencies\n- Implementation complexity\n\nClearly separate MVP from future functionality.\n\nDo not invent unsupported features.\n\nReturn JSON only."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1152,
+        0
+      ],
+      "id": "6b423775-644d-4c58-a6cd-7ece3283038b",
+      "name": "Feature & Scope Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1224,
+        232
+      ],
+      "id": "018c7414-df48-4134-9465-3fccb2219b21",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "rVblI62Z7BhJcU4Z",
+          "name": "Google Gemini(PaLM) Api account 18"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the technical requirements for this product.\n\nPRODUCT:\n{{ $(\"Normalize Product Requirements\").first().json.product_name }}\n\nPLATFORM:\n{{ $(\"Normalize Product Requirements\").first().json.platform }}\n\nREQUIREMENTS:\n{{ $(\"Requirements Analysis Agent\").first().json.output }}\n\nFEATURES:\n{{ $(\"Feature & Scope Agent\").first().json.output }}\n\nDetermine:\n\n1. Recommended architecture\n2. Frontend requirements\n3. Backend requirements\n4. Database requirements\n5. API requirements\n6. Authentication requirements\n7. Authorization requirements\n8. Integration requirements\n9. Data requirements\n10. Performance requirements\n11. Scalability requirements\n12. Security requirements\n13. Logging requirements\n14. Monitoring requirements\n15. Availability requirements\n\nDo not assume a specific technology stack unless the requirements justify it.\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Principal Software Architect.\n\nTranslate product requirements into implementation-oriented technical requirements.\n\nDo not over-engineer.\n\nDo not choose technologies merely because they are popular.\n\nExplain technical requirements in a way that product managers and engineering teams can understand.\n\nIdentify technical assumptions and unknowns.\n\nReturn JSON only."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1504,
+        0
+      ],
+      "id": "e41af311-5dd1-4827-b763-c66003613f2e",
+      "name": "Technical Requirements Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1576,
+        232
+      ],
+      "id": "ffb177cd-fd07-477d-a0ae-9a461e3e5b02",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "xEHLZsC4tubbxhas",
+          "name": "Google Gemini(PaLM) Api account 19"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Perform product risk and dependency analysis.\n\nPRODUCT:\n{{ $(\"Normalize Product Requirements\").first().json.product_name }}\n\nREQUIREMENTS:\n{{ $(\"Requirements Analysis Agent\").first().json.output }}\n\nFEATURES:\n{{ $(\"Feature & Scope Agent\").first().json.output }}\n\nTECHNICAL REQUIREMENTS:\n{{ $(\"Technical Requirements Agent\").first().json.output }}\n\nAnalyze:\n\n1. Product risks\n2. Technical risks\n3. Security risks\n4. Privacy risks\n5. Operational risks\n6. Business risks\n7. Dependencies\n8. External integrations\n9. Assumptions\n10. Constraints\n11. Mitigation strategies\n12. Open questions\n\nFor each risk provide:\n\n- risk_id\n- risk\n- category\n- probability\n- impact\n- severity\n- mitigation\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Product Risk and Delivery Specialist.\n\nIdentify realistic risks based on the supplied requirements.\n\nDo not create hypothetical risks with no connection to the product.\n\nPrioritize risks that could materially affect:\n\n- Scope\n- Timeline\n- Cost\n- Security\n- Reliability\n- User adoption\n- Business outcomes\n\nReturn JSON only."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1856,
+        0
+      ],
+      "id": "f94dc7c5-fd34-4039-86c4-05d55cbd307f",
+      "name": "Risk & Dependency Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1928,
+        232
+      ],
+      "id": "8b30d60a-770a-48bc-bef1-3375dcaea91e",
+      "name": "Google Gemini Chat Model4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "lbg1DSLnVuyPdrls",
+          "name": "Google Gemini(PaLM) Api account 20"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create a professional Product Requirements Document.\n\nPRODUCT:\n{{ $(\"Normalize Product Requirements\").first().json.product_name }}\n\nREQUIREMENTS ANALYSIS:\n{{ $(\"Requirements Analysis Agent\").first().json.output }}\n\nUSER & PERSONAS:\n{{ $(\"User & Persona Agent\").first().json.output }}\n\nFEATURE & SCOPE:\n{{ $(\"Feature & Scope Agent\").first().json.output }}\n\nTECHNICAL REQUIREMENTS:\n{{ $(\"Technical Requirements Agent\").first().json.output }}\n\nRISKS & DEPENDENCIES:\n{{ $(\"Risk & Dependency Agent\").first().json.output }}\n\nCreate a complete PRD containing:\n\n1. Product Overview\n2. Problem Statement\n3. Product Vision\n4. Business Objectives\n5. Product Objectives\n6. Target Users\n7. User Personas\n8. User Stories\n9. User Journey\n10. Functional Requirements\n11. Non-Functional Requirements\n12. Feature Requirements\n13. MVP Scope\n14. Out-of-Scope\n15. Technical Requirements\n16. Integrations\n17. Security Requirements\n18. Analytics and KPIs\n19. Dependencies\n20. Risks\n21. Assumptions\n22. Constraints\n23. Acceptance Criteria\n24. Timeline\n25. Open Questions\n\nUse clear professional language.\n\nDo not invent missing requirements.\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Senior Product Manager and Professional PRD Writer.\n\nYour responsibility is to create a complete, professional, implementation-ready Product Requirements Document (PRD) from the provided product analysis.\n\nYou will receive information from multiple specialized agents, including:\n\n- Requirements Analysis\n- User & Persona Analysis\n- Feature & Scope Analysis\n- Technical Requirements\n- Risk & Dependency Analysis\n\nYour job is to synthesize these inputs into ONE coherent PRD.\n\nIMPORTANT RULES:\n\n1. Do not invent requirements, features, users, business goals, technical capabilities, timelines, budgets, or metrics.\n\n2. Treat explicitly provided requirements as confirmed requirements.\n\n3. Clearly distinguish between:\n   - Confirmed information\n   - Reasonable inference\n   - Unknown information\n\n4. If required information is missing, write:\n   \"TBD\"\n   or\n   \"Not specified\"\n\n5. Do not silently assume missing information.\n\n6. Do not introduce unnecessary features simply because they are common in similar products.\n\n7. Prevent scope creep.\n\n8. Every major feature must have a clear relationship to:\n   - A user need\n   - A business objective\n   - A product objective\n\n9. User stories must follow this structure:\n\n   As a [user],\n   I want [capability],\n   so that [benefit].\n\n10. Functional requirements must be specific and testable.\n\n11. Non-functional requirements should cover relevant areas such as:\n   - Performance\n   - Security\n   - Scalability\n   - Availability\n   - Reliability\n   - Maintainability\n\n12. Acceptance criteria must describe observable conditions that can be tested.\n\n13. Separate MVP functionality from future functionality.\n\n14. Clearly identify out-of-scope functionality.\n\n15. Identify dependencies between features, systems, teams, APIs, or external services when supported by the input.\n\n16. Identify risks only when they are reasonably connected to the supplied requirements.\n\n17. Do not convert assumptions into facts.\n\n18. Maintain consistency throughout the PRD.\n\n19. Remove duplicate or contradictory requirements when possible.\n\n20. Use professional language that can be understood by:\n\n   - Product Managers\n   - Business Analysts\n   - Developers\n   - QA Engineers\n   - UI/UX Designers\n   - Project Managers\n   - Business Stakeholders\n\nPRD QUALITY REQUIREMENTS:\n\nThe document must be:\n\n- Clear\n- Structured\n- Specific\n- Testable\n- Consistent\n- Traceable\n- Implementation-oriented\n- Business-focused\n\nThe PRD should explain:\n\nWHY the product is needed,\nWHO will use it,\nWHAT the product must do,\nHOW success will be measured,\nWHAT is included,\nWHAT is excluded,\nand WHAT constraints or dependencies exist.\n\nOUTPUT RULE:\n\nReturn valid JSON only.\n\nDo not return Markdown.\n\nDo not return ```json.\n\nDo not add explanations before or after the JSON.\n\nUse the exact JSON structure requested in the user prompt.\n\nEnsure the final response is valid JSON that can be parsed by an n8n Code node."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2208,
+        0
+      ],
+      "id": "45180164-c64b-458c-b214-0cbdfac76f26",
+      "name": "PRD Writer Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        2280,
+        232
+      ],
+      "id": "4a44dfb2-9209-4666-a51f-403cbaf54eaa",
+      "name": "Google Gemini Chat Model5",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "c8rW37f4ObemUfIQ",
+          "name": "Google Gemini(PaLM) Api account 21"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Review the following Product Requirements Document as a Principal Product Manager.\n\nPRD:\n{{ $(\"PRD Writer Agent\").first().json.output }}\n\nOriginal Requirements:\n{{ $(\"Normalize Product Requirements\").first().json }}\n\nEvaluate:\n\n1. Requirement completeness\n2. Requirement clarity\n3. Scope consistency\n4. User alignment\n5. Feature consistency\n6. Technical feasibility\n7. Acceptance criteria quality\n8. Missing requirements\n9. Contradictions\n10. Ambiguous statements\n11. Unsupported assumptions\n12. Scope creep\n13. Risk coverage\n14. KPI quality\n\nFor every issue provide:\n\n- issue_id\n- category\n- severity\n- issue\n- evidence\n- recommendation\n\nAlso provide:\n\n- quality_score\n- strengths\n- weaknesses\n- approval_status\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Principal Product Manager performing a rigorous PRD review.\n\nDo not rewrite the PRD.\n\nAudit it.\n\nLook for:\n\n- Missing requirements\n- Contradictions\n- Ambiguous requirements\n- Unsupported assumptions\n- Scope creep\n- Weak acceptance criteria\n- Unclear ownership\n- Missing dependencies\n- Unrealistic expectations\n\nA high-quality PRD must be:\n\n- Clear\n- Testable\n- Consistent\n- Traceable\n- Implementable\n- Measurable\n\nReturn JSON only."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2560,
+        0
+      ],
+      "id": "c6de86dd-96ab-4c2e-ba67-134a90d40a83",
+      "name": "PRD Quality Reviewer"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        2632,
+        232
+      ],
+      "id": "1bf32a03-790b-4fe6-a708-e99aaab848d9",
+      "name": "Google Gemini Chat Model6",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aKmJxMMhqMO2BLe4",
+          "name": "Google Gemini(PaLM) Api account 22"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create the final professional Product Requirements Document.\n\nORIGINAL REQUIREMENTS:\n\n{{ $(\"Normalize Product Requirements\").first().json }}\n\nREQUIREMENTS ANALYSIS:\n\n{{ $(\"Requirements Analysis Agent\").first().json.output }}\n\nUSER & PERSONA ANALYSIS:\n\n{{ $(\"User & Persona Agent\").first().json.output }}\n\nFEATURE & SCOPE ANALYSIS:\n\n{{ $(\"Feature & Scope Agent\").first().json.output }}\n\nTECHNICAL REQUIREMENTS:\n\n{{ $(\"Technical Requirements Agent\").first().json.output }}\n\nRISK ANALYSIS:\n\n{{ $(\"Risk & Dependency Agent\").first().json.output }}\n\nDRAFT PRD:\n\n{{ $(\"PRD Writer Agent\").first().json.output }}\n\nPRD REVIEW:\n\n{{ $(\"PRD Quality Reviewer\").first().json.output }}\n\nCreate the final PRD.\n\nApply valid reviewer recommendations.\n\nDo not blindly accept reviewer suggestions if they contradict confirmed requirements.\n\nDo not invent missing information.\n\nUnknown information must be explicitly marked as \"TBD\" or \"Not specified\".\n\nReturn ONLY valid JSON.\n\nUse exactly this structure:\n\n{\n  \"report_type\": \"AI Product Requirements Document\",\n\n  \"product\": {\n    \"name\": \"\",\n    \"vision\": \"\",\n    \"problem_statement\": \"\",\n    \"solution_summary\": \"\"\n  },\n\n  \"business_objectives\": [],\n\n  \"product_objectives\": [],\n\n  \"target_users\": [],\n\n  \"personas\": [],\n\n  \"user_stories\": [],\n\n  \"user_journey\": [],\n\n  \"functional_requirements\": [],\n\n  \"non_functional_requirements\": [],\n\n  \"features\": [],\n\n  \"mvp_scope\": [],\n\n  \"out_of_scope\": [],\n\n  \"technical_requirements\": {},\n\n  \"integrations\": [],\n\n  \"security_requirements\": [],\n\n  \"analytics_and_kpis\": [],\n\n  \"acceptance_criteria\": [],\n\n  \"dependencies\": [],\n\n  \"risks\": [],\n\n  \"assumptions\": [],\n\n  \"constraints\": [],\n\n  \"timeline\": \"\",\n\n  \"open_questions\": [],\n\n  \"final_recommendations\": [],\n\n  \"prd_quality\": {\n    \"score\": 0,\n    \"status\": \"\"\n  }\n}",
+        "options": {
+          "systemMessage": "You are a Principal Product Manager, Product Strategist and Technical Product Lead.\n\nYou are responsible for creating the final professional Product Requirements Document.\n\nMultiple specialized agents have analyzed the product.\n\nYour job is to synthesize their outputs.\n\nRules:\n\n1. Never invent requirements.\n2. Never silently change confirmed requirements.\n3. Remove duplicate requirements.\n4. Resolve contradictions carefully.\n5. Preserve important business constraints.\n6. Separate MVP from future scope.\n7. Ensure requirements are testable.\n8. Ensure acceptance criteria are measurable.\n9. Identify unknown information as TBD.\n10. Do not add unnecessary features.\n11. Do not over-engineer the technical solution.\n12. Ensure every major feature supports a user or business objective.\n\nThe final PRD must be useful to:\n\n- Product Managers\n- Business Analysts\n- Designers\n- Developers\n- QA Engineers\n- Project Managers\n- Stakeholders\n\nReturn valid JSON only.\n\nNever return Markdown.\n\nNever return ```json.\n\nNever place explanations outside the JSON."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2912,
+        0
+      ],
+      "id": "ff831123-13fd-4025-b981-0e61b52464db",
+      "name": "Final PRD Generator"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        2984,
+        232
+      ],
+      "id": "234fbbf5-d286-4af0-abee-572537250d58",
+      "name": "Google Gemini Chat Model7",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "pJqVh3ZXkC5JJOtA",
+          "name": "Google Gemini(PaLM) Api account 23"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let raw = $json.output;\n\nif (!raw) {\n  throw new Error(\"Final PRD Generator returned no output.\");\n}\n\nraw = String(raw).trim();\n\n// Remove Markdown code fences if the model accidentally adds them\nraw = raw\n  .replace(/^```json\\s*/i, \"\")\n  .replace(/^```\\s*/i, \"\")\n  .replace(/\\s*```$/i, \"\")\n  .trim();\n\nlet prd;\n\ntry {\n  prd = JSON.parse(raw);\n} catch (error) {\n\n  // Attempt to extract the JSON object\n  const start = raw.indexOf(\"{\");\n  const end = raw.lastIndexOf(\"}\");\n\n  if (start === -1 || end === -1) {\n    throw new Error(\n      \"Final PRD Generator did not return valid JSON.\"\n    );\n  }\n\n  const jsonText = raw.substring(start, end + 1);\n\n  try {\n    prd = JSON.parse(jsonText);\n  } catch (secondError) {\n    throw new Error(\n      \"Unable to parse Final PRD Generator output.\"\n    );\n  }\n}\n\nreturn [\n  {\n    json: prd\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3264,
+        0
+      ],
+      "id": "51a2377d-40ec-491a-b1a5-0daff8b9d7b4",
+      "name": "Parse Final PRD"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Normalize Product Requirements",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Product Requirements": {
+      "main": [
+        [
+          {
+            "node": "Requirements Analysis Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Requirements Analysis Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Requirements Analysis Agent": {
+      "main": [
+        [
+          {
+            "node": "User & Persona Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "User & Persona Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "User & Persona Agent": {
+      "main": [
+        [
+          {
+            "node": "Feature & Scope Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Feature & Scope Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Feature & Scope Agent": {
+      "main": [
+        [
+          {
+            "node": "Technical Requirements Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Technical Requirements Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Technical Requirements Agent": {
+      "main": [
+        [
+          {
+            "node": "Risk & Dependency Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Risk & Dependency Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Risk & Dependency Agent": {
+      "main": [
+        [
+          {
+            "node": "PRD Writer Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "PRD Writer Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PRD Writer Agent": {
+      "main": [
+        [
+          {
+            "node": "PRD Quality Reviewer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model6": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "PRD Quality Reviewer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PRD Quality Reviewer": {
+      "main": [
+        [
+          {
+            "node": "Final PRD Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model7": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Final PRD Generator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final PRD Generator": {
+      "main": [
+        [
+          {
+            "node": "Parse Final PRD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "a48a1692-17e0-48b4-9cba-0393b1cf1b71",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "edbb0d25bd7a66014faefe68083a8f89c418df33feee41a51636a861e015ce95"
+  },
+  "nodeGroups": [],
+  "id": "UAUTVZhhgvMh54nd",
+  "tags": []
+}

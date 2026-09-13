@@ -1,0 +1,588 @@
+{
+  "name": "AI Recruitment Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI Recruitment Assistant",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Candidate Name"
+            },
+            {
+              "fieldLabel": "Job Title"
+            },
+            {
+              "fieldLabel": "Job Description",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Resume Text",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Required Experience",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Location Requirement"
+            },
+            {
+              "fieldLabel": "Employment Type",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Full-Time"
+                  },
+                  {
+                    "option": "Part-Time"
+                  },
+                  {
+                    "option": "Contract"
+                  },
+                  {
+                    "option": "Internship"
+                  },
+                  {
+                    "option": "Temporary"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Recruiter Priority",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Medium Priority"
+                  },
+                  {
+                    "option": "Normal Priority"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        -16
+      ],
+      "id": "0952480f-69f4-4a9d-ad01-675b53971764",
+      "name": "On form submission",
+      "webhookId": "8c329d55-b3af-4983-b466-9986d21813bf"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "44fe5ae5-c98b-4acf-87e2-4f093094531d",
+              "name": "candidate_name",
+              "value": "={{ $json['Candidate Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "72e421c8-3acd-41dd-acf2-0650accf7920",
+              "name": "job_title",
+              "value": "={{ $json['Job Title'] }}",
+              "type": "string"
+            },
+            {
+              "id": "b144a247-c4d9-4894-a123-b31d66460677",
+              "name": "job_description",
+              "value": "={{ $json['Job Description'] }}",
+              "type": "string"
+            },
+            {
+              "id": "971054ef-f942-42e6-9867-27f9e0183e6b",
+              "name": "resume_text",
+              "value": "={{ $json['Resume Text'] }}",
+              "type": "string"
+            },
+            {
+              "id": "e7f06373-2af7-4876-bc38-e6208154986d",
+              "name": "required_experience",
+              "value": "={{ $json['Required Experience'] }}",
+              "type": "number"
+            },
+            {
+              "id": "2065fd0a-203c-47a0-8521-4700f742b8d3",
+              "name": "location_requirement",
+              "value": "={{ $json['Location Requirement'] }}",
+              "type": "string"
+            },
+            {
+              "id": "24f0c758-7ca0-431d-a15b-87bfe499197c",
+              "name": "employment_type",
+              "value": "={{ $json['Employment Type'] }}",
+              "type": "string"
+            },
+            {
+              "id": "2b25cdad-2401-447e-8ecb-bac3b5dd2b02",
+              "name": "recruiter_priority",
+              "value": "={{ $json['Recruiter Priority'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        -16
+      ],
+      "id": "4450b397-c397-4cff-81d4-a0afd0e1b39c",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        520,
+        216
+      ],
+      "id": "082ec153-490a-4bf7-aba9-5400567cd942",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1928,
+        216
+      ],
+      "id": "18d9a089-3d87-4428-82ea-fff42511b877",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        872,
+        216
+      ],
+      "id": "dc7b8192-a4d8-4aa2-97f2-6269fbdcb30e",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1224,
+        216
+      ],
+      "id": "501e9f39-5780-47c7-93a1-ce67973dd719",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1576,
+        216
+      ],
+      "id": "ab5192c3-9cb7-41ae-a393-4db2b11998ea",
+      "name": "Google Gemini Chat Model4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the recruitment request and prepare it for specialist candidate evaluation.\n\nCandidate Name:\n{{ $('Edit Fields').item.json.candidate_name }}\n\nJob Title:\n{{ $('Edit Fields').item.json.job_title }}\n\nJob Description:\n{{ $('Edit Fields').item.json.job_description }}\n\nResume:\n{{ $('Edit Fields').item.json.resume_text }}\n\nRequired Experience:\n{{ $('Edit Fields').item.json.required_experience }}\n\nLocation Requirement:\n{{ $('Edit Fields').item.json.location_requirement }}\n\nEmployment Type:\n{{ $('Edit Fields').item.json.employment_type }}\n\nRecruiter Priority:\n{{ $('Edit Fields').item.json.recruiter_priority }}\n\nIdentify:\n\n1. Core job requirements\n2. Required skills\n3. Preferred skills\n4. Experience requirements\n5. Education/certification requirements\n6. Important responsibilities\n7. Candidate information available\n8. Missing information\n9. Areas requiring specialist analysis\n\nDo not make a hiring decision.\nDo not use protected or sensitive personal characteristics.",
+        "options": {
+          "systemMessage": "You are the Recruitment Manager in a multi-agent AI Recruitment Assistant.\n\nYour responsibility is to organize the job requirements and candidate information for specialist analysis.\n\nYou must:\n\n- Extract objective job requirements.\n- Separate required skills from preferred skills.\n- Identify experience requirements.\n- Identify education and certification requirements.\n- Preserve the candidate's information accurately.\n- Identify missing information.\n- Never invent candidate qualifications.\n- Never make an automatic hiring or rejection decision.\n- Never use protected characteristics as selection criteria.\n- Do not infer age, gender, race, religion, disability, marital status, pregnancy, or other protected characteristics.\n- Base recruitment analysis only on job-related qualifications and evidence."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        448,
+        -16
+      ],
+      "id": "c7278643-26c8-4547-9075-6aa7a18575b7",
+      "name": "Recruitment Manager"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the job description and extract objective recruitment requirements.\n\nJob Title:\n{{ $('Edit Fields').item.json.job_title }}\n\nJob Description:\n{{ $('Edit Fields').item.json.job_description }}\n\nRequired Experience:\n{{ $('Edit Fields').item.json.required_experience }}\n\nIdentify:\n\n1. Mandatory skills\n2. Preferred skills\n3. Technical requirements\n4. Soft skills explicitly mentioned\n5. Experience requirements\n6. Education requirements\n7. Certifications\n8. Responsibilities\n9. Preferred qualifications\n10. Important keywords\n\nClearly separate mandatory requirements from preferred requirements.\n\nDo not invent requirements that are not present in the job description.",
+        "options": {
+          "systemMessage": "You are the Job Requirement Analysis Agent.\n\nAnalyze job descriptions objectively.\n\nFocus only on job-related requirements.\n\nDo not introduce protected characteristics or discriminatory selection criteria.\n\nClearly distinguish:\n\nMANDATORY\nPREFERRED\nNOT SPECIFIED\n\nNever invent requirements."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        800,
+        -16
+      ],
+      "id": "bd879e91-fee2-49a2-9471-dea621900401",
+      "name": "Job Requirement Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the candidate resume against the provided recruitment context.\n\nCandidate Name:\n{{ $('Edit Fields').item.json.candidate_name }}\n\nResume:\n{{ $('Edit Fields').item.json.resume_text }}\n\nJob Title:\n{{ $('Edit Fields').item.json.job_title }}\n\nExtract:\n\n1. Technical skills\n2. Tools and technologies\n3. Work experience\n4. Years of relevant experience\n5. Education\n6. Certifications\n7. Projects\n8. Responsibilities\n9. Achievements\n10. Evidence supporting job requirements\n11. Missing information\n\nUse only information explicitly present in the resume.\n\nDo not invent experience, skills, education, or certifications.",
+        "options": {
+          "systemMessage": "You are the Resume Analysis Agent.\n\nExtract objective information from the resume.\n\nDo not infer qualifications that are not explicitly supported.\n\nDo not fabricate experience.\n\nDo not evaluate candidates using protected characteristics.\n\nFocus only on job-relevant qualifications and evidence."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1152,
+        -16
+      ],
+      "id": "0a5ed5d7-dd13-4ba4-b0e5-66a77d037044",
+      "name": "Resume Analysis Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Compare the job requirements with the candidate's resume analysis.\n\nJOB REQUIREMENTS:\n{{ $('Job Requirement Agent').item.json.output }}\n\nCANDIDATE RESUME ANALYSIS:\n{{ $('Resume Analysis Agent').item.json.output }}\n\nFor each important job requirement, classify the candidate as:\n\n- MATCHED\n- PARTIALLY MATCHED\n- NOT MATCHED\n- NOT ENOUGH INFORMATION\n\nAnalyze:\n\n1. Required technical skills\n2. Preferred technical skills\n3. Required experience\n4. Relevant work experience\n5. Education requirements\n6. Certifications\n7. Tools and technologies\n8. Job responsibilities\n9. Location requirements\n10. Employment requirements\n\nFor every classification, provide evidence from the candidate's resume.\n\nCalculate an overall job-related skill match percentage based only on documented qualifications.\n\nDo not invent information.\nDo not use protected or sensitive personal characteristics.\nDo not make a final hiring or rejection decision.\n\nReturn a structured skill-matching report.",
+        "options": {
+          "systemMessage": "You are the Skill Matching Agent in a multi-agent AI Recruitment Assistant.\n\nYour responsibility is to objectively compare job requirements with documented candidate qualifications.\n\nRules:\n\n1. Compare only job-related qualifications.\n2. Use only information provided by the job requirements and resume analysis.\n3. Never invent skills, experience, education, certifications, or achievements.\n4. Clearly distinguish MATCHED, PARTIALLY MATCHED, NOT MATCHED, and NOT ENOUGH INFORMATION.\n5. Provide evidence for every important matching decision.\n6. Do not use age, gender, race, religion, disability, pregnancy, marital status, or other protected characteristics.\n7. Do not make the final hiring decision.\n8. Do not automatically reject or recommend a candidate based on protected characteristics.\n9. If information is missing, report NOT ENOUGH INFORMATION.\n10. Keep the analysis objective, consistent, and evidence-based.\n\nCalculate the match percentage using only documented job-related qualifications.\n\nYour output will be passed to the next recruitment specialist agent."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1504,
+        -16
+      ],
+      "id": "ab3e8bc9-5bee-48c3-a3a9-148e0c3acf6e",
+      "name": "Skill Matching Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the candidate's professional experience against the job requirements.\n\nRequired Experience:\n{{ $('Edit Fields').item.json.required_experience }}\n\nJob Description:\n{{ $('Edit Fields').item.json.job_description }}\n\nResume:\n{{ $('Edit Fields').item.json.resume_text }}\n\nEvaluate:\n\n1. Relevant experience\n2. Years of relevant experience\n3. Industry relevance\n4. Responsibility alignment\n5. Project relevance\n6. Leadership experience if explicitly stated\n7. Evidence supporting the experience assessment\n8. Missing experience information\n\nDo not invent experience.\nDo not infer qualifications from personal characteristics.",
+        "options": {
+          "systemMessage": "You are the Experience Analysis Agent in a multi-agent AI Recruitment Assistant.\n\nYour responsibility is to analyze the candidate's professional experience against the experience requirements of the job.\n\nAnalyze only job-related information.\n\nYour analysis must include:\n\n1. Total years of professional experience.\n2. Years of relevant experience.\n3. Previous job roles and responsibilities.\n4. Experience relevant to the target job.\n5. Industry/domain experience.\n6. Leadership or team-management experience, if explicitly mentioned.\n7. Project experience relevant to the role.\n8. Required experience versus candidate experience.\n9. Evidence supporting the experience assessment.\n10. Missing or unclear experience information.\n\nClassify the experience requirement as:\n\n- MATCHED\n- PARTIALLY MATCHED\n- NOT MATCHED\n- NOT ENOUGH INFORMATION\n\nRules:\n\n- Use only information provided in the job requirements and candidate resume.\n- Never invent employment history or years of experience.\n- Do not assume experience from job titles alone.\n- Do not treat unrelated experience as relevant experience.\n- Clearly distinguish total experience from relevant experience.\n- If dates are provided, calculate experience carefully.\n- If dates are missing or unclear, state NOT ENOUGH INFORMATION.\n- Do not use age, gender, race, religion, disability, pregnancy, marital status, or other protected characteristics.\n- Do not make the final hiring or rejection decision.\n- Provide evidence for every important conclusion.\n- Keep the analysis objective, consistent, and evidence-based.\n\nYour output will be passed to the Candidate Evaluation Agent and Recruitment Synthesizer."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1856,
+        -16
+      ],
+      "id": "2f80e4b4-7195-414a-8f18-31b0b4638d59",
+      "name": "Experience Analysis Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Evaluate the candidate using all specialist analyses.\n\nJOB REQUIREMENTS:\n{{ $('Job Requirement Agent').item.json.output }}\n\nRESUME ANALYSIS:\n{{ $('Resume Analysis Agent').item.json.output }}\n\nSKILL MATCHING:\n{{ $('Skill Matching Agent').item.json.output }}\n\nEXPERIENCE ANALYSIS:\n{{ $('Experience Analysis Agent').item.json.output }}\n\nEvaluate:\n\n1. Overall skills match\n2. Overall experience match\n3. Required qualifications\n4. Preferred qualifications\n5. Key strengths\n6. Skill gaps\n7. Experience gaps\n8. Missing information\n9. Recruiter verification points\n10. Interview focus areas\n\nClassify the overall job-related match as:\n\nSTRONG MATCH\nMODERATE MATCH\nPARTIAL MATCH\nLOW MATCH\nINSUFFICIENT INFORMATION\n\nProvide evidence for the classification.\n\nDo not invent information.\n\nDo not use protected or sensitive personal characteristics.\n\nDo not make an automatic hiring or rejection decision.\n\nReturn a professional candidate evaluation.",
+        "options": {
+          "systemMessage": "You are the Candidate Evaluation Agent in a multi-agent AI Recruitment Assistant.\n\nYour responsibility is to combine objective information from specialist recruitment agents.\n\nUse only information provided by upstream agents.\n\nIdentify strengths, gaps, missing information, and recruiter verification points.\n\nFocus only on job-related qualifications.\n\nDo not invent information.\n\nDo not use protected or sensitive personal characteristics.\n\nDo not make an automatic hiring or rejection decision.\n\nMaintain an objective and evidence-based evaluation."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2208,
+        -16
+      ],
+      "id": "fa85c61e-fb71-4bf0-af2d-fc658052cc89",
+      "name": "Candidate Evaluation Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        2280,
+        216
+      ],
+      "id": "4f8e5211-a0a4-4a7e-b51c-c8603bd2ecf4",
+      "name": "Google Gemini Chat Model5",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create the final recruitment assessment.\n\nJOB REQUIREMENTS:\n{{ $('Job Requirement Agent').item.json.output }}\n\nRESUME ANALYSIS:\n{{ $('Resume Analysis Agent').item.json.output }}\n\nSKILL MATCHING:\n{{ $('Skill Matching Agent').item.json.output }}\n\nEXPERIENCE ANALYSIS:\n{{ $('Experience Analysis Agent').item.json.output }}\n\nCANDIDATE EVALUATION:\n{{ $('Candidate Evaluation Agent').item.json.output }}\n\nCreate a professional final recruitment report containing:\n\n1. Candidate Name\n2. Target Job Title\n3. Overall Match\n4. Skills Match\n5. Experience Match\n6. Key Strengths\n7. Skill Gaps\n8. Experience Gaps\n9. Required Qualifications\n10. Missing Information\n11. Recruiter Verification Points\n12. Interview Focus Areas\n13. Final Evidence-Based Assessment\n\nDo not invent information.\n\nDo not use protected or sensitive personal characteristics.\n\nDo not make an automatic hiring or rejection decision.\n\nBase the report only on documented job-related qualifications.",
+        "options": {
+          "systemMessage": "You are the Recruitment Synthesizer in a multi-agent AI Recruitment Assistant.\n\nYour responsibility is to combine specialist recruitment analyses into one professional final assessment.\n\nUse only information provided by upstream agents.\n\nThe final report must:\n\n- Be factual.\n- Be evidence-based.\n- Clearly identify strengths and gaps.\n- Identify missing information.\n- Identify recruiter verification points.\n- Focus only on job-related qualifications.\n- Never invent candidate information.\n- Never use protected or sensitive personal characteristics.\n- Never make an automatic hiring or rejection decision.\n\nPreserve uncertainty when information is incomplete.\n\nCreate a professional report suitable for recruiter review."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2560,
+        -16
+      ],
+      "id": "e7ab1fa5-58ff-4ea0-923f-ce44129f6571",
+      "name": "Recruitment Synthesizer"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        2632,
+        216
+      ],
+      "id": "ffd0a158-81aa-4a09-a178-a6f593fb31f6",
+      "name": "Google Gemini Chat Model6",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Recruitment Manager",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Recruitment Manager",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Experience Analysis Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Job Requirement Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Resume Analysis Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Skill Matching Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recruitment Manager": {
+      "main": [
+        [
+          {
+            "node": "Job Requirement Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Job Requirement Agent": {
+      "main": [
+        [
+          {
+            "node": "Resume Analysis Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resume Analysis Agent": {
+      "main": [
+        [
+          {
+            "node": "Skill Matching Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Skill Matching Agent": {
+      "main": [
+        [
+          {
+            "node": "Experience Analysis Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Experience Analysis Agent": {
+      "main": [
+        [
+          {
+            "node": "Candidate Evaluation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Candidate Evaluation Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Candidate Evaluation Agent": {
+      "main": [
+        [
+          {
+            "node": "Recruitment Synthesizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model6": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Recruitment Synthesizer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "e92e4d2e-05ca-460c-8192-b1de9f7dbfa0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "PKzKi3Pps1kYHmqp",
+  "tags": []
+}

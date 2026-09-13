@@ -1,0 +1,348 @@
+{
+  "name": "AI Purchase Order Processor",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI Purchase Order Processor",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "PO Number"
+            },
+            {
+              "fieldLabel": "Supplier Name"
+            },
+            {
+              "fieldLabel": "Supplier Email",
+              "fieldType": "email"
+            },
+            {
+              "fieldLabel": "Supplier Address"
+            },
+            {
+              "fieldLabel": "Buyer Name"
+            },
+            {
+              "fieldLabel": "Buyer Email",
+              "fieldType": "email"
+            },
+            {
+              "fieldLabel": "Order Date",
+              "fieldType": "date"
+            },
+            {
+              "fieldLabel": "Delivery Date",
+              "fieldType": "date"
+            },
+            {
+              "fieldLabel": "Payment Terms"
+            },
+            {
+              "fieldLabel": "Product Details",
+              "fieldType": "textarea"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        -96
+      ],
+      "id": "3edcf707-bd08-4502-81d5-bb5c85e461cb",
+      "name": "On form submission",
+      "webhookId": "41b33d3f-2c9c-4378-af12-145f03e765d0"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nconst requiredFields = [\n  \"PO Number\",\n  \"Supplier Name\",\n  \"Supplier Email\",\n  \"Buyer Name\",\n  \"Buyer Email\",\n  \"Order Date\",\n  \"Delivery Date\",\n  \"Product Details\"\n];\n\nconst missingFields = requiredFields.filter(\n  field =>\n    data[field] === undefined ||\n    data[field] === null ||\n    data[field] === \"\"\n);\n\nreturn {\n  json: {\n    ...data,\n    data_valid: missingFields.length === 0,\n    missing_fields: missingFields\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -96
+      ],
+      "id": "e8418287-f4c6-454c-bfc9-7f3b3d71819e",
+      "name": "Validate PO Data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "27fa4cf9-309d-4a75-9755-6ca0f26d9582",
+              "leftValue": "={{ $json.data_valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        -96
+      ],
+      "id": "b498d83f-930e-476c-a275-d32878c4331c",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Process this purchase order.\n\nPO Number:\n{{ $json[\"PO Number\"] }}\n\nSupplier Name:\n{{ $json[\"Supplier Name\"] }}\n\nSupplier Email:\n{{ $json[\"Supplier Email\"] }}\n\nSupplier Address:\n{{ $json[\"Supplier Address\"] }}\n\nBuyer Name:\n{{ $json[\"Buyer Name\"] }}\n\nBuyer Email:\n{{ $json[\"Buyer Email\"] }}\n\nOrder Date:\n{{ $json[\"Order Date\"] }}\n\nDelivery Date:\n{{ $json[\"Delivery Date\"] }}\n\nPayment Terms:\n{{ $json[\"Payment Terms\"] }}\n\nProduct Details:\n{{ $json[\"Product Details\"] }}\n\nExtract the information and return the required JSON.",
+        "options": {
+          "systemMessage": "You are an AI Purchase Order Processing Assistant.\n\nYour job is to analyze purchase order information and convert it into structured JSON.\n\nExtract:\n\n- Purchase order number\n- Supplier information\n- Buyer information\n- Order date\n- Delivery date\n- Payment terms\n- Product details\n- Quantity\n- Unit price\n- Line total\n\nCalculate each line total using:\n\nquantity × unit price\n\nDo not invent information.\n\nIf information is missing, return an empty value.\n\nReturn ONLY valid JSON.\n\nUse exactly this structure:\n\n{\n  \"po_number\": \"\",\n  \"supplier_name\": \"\",\n  \"supplier_email\": \"\",\n  \"supplier_address\": \"\",\n  \"buyer_name\": \"\",\n  \"buyer_email\": \"\",\n  \"order_date\": \"\",\n  \"delivery_date\": \"\",\n  \"payment_terms\": \"\",\n  \"products\": [\n    {\n      \"product_name\": \"\",\n      \"quantity\": 0,\n      \"unit_price\": 0,\n      \"line_total\": 0\n    }\n  ]\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "8349be9a-1689-4c5b-a570-9d95664ccca9",
+      "name": "AI Purchase Order Processor"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        744,
+        136
+      ],
+      "id": "5717ab26-a139-4588-be98-6651ece712ab",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wkvPLR8iLkAneiWB",
+          "name": "Google Gemini(PaLM) Api account 32"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nlet result = data.output;\n\nif (typeof result === \"string\") {\n  result = result\n    .replace(/```json/g, \"\")\n    .replace(/```/g, \"\")\n    .trim();\n\n  result = JSON.parse(result);\n}\n\nreturn {\n  json: {\n    ...data,\n    ...result\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        -96
+      ],
+      "id": "45137f70-d01b-4e1e-a8e9-477ff4221c40",
+      "name": "Parse PO Result"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nconst products = data.products || [];\n\nlet subtotal = 0;\nlet total_quantity = 0;\n\nconst updatedProducts = products.map(product => {\n  const quantity = Number(product.quantity || 0);\n  const unitPrice = Number(product.unit_price || 0);\n\n  const lineTotal = quantity * unitPrice;\n\n  subtotal += lineTotal;\n  total_quantity += quantity;\n\n  return {\n    ...product,\n    quantity,\n    unit_price: unitPrice,\n    line_total: lineTotal\n  };\n});\n\nreturn {\n  json: {\n    ...data,\n    products: updatedProducts,\n    total_quantity,\n    subtotal,\n    order_total: subtotal\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        -96
+      ],
+      "id": "bdbbc0d0-1370-4ff4-a86c-e3e7fa053dde",
+      "name": "Calculate Order Total"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nreturn {\n  json: {\n    po_id: `PO-${Date.now()}`,\n\n    po_number: data.po_number,\n\n    supplier_name: data.supplier_name,\n    supplier_email: data.supplier_email,\n    supplier_address: data.supplier_address,\n\n    buyer_name: data.buyer_name,\n    buyer_email: data.buyer_email,\n\n    order_date: data.order_date,\n    delivery_date: data.delivery_date,\n    payment_terms: data.payment_terms,\n\n    products: JSON.stringify(data.products),\n\n    total_quantity: data.total_quantity,\n    subtotal: data.subtotal,\n    order_total: data.order_total,\n\n    processing_status: \"Processed\",\n\n    processed_at: new Date().toISOString()\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        -96
+      ],
+      "id": "b19e95a0-174d-4a99-83e6-6ccc1e0b0c10",
+      "name": "Create PO Record"
+    },
+    {
+      "parameters": {
+        "subject": "=Purchase Order {{ $json.po_number }} Processed Successfully",
+        "message": "=Hi {{ $json.buyer_name }},  Your purchase order has been successfully processed.  Purchase Order Details  PO Number: {{ $json.po_number }}  Supplier: {{ $json.supplier_name }}  Order Date: {{ $json.order_date }}  Delivery Date: {{ $json.delivery_date }}  Payment Terms: {{ $json.payment_terms }}  Total Quantity: {{ $json.total_quantity }}  Order Total: ₹{{ $json.order_total }}  Status: {{ $json.processing_status }}  The purchase order has been recorded successfully.  Best Regards, Purchase Order Processing Team",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1696,
+        -96
+      ],
+      "id": "094d26ac-f1df-4b6b-871c-48e86b2d3f72",
+      "name": "Send Confirmation Email",
+      "webhookId": "e832a70d-3c2c-4b32-9013-0fc356ab95e9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "KyGpVSE3ClSAusz1",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1bn_fVlZXS6-zMS0BXPNH-bCLcsfNYxXyKcaCFksPKh8",
+          "mode": "list",
+          "cachedResultName": "Untitled spreadsheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bn_fVlZXS6-zMS0BXPNH-bCLcsfNYxXyKcaCFksPKh8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1920,
+        -96
+      ],
+      "id": "7cbb67bf-fc7a-45d7-b052-5f4407c47349",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q524jgyHLO03nlDm",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Validate PO Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate PO Data": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Purchase Order Processor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Purchase Order Processor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Purchase Order Processor": {
+      "main": [
+        [
+          {
+            "node": "Parse PO Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse PO Result": {
+      "main": [
+        [
+          {
+            "node": "Calculate Order Total",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Order Total": {
+      "main": [
+        [
+          {
+            "node": "Create PO Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create PO Record": {
+      "main": [
+        [
+          {
+            "node": "Send Confirmation Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Confirmation Email": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "982e9c47-5285-4ef2-9066-0f6b56e776da",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "edbb0d25bd7a66014faefe68083a8f89c418df33feee41a51636a861e015ce95"
+  },
+  "nodeGroups": [],
+  "id": "G7aXwMNvkR7hS32R",
+  "tags": []
+}

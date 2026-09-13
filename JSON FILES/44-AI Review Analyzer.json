@@ -1,0 +1,139 @@
+{
+  "name": "AI Review Analyzer",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI Review Analyzer",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Customer Name"
+            },
+            {
+              "fieldLabel": "Product"
+            },
+            {
+              "fieldLabel": "Rating",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Review",
+              "fieldType": "textarea"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "6b8b0f38-973e-4cb1-8b80-e0b8e59fe6d7",
+      "name": "On form submission",
+      "webhookId": "790e2c08-6fc1-4eea-b5d6-879c2fd86e38"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the following customer review.\n\nCustomer Name:\n{{ $json['Customer Name'] }}\n\nProduct:\n{{ $json['Product'] }}\n\nRating:\n{{ $json['Rating'] }}\n\nReview:\n{{ $json['Review'] }}\n\nAnalyze the review and provide:\n\n1. Customer name\n2. Product\n3. Rating\n4. Sentiment\n5. Review summary\n6. Positive points\n7. Negative points\n8. Issues identified\n9. Priority\n10. Recommended action",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an AI Review Analyzer.\n\nYour job is to analyze customer reviews accurately and convert\nthem into useful structured information.\n\nIMPORTANT RULES:\n\n1. Analyze only the information provided in the review.\n2. Do not invent facts.\n3. Do not change the customer's meaning.\n4. Identify the overall sentiment.\n5. Summarize the review clearly.\n6. Identify positive points.\n7. Identify negative points.\n8. Identify specific issues mentioned by the customer.\n9. Assign a priority based on the seriousness of the issue.\n10. Provide a practical recommended action.\n11. Use simple and professional language.\n12. Return the information using the required structured output format.\n\nSentiment must be one of:\n\nPositive\nNegative\nNeutral\nMixed\n\nPriority must be one of:\n\nLow\nMedium\nHigh"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "b6de8a38-248c-49c3-b868-2ebfca3091a5",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"customer_name\": \"John\",\n  \"product\": \"Laptop\",\n  \"rating\": 3,\n  \"sentiment\": \"Mixed\",\n  \"summary\": \"The customer is satisfied with the laptop performance and delivery speed but is unhappy with battery backup and damaged packaging.\",\n  \"positive_points\": [\n    \"Good laptop performance\",\n    \"Fast delivery\"\n  ],\n  \"negative_points\": [\n    \"Poor battery backup\",\n    \"Damaged packaging\"\n  ],\n  \"issues\": [\n    \"Battery performance\",\n    \"Packaging damage\"\n  ],\n  \"priority\": \"Medium\",\n  \"recommended_action\": \"Improve battery performance and packaging quality.\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        368,
+        240
+      ],
+      "id": "334728df-a1ed-481b-ac63-6659a1b973c2",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        240
+      ],
+      "id": "ab70f983-3bc2-41cb-8bb4-efcc0c8e6c0f",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "e2c24e93-7e3f-4cd4-8276-c94e73b47bcc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "SpPjEyQRj6KbqKu0",
+  "tags": []
+}

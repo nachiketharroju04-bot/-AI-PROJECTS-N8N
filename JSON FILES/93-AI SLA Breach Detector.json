@@ -1,0 +1,424 @@
+{
+  "name": "93-AI SLA Breach Detector",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        -96
+      ],
+      "id": "8bc5e5f7-34e5-4066-82c8-e967a4cd120a",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "355486f8-5423-4db1-a7be-a26e0822b864",
+              "leftValue": "={{ $json.data_valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "0d64d7ca-6308-4834-adde-a24730b70c31",
+      "name": "Is Data Valid?"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        144
+      ],
+      "id": "93928b4f-9149-4d77-b8cf-1453726fd059",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wkvPLR8iLkAneiWB",
+          "name": "Google Gemini(PaLM) Api account 32"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nlet result = data.output;\n\nif (typeof result !== \"string\") {\n  result = JSON.stringify(result);\n}\n\nresult = result\n  .replace(/```json/g, \"\")\n  .replace(/```/g, \"\")\n  .trim();\n\nlet parsed;\n\ntry {\n  parsed = JSON.parse(result);\n} catch (error) {\n  throw new Error(\"Invalid JSON returned by AI\");\n}\n\nreturn {\n  json: {\n    ...data,\n    ...parsed\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        -96
+      ],
+      "id": "07c8289f-a5bd-4887-a350-eccc9a0a57fb",
+      "name": "Parse AI Result"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1bn_fVlZXS6-zMS0BXPNH-bCLcsfNYxXyKcaCFksPKh8",
+          "mode": "list",
+          "cachedResultName": "Untitled spreadsheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bn_fVlZXS6-zMS0BXPNH-bCLcsfNYxXyKcaCFksPKh8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bn_fVlZXS6-zMS0BXPNH-bCLcsfNYxXyKcaCFksPKh8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Customer ID",
+              "displayName": "Customer ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Last Login",
+              "displayName": "Last Login",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Login Count",
+              "displayName": "Login Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Purchase Count",
+              "displayName": "Purchase Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Support Tickets",
+              "displayName": "Support Tickets",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Satisfaction",
+              "displayName": "Satisfaction",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Payment Failures",
+              "displayName": "Payment Failures",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Monthly Value",
+              "displayName": "Monthly Value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        -96
+      ],
+      "id": "cda3de4e-b09d-4a95-902f-788639720108",
+      "name": "Get Ticket Data",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q524jgyHLO03nlDm",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst requiredFields = [\n  \"Ticket_ID\",\n  \"Customer_ID\",\n  \"Customer_Name\",\n  \"Customer_Email\",\n  \"Issue\",\n  \"Priority\",\n  \"Assigned_Team\",\n  \"Created_At\"\n];\n\nconst validItems = [];\nconst invalidItems = [];\n\nfor (const item of items) {\n\n  const data = item.json;\n\n  const missingFields = requiredFields.filter(\n    field =>\n      data[field] === undefined ||\n      data[field] === null ||\n      String(data[field]).trim() === \"\"\n  );\n\n  const validPriorities = [\n    \"Critical\",\n    \"High\",\n    \"Medium\",\n    \"Low\"\n  ];\n\n  const priorityValid =\n    validPriorities.some(\n      p =>\n        p.toLowerCase() ===\n        String(data.Priority).toLowerCase()\n    );\n\n  const createdDate =\n    new Date(data.Created_At);\n\n  const dateValid =\n    !isNaN(createdDate.getTime());\n\n  if (\n    missingFields.length === 0 &&\n    priorityValid &&\n    dateValid\n  ) {\n\n    validItems.push({\n      ...data\n    });\n\n  } else {\n\n    invalidItems.push({\n      ticket_id:\n        data.Ticket_ID || \"Unknown\",\n\n      missing_fields:\n        missingFields\n    });\n  }\n}\n\nreturn [\n  {\n    json: {\n      data_valid:\n        invalidItems.length === 0,\n\n      total_tickets:\n        items.length,\n\n      valid_tickets:\n        validItems.length,\n\n      invalid_tickets:\n        invalidItems.length,\n\n      invalid_details:\n        invalidItems,\n\n      ticket_data:\n        validItems\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        -96
+      ],
+      "id": "33ab0708-c9c9-49fb-b2ad-b989a0924e37",
+      "name": "Validate SLA Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "const tickets = $json.ticket_data;\n\nconst now = new Date();\n\nconst slaRules = {\n  critical: 4,\n  high: 8,\n  medium: 24,\n  low: 48\n};\n\nconst results = [];\n\nfor (const ticket of tickets) {\n\n  const priority =\n    String(ticket.Priority).toLowerCase();\n\n  const createdAt =\n    new Date(ticket.Created_At);\n\n  const elapsedMilliseconds =\n    now.getTime() - createdAt.getTime();\n\n  const elapsedHours =\n    elapsedMilliseconds / (1000 * 60 * 60);\n\n  const slaHours =\n    slaRules[priority];\n\n  if (!slaHours) {\n    continue;\n  }\n\n  const remainingHours =\n    slaHours - elapsedHours;\n\n  const riskThreshold =\n    slaHours * 0.20;\n\n  let slaStatus;\n\n  if (remainingHours <= 0) {\n\n    slaStatus = \"BREACHED\";\n\n  } else if (remainingHours <= riskThreshold) {\n\n    slaStatus = \"AT RISK\";\n\n  } else {\n\n    slaStatus = \"ON TRACK\";\n  }\n\n  results.push({\n\n    ...ticket,\n\n    SLA_Hours:\n      Number(slaHours.toFixed(2)),\n\n    Elapsed_Hours:\n      Number(Math.max(elapsedHours, 0).toFixed(2)),\n\n    Remaining_Hours:\n      Number(Math.max(remainingHours, 0).toFixed(2)),\n\n    SLA_Status:\n      slaStatus\n  });\n}\n\nreturn [\n  {\n    json: {\n      sla_tickets:\n        results\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        -96
+      ],
+      "id": "98a7c3e0-a777-4a42-8a87-a08fdc50856a",
+      "name": "Calculate SLA Status"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze this SLA ticket.\n\nTicket ID:\n{{ $json.Ticket_ID }}\n\nCustomer:\n{{ $json.Customer_Name }}\n\nIssue:\n{{ $json.Issue }}\n\nPriority:\n{{ $json.Priority }}\n\nAssigned Team:\n{{ $json.Assigned_Team }}\n\nCreated At:\n{{ $json.Created_At }}\n\nSLA Hours:\n{{ $json.SLA_Hours }}\n\nElapsed Hours:\n{{ $json.Elapsed_Hours }}\n\nRemaining Hours:\n{{ $json.Remaining_Hours }}\n\nSLA Status:\n{{ $json.SLA_Status }}\n\nDetermine:\n\n1. SLA severity\n2. Whether an alert is required\n3. Short summary\n4. Recommended action\n\nDo not change the calculated SLA status.\n\nReturn ONLY valid JSON.",
+        "options": {
+          "systemMessage": "You are an AI SLA Monitoring Analyst.\n\nYour task is to analyze customer support tickets and their SLA status.\n\nPossible SLA statuses:\n\nBREACHED:\nThe ticket has exceeded its allowed SLA time.\n\nAT RISK:\nThe ticket has not breached yet but is approaching its SLA deadline.\n\nON TRACK:\nThe ticket has sufficient SLA time remaining.\n\nFor each ticket determine:\n\n- SLA severity\n- Whether an alert is required\n- A short summary\n- A recommended action\n\nRules:\n\nBREACHED:\nAlways recommend immediate attention and set alert_required to true.\n\nAT RISK:\nRecommend proactive action and set alert_required to true.\n\nON TRACK:\nNormal monitoring is sufficient and alert_required should be false.\n\nImportant:\n\n- Use only the provided information.\n- Do not invent facts.\n- Do not change the calculated SLA status.\n- Do not assume the customer is angry.\n- Do not assume financial loss.\n- Keep recommendations practical.\n- Do not modify SLA hours or calculations.\n\nReturn ONLY valid JSON.\n\nUse this structure:\n\n{\n  \"ticket_id\": \"\",\n  \"sla_severity\": \"\",\n  \"alert_required\": false,\n  \"summary\": \"\",\n  \"recommended_action\": \"\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1120,
+        -96
+      ],
+      "id": "ffdd78b6-7a97-4595-a21f-fa47866d5a7b",
+      "name": "AI SLA Analyst"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n\n      Report_ID:\n        `SLA-${Date.now()}`,\n\n      Report_Date:\n        new Date()\n          .toISOString()\n          .split(\"T\")[0],\n\n      Ticket_ID:\n        $json.ticket_id,\n\n      Customer_ID:\n        $json.Customer_ID,\n\n      Customer_Name:\n        $json.Customer_Name,\n\n      Issue:\n        $json.Issue,\n\n      Priority:\n        $json.Priority,\n\n      Assigned_Team:\n        $json.Assigned_Team,\n\n      Created_At:\n        $json.Created_At,\n\n      SLA_Hours:\n        $json.SLA_Hours,\n\n      Elapsed_Hours:\n        $json.Elapsed_Hours,\n\n      Remaining_Hours:\n        $json.Remaining_Hours,\n\n      SLA_Status:\n        $json.SLA_Status,\n\n      SLA_Severity:\n        $json.sla_severity,\n\n      Alert_Required:\n        $json.alert_required,\n\n      AI_Summary:\n        $json.summary,\n\n      Recommended_Action:\n        $json.recommended_action,\n\n      Created_Time:\n        new Date().toISOString()\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1696,
+        -96
+      ],
+      "id": "07dda4fe-2198-4439-a10b-f0ab33c1ad69",
+      "name": "Create SLA Report"
+    },
+    {
+      "parameters": {
+        "sendTo": "nachiketharroju@gmail.com",
+        "subject": "=🚨 SLA Alert - {{ $json.SLA_Status }} - {{ $json.Ticket_ID }}",
+        "message": "=Hi Support Team,\n\nAn SLA issue has been detected.\n\nTicket ID:\n{{ $json.Ticket_ID }}\n\nCustomer:\n{{ $json.Customer_Name }}\n\nIssue:\n{{ $json.Issue }}\n\nPriority:\n{{ $json.Priority }}\n\nAssigned Team:\n{{ $json.Assigned_Team }}\n\nSLA Allowed:\n{{ $json.SLA_Hours }} hours\n\nElapsed Time:\n{{ $json.Elapsed_Hours }} hours\n\nRemaining Time:\n{{ $json.Remaining_Hours }} hours\n\nSLA Status:\n{{ $json.SLA_Status }}\n\nSLA Severity:\n{{ $json.SLA_Severity }}\n\nAI Summary:\n{{ $json.AI_Summary }}\n\nRecommended Action:\n{{ $json.Recommended_Action }}\n\nPlease review the ticket and take the appropriate action.\n\nBest Regards,\nAI SLA Breach Detector",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1920,
+        -96
+      ],
+      "id": "4a0bc667-d46a-4957-9709-584f373a5061",
+      "name": "Send SLA Alert",
+      "webhookId": "a45851e0-9a76-4720-89fa-c30f2d7fd469",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "BhfiiIF56c1Uc6dC",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Ticket Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Data Valid?": {
+      "main": [
+        [
+          {
+            "node": "Calculate SLA Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI SLA Analyst",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Result": {
+      "main": [
+        [
+          {
+            "node": "Create SLA Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Ticket Data": {
+      "main": [
+        [
+          {
+            "node": "Validate SLA Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate SLA Data": {
+      "main": [
+        [
+          {
+            "node": "Is Data Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate SLA Status": {
+      "main": [
+        [
+          {
+            "node": "AI SLA Analyst",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI SLA Analyst": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create SLA Report": {
+      "main": [
+        [
+          {
+            "node": "Send SLA Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "50b4afd6-2024-4238-b461-5c5a88c69039",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "edbb0d25bd7a66014faefe68083a8f89c418df33feee41a51636a861e015ce95"
+  },
+  "nodeGroups": [],
+  "id": "S5b18AiSGurgKQ5g",
+  "tags": []
+}

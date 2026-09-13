@@ -1,0 +1,386 @@
+{
+  "name": "AI Meeting Action Tracker",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI Web Form Lead Router",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "full_name"
+            },
+            {
+              "fieldLabel": "email",
+              "fieldType": "email"
+            },
+            {
+              "fieldLabel": "company"
+            },
+            {
+              "fieldLabel": "job_title"
+            },
+            {
+              "fieldLabel": "company_size",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "industry"
+            },
+            {
+              "fieldLabel": "requirement",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "budget",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "timeline",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "message",
+              "fieldType": "textarea"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "1338f768-9688-474f-9a2b-7923889371ac",
+      "name": "On form submission",
+      "webhookId": "f25ceaf3-9051-402a-9640-17a6f76ac3f8"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        520,
+        232
+      ],
+      "id": "7b2701ae-d378-477b-af1e-762411326413",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "DmBclGyDtuulIu7s",
+          "name": "Google Gemini(PaLM) Api account 31"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1096,
+        232
+      ],
+      "id": "fa1ae277-3fbc-414d-98f3-798eb42635df",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "oBl8uRmeBD54wUiq",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1448,
+        232
+      ],
+      "id": "f1bcd451-408b-413a-8133-51ba617138f5",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "3aGZVsfU4wgPBD70",
+          "name": "Google Gemini(PaLM) Api account 28"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1800,
+        232
+      ],
+      "id": "f3f32f59-e74d-417d-a02c-d59906b68444",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wkvPLR8iLkAneiWB",
+          "name": "Google Gemini(PaLM) Api account 32"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\n\nreturn [\n  {\n    json: {\n      full_name: data.full_name || \"Unknown\",\n      email: data.email || \"Unknown\",\n      company: data.company || \"Unknown\",\n      job_title: data.job_title || \"Unknown\",\n      company_size: data.company_size || \"Unknown\",\n      industry: data.industry || \"Unknown\",\n      requirement: data.requirement || \"\",\n      budget: data.budget || \"Unknown\",\n      timeline: data.timeline || \"Unknown\",\n      message: data.message || \"\",\n      submitted_at: new Date().toISOString()\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "4a14f29c-a8c6-4aa4-b4cd-6f0c097d386f",
+      "name": "Normalize Lead"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the following website lead.\n\nNAME:\n\n{{ $(\"Normalize Lead\").first().json.full_name }}\n\nEMAIL:\n\n{{ $(\"Normalize Lead\").first().json.email }}\n\nCOMPANY:\n\n{{ $(\"Normalize Lead\").first().json.company }}\n\nJOB TITLE:\n\n{{ $(\"Normalize Lead\").first().json.job_title }}\n\nCOMPANY SIZE:\n\n{{ $(\"Normalize Lead\").first().json.company_size }}\n\nINDUSTRY:\n\n{{ $(\"Normalize Lead\").first().json.industry }}\n\nREQUIREMENT:\n\n{{ $(\"Normalize Lead\").first().json.requirement }}\n\nBUDGET:\n\n{{ $(\"Normalize Lead\").first().json.budget }}\n\nTIMELINE:\n\n{{ $(\"Normalize Lead\").first().json.timeline }}\n\nMESSAGE:\n\n{{ $(\"Normalize Lead\").first().json.message }}\n\nReturn exactly:\n\n{\n  \"lead_intent\": \"\",\n  \"buying_stage\": \"\",\n  \"intent_level\": \"\",\n  \"industry\": \"\",\n  \"company_size\": \"\",\n  \"decision_maker_indicator\": \"\",\n  \"requirements\": [],\n  \"pain_points\": [],\n  \"budget\": \"\",\n  \"timeline\": \"\",\n  \"urgency\": \"\",\n  \"potential_business_value\": \"\",\n  \"lead_quality\": \"\",\n  \"evidence\": [],\n  \"analysis_reason\": \"\"\n}\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are an expert B2B Lead Intelligence Analyst.\n\nYour job is to analyze incoming website leads and convert their information\ninto structured sales intelligence.\n\nAnalyze:\n\n- Lead intent\n- Customer need\n- Business type\n- Industry\n- Company size\n- Decision-maker indicators\n- Buying stage\n- Purchase intent\n- Requirements\n- Pain points\n- Budget\n- Timeline\n- Potential business value\n- Urgency\n- Lead quality\n\nAllowed buying stages:\n\n- Awareness\n- Consideration\n- Evaluation\n- Purchase Intent\n- Existing Customer\n\nAllowed intent levels:\n\n- Informational\n- Exploratory\n- Commercial\n- High Purchase Intent\n\nAllowed urgency:\n\n- Critical\n- High\n- Medium\n- Low\n\nRules:\n\n1. Analyze only the supplied information.\n2. Never invent company information.\n3. Never invent a budget.\n4. Never assume the person is a decision maker without evidence.\n5. Never assume purchase intent without supporting evidence.\n6. Clearly distinguish facts from inference.\n7. If information is unavailable, use \"Unknown\".\n8. Do not infer sensitive personal information.\n9. Do not expose confidential information unnecessarily.\n10. Return valid JSON only.\n11. Do not return Markdown.\n12. Do not use code fences.\n13. Do not add explanations outside JSON.lanations outside the JSON."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "cd3e0966-3769-47b1-bd7b-414a6783c9d7",
+      "name": "AI Lead Analysis Agent"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.output;\n\ntry {\n  let cleaned = String(raw)\n    .replace(/```json/gi, \"\")\n    .replace(/```/g, \"\")\n    .trim();\n\n  const start = cleaned.indexOf(\"{\");\n  const end = cleaned.lastIndexOf(\"}\");\n\n  if (start === -1 || end === -1) {\n    throw new Error(\"No JSON object found\");\n  }\n\n  cleaned = cleaned.substring(start, end + 1);\n\n  const result = JSON.parse(cleaned);\n\n  return [\n    {\n      json: {\n        ...result,\n        parse_status: \"success\"\n      }\n    }\n  ];\n\n} catch (error) {\n\n  return [\n    {\n      json: {\n        parse_status: \"failed\",\n        parse_error: error.message,\n        raw_output: raw\n      }\n    }\n  ];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        0
+      ],
+      "id": "9e53361f-8325-44a2-bb5e-0b26bedfc23b",
+      "name": "Parse Lead Analysis"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Score this lead.\n\nORIGINAL LEAD:\n\n{{ JSON.stringify($(\"Normalize Lead\").first().json) }}\n\nLEAD ANALYSIS:\n\n{{ JSON.stringify($(\"Parse Lead Analysis\").first().json) }}\n\nReturn:\n\n{\n  \"lead_score\": 0,\n\n  \"score_breakdown\": {\n    \"purchase_intent\": 0,\n    \"budget\": 0,\n    \"timeline\": 0,\n    \"company_fit\": 0,\n    \"requirement_clarity\": 0,\n    \"decision_maker_indicator\": 0,\n    \"urgency\": 0\n  },\n\n  \"lead_tier\": \"\",\n  \"score_reason\": \"\",\n  \"recommended_follow_up_priority\": \"\"\n}\n\nLead tiers:\n\nHOT\nWARM\nCOLD\n\nThe total score must be between 0 and 100.\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a B2B Sales Lead Scoring Specialist.\n\nYour responsibility is to score a lead from 0 to 100 based on evidence\nprovided in the lead data.\n\nEvaluate:\n\n- Purchase intent\n- Budget availability\n- Timeline\n- Company fit\n- Business need\n- Requirement clarity\n- Decision-maker indicators\n- Urgency\n- Potential business value\n\nSuggested scoring framework:\n\nPurchase Intent: 0-25\nBudget: 0-15\nTimeline: 0-15\nCompany Fit: 0-15\nRequirement Clarity: 0-10\nDecision-Maker Indicator: 0-10\nUrgency: 0-10\n\nTotal: 100\n\nRules:\n\n1. Score only based on supplied evidence.\n2. Do not invent budget.\n3. Do not invent company fit.\n4. Do not assume decision-making authority.\n5. Do not automatically give high scores.\n6. Explain the reason for the score.\n7. Return valid JSON only."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1024,
+        0
+      ],
+      "id": "3c487d2f-53b7-4dcb-aee8-f7452d41f22c",
+      "name": "Lead Scoring Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Route this lead.\n\nORIGINAL LEAD:\n\n{{ JSON.stringify($(\"Normalize Lead\").first().json) }}\n\nLEAD ANALYSIS:\n\n{{ JSON.stringify($(\"Parse Lead Analysis\").first().json) }}\n\nLEAD SCORE:\n\n{{ JSON.stringify($(\"Lead Scoring Agent\").first().json) }}\n\nReturn:\n\n{\n  \"primary_department\": \"\",\n  \"secondary_departments\": [],\n  \"queue\": \"\",\n  \"assigned_role\": \"\",\n  \"routing_priority\": \"\",\n  \"routing_confidence\": 0,\n  \"routing_reason\": \"\",\n  \"requires_human_follow_up\": false\n}\n\nrouting_confidence must be between 0 and 1.\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are an expert Sales Operations Routing Manager.\n\nYour responsibility is to route incoming leads to the most appropriate\nbusiness team.\n\nAvailable departments:\n\n- Enterprise Sales\n- SMB Sales\n- Technical Sales\n- Customer Success\n- Support\n- Partnerships\n- General Sales\n\nRouting rules:\n\nEnterprise Sales:\nLarge organizations, enterprise requirements, high-value opportunities.\n\nSMB Sales:\nSmall and medium businesses with commercial requirements.\n\nTechnical Sales:\nLeads requiring technical architecture, integrations, APIs, or complex\ntechnical evaluation.\n\nCustomer Success:\nExisting customers requesting expansion, optimization, or account support.\n\nSupport:\nExisting customers reporting problems or requiring assistance.\n\nPartnerships:\nPotential strategic partnership or reseller opportunities.\n\nGeneral Sales:\nCommercial leads that do not clearly belong elsewhere.\n\nRules:\n\n1. Choose one primary department.\n2. Secondary departments may be included when relevant.\n3. Technical requirements should be identified.\n4. High-value enterprise opportunities should favor Enterprise Sales.\n5. Do not invent company size or business requirements.\n6. Return valid JSON only."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1376,
+        0
+      ],
+      "id": "acd4ee23-4ce7-4bfa-8137-2f9877fa6e4c",
+      "name": "Lead Routing Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create the final AI Web Form Lead Routing Report.\n\nORIGINAL LEAD:\n\n{{ JSON.stringify($(\"Normalize Lead\").first().json) }}\n\nLEAD ANALYSIS:\n\n{{ JSON.stringify($(\"Parse Lead Analysis\").first().json) }}\n\nLEAD SCORE:\n\n{{ JSON.stringify($(\"Lead Scoring Agent\").first().json) }}\n\nROUTING:\n\n{{ JSON.stringify($(\"Lead Routing Agent\").first().json) }}\n\nReturn exactly:\n\n{\n  \"report_type\": \"AI Web Form Lead Routing Report\",\n\n  \"lead\": {\n    \"name\": \"\",\n    \"email\": \"\",\n    \"company\": \"\",\n    \"job_title\": \"\",\n    \"company_size\": \"\",\n    \"industry\": \"\"\n  },\n\n  \"lead_analysis\": {\n    \"intent\": \"\",\n    \"buying_stage\": \"\",\n    \"requirements\": [],\n    \"pain_points\": [],\n    \"timeline\": \"\",\n    \"budget\": \"\",\n    \"urgency\": \"\"\n  },\n\n  \"lead_scoring\": {\n    \"score\": 0,\n    \"tier\": \"\",\n    \"reason\": \"\"\n  },\n\n  \"routing\": {\n    \"primary_department\": \"\",\n    \"secondary_departments\": [],\n    \"queue\": \"\",\n    \"assigned_role\": \"\",\n    \"priority\": \"\",\n    \"confidence\": 0\n  },\n\n  \"follow_up\": {\n    \"required\": false,\n    \"recommended_action\": \"\",\n    \"recommended_channel\": \"\",\n    \"recommended_timing\": \"\"\n  },\n\n  \"evidence\": [],\n\n  \"final_assessment\": \"\"\n}\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Senior Sales Operations Manager.\n\nCreate the final structured AI Lead Routing Report.\n\nThe report must summarize:\n\n- Lead information\n- Lead intent\n- Requirements\n- Buying stage\n- Lead score\n- Lead tier\n- Priority\n- Department\n- Queue\n- Assigned role\n- Follow-up recommendation\n- Routing reason\n\nRules:\n\n1. Never invent lead information.\n2. Preserve the original lead details.\n3. Do not invent budget or timeline.\n4. Do not make unsupported claims about decision-making authority.\n5. Do not expose unnecessary personal information.\n6. Recommendations must be based on evidence.\n7. Do not duplicate information.\n8. Use \"Unknown\" when information is unavailable.\n9. Return valid JSON only.\n10. Do not return Markdown.\n11. Do not use code fences.\n12. Do not add explanations outside JSON."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1728,
+        0
+      ],
+      "id": "81de2ecd-8294-41c5-87f5-0578ba786e62",
+      "name": "Final Lead Report Agent"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.output;\n\ntry {\n  let cleaned = String(raw)\n    .replace(/```json/gi, \"\")\n    .replace(/```/g, \"\")\n    .trim();\n\n  const start = cleaned.indexOf(\"{\");\n  const end = cleaned.lastIndexOf(\"}\");\n\n  if (start === -1 || end === -1) {\n    throw new Error(\"No JSON object found\");\n  }\n\n  cleaned = cleaned.substring(start, end + 1);\n\n  const report = JSON.parse(cleaned);\n\n  return [\n    {\n      json: {\n        report_type:\n          report.report_type ||\n          \"AI Web Form Lead Routing Report\",\n\n        lead:\n          report.lead || {},\n\n        lead_analysis:\n          report.lead_analysis || {},\n\n        lead_scoring:\n          report.lead_scoring || {},\n\n        routing:\n          report.routing || {},\n\n        follow_up:\n          report.follow_up || {},\n\n        evidence:\n          report.evidence || [],\n\n        final_assessment:\n          report.final_assessment || \"Unknown\",\n\n        parse_status: \"success\"\n      }\n    }\n  ];\n\n} catch (error) {\n\n  return [\n    {\n      json: {\n        report_type:\n          \"AI Web Form Lead Routing Report\",\n\n        parse_status: \"failed\",\n\n        parse_error: error.message,\n\n        raw_output: raw\n      }\n    }\n  ];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        0
+      ],
+      "id": "a2e10c76-45ff-487c-9ae5-6a931dc76661",
+      "name": "Parse Final Lead Report"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Normalize Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Lead Analysis Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Lead Scoring Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Lead Routing Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Final Lead Report Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Lead": {
+      "main": [
+        [
+          {
+            "node": "AI Lead Analysis Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Lead Analysis Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse Lead Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Lead Analysis": {
+      "main": [
+        [
+          {
+            "node": "Lead Scoring Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Scoring Agent": {
+      "main": [
+        [
+          {
+            "node": "Lead Routing Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Routing Agent": {
+      "main": [
+        [
+          {
+            "node": "Final Lead Report Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Lead Report Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse Final Lead Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Final Lead Report": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "c7bbf3ee-12aa-48ca-b9ea-4ce82ae832c9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "edbb0d25bd7a66014faefe68083a8f89c418df33feee41a51636a861e015ce95"
+  },
+  "nodeGroups": [],
+  "id": "HaHq7VdjSD3SAaZu",
+  "tags": []
+}

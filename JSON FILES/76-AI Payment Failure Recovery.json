@@ -1,0 +1,280 @@
+{
+  "name": "AI Payment Failure Recovery",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI Payment Failure Recovery",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Customer Name"
+            },
+            {
+              "fieldLabel": "Customer Email",
+              "fieldType": "email"
+            },
+            {
+              "fieldLabel": "Customer ID"
+            },
+            {
+              "fieldLabel": "Subscription Plan"
+            },
+            {
+              "fieldLabel": "Payment Amount",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Payment Date",
+              "fieldType": "date"
+            },
+            {
+              "fieldLabel": "Failure Reason"
+            },
+            {
+              "fieldLabel": "Retry Count",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Last Successful Payment",
+              "fieldType": "date"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        -112
+      ],
+      "id": "2ef97aea-d118-4560-9872-0af9857f81f8",
+      "name": "On form submission",
+      "webhookId": "017ed673-46c6-45f2-8aca-d0c8c232efe0"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nconst requiredFields = [\n  \"Customer Name\",\n  \"Customer Email\",\n  \"Customer ID\",\n  \"Subscription Plan\",\n  \"Payment Amount\",\n  \"Payment Date\",\n  \"Failure Reason\",\n  \"Retry Count\"\n];\n\nconst missingFields = requiredFields.filter(\n  field =>\n    data[field] === undefined ||\n    data[field] === null ||\n    data[field] === \"\"\n);\n\nconst amountValid = Number(data[\"Payment Amount\"]) > 0;\nconst retryValid = Number(data[\"Retry Count\"]) >= 0;\n\nreturn {\n  json: {\n    ...data,\n    data_valid:\n      missingFields.length === 0 &&\n      amountValid &&\n      retryValid,\n    missing_fields: missingFields\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -112
+      ],
+      "id": "9b405974-f819-400b-b96c-59a607825a9a",
+      "name": "Validate Payment Data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2afaa538-92c1-4d91-9313-f2e151bb6759",
+              "leftValue": "={{ $json.data_valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        -112
+      ],
+      "id": "af740195-760d-4a25-b0f4-c91954e7de9c",
+      "name": "Is Payment Data Valid?"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze this failed payment.\n\nCustomer Name:\n{{ $json[\"Customer Name\"] }}\n\nCustomer ID:\n{{ $json[\"Customer ID\"] }}\n\nSubscription Plan:\n{{ $json[\"Subscription Plan\"] }}\n\nPayment Amount:\n{{ $json[\"Payment Amount\"] }}\n\nPayment Date:\n{{ $json[\"Payment Date\"] }}\n\nFailure Reason:\n{{ $json[\"Failure Reason\"] }}\n\nRetry Count:\n{{ $json[\"Retry Count\"] }}\n\nLast Successful Payment:\n{{ $json[\"Last Successful Payment\"] }}\n\nProvide a payment recovery recommendation.",
+        "options": {
+          "systemMessage": "You are an AI Payment Recovery Analyst.\n\nYour job is to analyze failed customer payments and recommend an appropriate recovery action.\n\nUse only the information provided.\n\nConsider:\n\n1. Payment failure reason\n2. Payment amount\n3. Subscription plan\n4. Number of previous retry attempts\n5. Customer payment history\n6. Whether the customer has recently made a successful payment\n\nDetermine:\n\n- Failure category\n- Recovery priority\n- Recommended action\n- Customer message\n- Reason\n\nRecovery priority should be:\n\nLOW:\nThe failure appears temporary or has low urgency.\n\nMEDIUM:\nThe payment needs customer attention but does not appear highly urgent.\n\nHIGH:\nThe payment requires prompt follow-up, especially when multiple retries have failed or the subscription value is significant.\n\nDo not invent payment information.\n\nDo not request or expose full card numbers, CVV, passwords, or other sensitive payment credentials.\n\nDo not make claims about the exact cause of a payment failure beyond the information provided.\n\nReturn ONLY valid JSON.\n\nUse exactly this structure:\n\n{\n  \"failure_category\": \"\",\n  \"recovery_priority\": \"\",\n  \"recommended_action\": \"\",\n  \"customer_message\": \"\",\n  \"reason\": \"\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        672,
+        -112
+      ],
+      "id": "56f9c7c0-b73f-45f8-8512-f1391d5a2ba0",
+      "name": "AI Payment Recovery Analyst"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        752,
+        128
+      ],
+      "id": "8e15b629-7f77-40dd-9727-a488c8451f18",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wkvPLR8iLkAneiWB",
+          "name": "Google Gemini(PaLM) Api account 32"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nlet result = data.output;\n\nif (typeof result === \"string\") {\n  result = result\n    .replace(/```json/g, \"\")\n    .replace(/```/g, \"\")\n    .trim();\n\n  result = JSON.parse(result);\n}\n\nreturn {\n  json: {\n    ...data,\n    ...result\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        -112
+      ],
+      "id": "5c1723be-f0e5-433d-afa5-a4eb581b4ce6",
+      "name": "Parse Payment Recovery Result"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nreturn {\n  json: {\n    recovery_id: `PAY-${Date.now()}`,\n\n    customer_name: data[\"Customer Name\"],\n    customer_email: data[\"Customer Email\"],\n    customer_id: data[\"Customer ID\"],\n\n    subscription_plan: data[\"Subscription Plan\"],\n    payment_amount: Number(data[\"Payment Amount\"]),\n    payment_date: data[\"Payment Date\"],\n\n    failure_reason: data[\"Failure Reason\"],\n    retry_count: Number(data[\"Retry Count\"]),\n    last_successful_payment: data[\"Last Successful Payment\"],\n\n    failure_category: data.failure_category,\n    recovery_priority: data.recovery_priority,\n    recommended_action: data.recommended_action,\n    customer_message: data.customer_message,\n    reason: data.reason,\n\n    recovery_status: \"Pending\",\n    created_at: new Date().toISOString()\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        -112
+      ],
+      "id": "3228e8ed-7b8d-46bb-96f3-a2dade087629",
+      "name": "Create Recovery Record"
+    },
+    {
+      "parameters": {
+        "sendTo": "=nachiketharroju@gmail.com",
+        "subject": "Action Required: Payment Could Not Be Completed",
+        "message": "=Hi {{ $json.customer_name }},  We were unable to complete your recent payment.  Payment Details  Subscription: {{ $json.subscription_plan }}  Amount: ₹{{ $json.payment_amount }}  Payment Date: {{ $json.payment_date }}  Reason: {{ $json.failure_reason }}  What you can do:  {{ $json.customer_message }}  Recommended Action:  {{ $json.recommended_action }}  Please update your payment method or retry the payment if necessary.  If you believe this was an error, please contact our support team.  Best Regards, Billing Support Team",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1472,
+        -112
+      ],
+      "id": "f7d030db-1392-42f3-bef9-917758982f57",
+      "name": "Send a message",
+      "webhookId": "33de5438-ad3c-4bc7-83d9-77c63ce2ca32",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "BhfiiIF56c1Uc6dC",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Validate Payment Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Payment Data": {
+      "main": [
+        [
+          {
+            "node": "Is Payment Data Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Payment Data Valid?": {
+      "main": [
+        [
+          {
+            "node": "AI Payment Recovery Analyst",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Payment Recovery Analyst",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Payment Recovery Analyst": {
+      "main": [
+        [
+          {
+            "node": "Parse Payment Recovery Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Payment Recovery Result": {
+      "main": [
+        [
+          {
+            "node": "Create Recovery Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Recovery Record": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "e58ec8a1-841b-48ec-bb1a-09e8c8a8eb5a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "edbb0d25bd7a66014faefe68083a8f89c418df33feee41a51636a861e015ce95"
+  },
+  "nodeGroups": [],
+  "id": "tQB9nj6KqMg7xF6w",
+  "tags": []
+}

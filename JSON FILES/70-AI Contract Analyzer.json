@@ -1,0 +1,515 @@
+{
+  "name": "AI Contract Analyzer",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI Contract Analyzer",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "contract_name"
+            },
+            {
+              "fieldLabel": "contract_type"
+            },
+            {
+              "fieldLabel": "party_name"
+            },
+            {
+              "fieldLabel": "uploaded_contract",
+              "fieldType": "file"
+            },
+            {
+              "fieldLabel": "review_priority"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        -16
+      ],
+      "id": "8b2bae57-da23-49db-8e76-9cd77729e29e",
+      "name": "On form submission",
+      "webhookId": "49abfec9-b49d-49a8-8dfe-3d1ad3ec8011"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        -16
+      ],
+      "id": "23d41316-5ef8-442e-a362-da7aebabb337",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\nconst rawText =\n  input.contract_text ||\n  input.text ||\n  input.extracted_text ||\n  \"\";\n\nconst normalizedText = String(rawText)\n  .replace(/\\r\\n/g, \"\\n\")\n  .replace(/[ \\t]+/g, \" \")\n  .replace(/\\n{3,}/g, \"\\n\\n\")\n  .trim();\n\nreturn [\n  {\n    json: {\n      contract_text: normalizedText,\n      character_count: normalizedText.length,\n      word_count: normalizedText\n        .split(/\\s+/)\n        .filter(Boolean)\n        .length\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        -16
+      ],
+      "id": "6a23e371-00a1-4b76-bd87-80d842c4e42b",
+      "name": "Normalize Contract"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the following contract.\n\nCONTRACT TEXT:\n\n{{ $input.first().json.contract_text }}\n\nReturn exactly this JSON structure:\n\n{\n  \"contract_metadata\": {\n    \"contract_title\": \"\",\n    \"contract_type\": \"\",\n    \"parties\": [],\n    \"effective_date\": \"\",\n    \"start_date\": \"\",\n    \"end_date\": \"\",\n    \"renewal_terms\": \"\",\n    \"governing_law\": \"\",\n    \"jurisdiction\": \"\"\n  },\n\n  \"commercial_terms\": {\n    \"payment_terms\": \"\",\n    \"scope_of_services\": \"\",\n    \"pricing_terms\": \"\",\n    \"service_levels\": \"\"\n  },\n\n  \"sections_present\": [],\n\n  \"sections_missing_or_unclear\": [],\n\n  \"important_defined_terms\": [],\n\n  \"structure_summary\": \"\"\n}\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Senior Contract Analysis Specialist.\n\nYour task is to analyze the structure and metadata of a supplied contract.\n\nYou are not providing legal advice.\n\nYou must extract information directly supported by the contract text.\n\nIdentify:\n\n1. Contract title\n2. Contract type\n3. Contracting parties\n4. Effective date\n5. Start date\n6. End date\n7. Renewal mechanism\n8. Governing law\n9. Jurisdiction\n10. Payment terms\n11. Scope of services\n12. Key sections\n13. Presence or absence of important commercial clauses\n14. Important defined terms\n\nDo not invent missing information.\n\nIf information cannot be found, return \"Not specified\".\n\nReturn valid JSON only.\n\nDo not use Markdown.\nDo not use code fences.\nDo not add commentary outside JSON."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        672,
+        -16
+      ],
+      "id": "8b85494b-164d-45bd-9dd9-93a7b192b6ce",
+      "name": "Contract Structure Analyzer"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        744,
+        216
+      ],
+      "id": "394d1cd4-579c-4956-a910-1df11882e997",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wkvPLR8iLkAneiWB",
+          "name": "Google Gemini(PaLM) Api account 32"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.output;\n\ntry {\n  let cleaned = String(raw)\n    .replace(/```json/gi, \"\")\n    .replace(/```/g, \"\")\n    .trim();\n\n  const start = cleaned.indexOf(\"{\");\n  const end = cleaned.lastIndexOf(\"}\");\n\n  if (start === -1 || end === -1) {\n    throw new Error(\"No JSON object found\");\n  }\n\n  cleaned = cleaned.substring(start, end + 1);\n\n  return [\n    {\n      json: {\n        ...JSON.parse(cleaned),\n        parse_status: \"success\"\n      }\n    }\n  ];\n\n} catch (error) {\n  return [\n    {\n      json: {\n        parse_status: \"failed\",\n        parse_error: error.message,\n        raw_output: raw\n      }\n    }\n  ];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        -16
+      ],
+      "id": "0d87377c-c6d5-480e-9f07-ecdfe62db38d",
+      "name": "Parse Contract Structure"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze this contract for material risks.\n\nCONTRACT:\n\n{{ $(\"Normalize Contract\").first().json.contract_text }}\n\nCONTRACT STRUCTURE:\n\n{{ JSON.stringify($(\"Parse Contract Structure\").first().json) }}\n\nReturn exactly:\n\n{\n  \"risk_summary\": {\n    \"overall_risk_level\": \"\",\n    \"risk_score\": 0,\n    \"summary\": \"\"\n  },\n\n  \"risks\": [\n    {\n      \"risk_id\": \"\",\n      \"clause\": \"\",\n      \"severity\": \"\",\n      \"affected_party\": \"\",\n      \"description\": \"\",\n      \"evidence\": \"\",\n      \"business_impact\": \"\",\n      \"recommendation\": \"\"\n    }\n  ],\n\n  \"missing_protections\": [],\n\n  \"positive_clauses\": [],\n\n  \"high_priority_risks\": []\n}\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Senior Commercial Contract Risk Analyst.\n\nYour task is to identify and assess material clauses and risks in the supplied contract.\n\nYou are not a lawyer and must not provide definitive legal conclusions.\n\nAnalyze the contract for:\n\n1. Payment obligations\n2. Liability limitations\n3. Indemnification\n4. Confidentiality\n5. Intellectual property\n6. Data protection and privacy\n7. Security obligations\n8. Term and termination\n9. Automatic renewal\n10. Price increases\n11. Service levels\n12. Warranties\n13. Representations\n14. Assignment\n15. Subcontracting\n16. Audit rights\n17. Insurance\n18. Governing law\n19. Dispute resolution\n20. Force majeure\n21. Non-solicitation\n22. Exclusivity\n23. Change-control rights\n24. Unilateral amendment rights\n25. Post-termination obligations\n\nFor every risk:\n\n- Assign a unique risk ID.\n- Identify the clause.\n- Quote only a short relevant excerpt when necessary.\n- Explain the risk.\n- Assign severity.\n- Explain the business impact.\n- Identify which party is exposed.\n- Provide a review recommendation.\n\nSeverity:\n\nCritical\nHigh\nMedium\nLow\nInformational\n\nPay particular attention to unlimited liability, broad indemnification, unfavorable termination rights, automatic renewal, unilateral amendment rights, data-processing obligations, and IP ownership. These are common commercial risk areas. :contentReference[oaicite:2]{index=2}\n\nDo not invent risks.\n\nReturn valid JSON only."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1248,
+        -16
+      ],
+      "id": "2bf46909-883b-4302-8149-61d3455a6d90",
+      "name": "Clause & Risk Analysis Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1320,
+        216
+      ],
+      "id": "54863269-846e-4cac-81b1-cf5f0cc4e9b9",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wkvPLR8iLkAneiWB",
+          "name": "Google Gemini(PaLM) Api account 32"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.output;\n\ntry {\n  let cleaned = String(raw)\n    .replace(/```json/gi, \"\")\n    .replace(/```/g, \"\")\n    .trim();\n\n  const start = cleaned.indexOf(\"{\");\n  const end = cleaned.lastIndexOf(\"}\");\n\n  if (start === -1 || end === -1) {\n    throw new Error(\"No JSON object found\");\n  }\n\n  cleaned = cleaned.substring(start, end + 1);\n\n  return [\n    {\n      json: {\n        ...JSON.parse(cleaned),\n        parse_status: \"success\"\n      }\n    }\n  ];\n\n} catch (error) {\n  return [\n    {\n      json: {\n        parse_status: \"failed\",\n        parse_error: error.message,\n        raw_output: raw\n      }\n    }\n  ];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        -16
+      ],
+      "id": "668e976d-ad66-4d0b-b72a-21240c8059a8",
+      "name": "Parse Risk Analysis"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extract all actionable obligations and deadlines.\n\nCONTRACT:\n\n{{ $(\"Normalize Contract\").first().json.contract_text }}\n\nReturn exactly:\n\n{\n  \"obligations\": [\n    {\n      \"obligation_id\": \"\",\n      \"responsible_party\": \"\",\n      \"obligation\": \"\",\n      \"trigger\": \"\",\n      \"deadline\": \"\",\n      \"frequency\": \"\",\n      \"consequence\": \"\",\n      \"source_clause\": \"\"\n    }\n  ],\n\n  \"important_dates\": [\n    {\n      \"date_type\": \"\",\n      \"date\": \"\",\n      \"description\": \"\",\n      \"responsible_party\": \"\"\n    }\n  ],\n\n  \"notice_requirements\": [],\n\n  \"surviving_obligations\": []\n}\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Contract Obligation and Deadline Analyst.\n\nYour task is to extract actionable obligations, deadlines, notice periods, payment dates, renewal dates, termination notice requirements, deliverables, and continuing obligations from the contract.\n\nIdentify obligations belonging to each party.\n\nFor each obligation determine:\n\n- Obligation ID\n- Responsible party\n- Obligation\n- Trigger\n- Deadline or time period\n- Frequency\n- Consequence of non-compliance\n- Source clause\n\nPay special attention to:\n\n- Payment deadlines\n- Renewal notice periods\n- Termination notice periods\n- Cure periods\n- Reporting obligations\n- Security obligations\n- Data deletion/return obligations\n- Insurance requirements\n- Audit obligations\n- Deliverables\n- SLA commitments\n- Confidentiality survival\n- IP obligations\n\nIf a deadline is not explicitly stated, return \"Not specified\".\n\nDo not invent dates.\n\nReturn valid JSON only."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1824,
+        -16
+      ],
+      "id": "a8d7e67e-5f18-489e-8187-0b0e37d8acb0",
+      "name": "Obligation & Deadline Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1896,
+        216
+      ],
+      "id": "a68d7a30-c70e-4940-b1e7-a47f15570c75",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wkvPLR8iLkAneiWB",
+          "name": "Google Gemini(PaLM) Api account 32"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.output;\n\ntry {\n  let cleaned = String(raw)\n    .replace(/```json/gi, \"\")\n    .replace(/```/g, \"\")\n    .trim();\n\n  const start = cleaned.indexOf(\"{\");\n  const end = cleaned.lastIndexOf(\"}\");\n\n  if (start === -1 || end === -1) {\n    throw new Error(\"No JSON object found\");\n  }\n\n  cleaned = cleaned.substring(start, end + 1);\n\n  return [\n    {\n      json: {\n        ...JSON.parse(cleaned),\n        parse_status: \"success\"\n      }\n    }\n  ];\n\n} catch (error) {\n  return [\n    {\n      json: {\n        parse_status: \"failed\",\n        parse_error: error.message,\n        raw_output: raw\n      }\n    }\n  ];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2176,
+        -16
+      ],
+      "id": "cfd85c5c-a2aa-45cc-bb0d-d46d3a4d539a",
+      "name": "Parse Obligations"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create a contract review recommendation plan.\n\nCONTRACT STRUCTURE:\n\n{{ JSON.stringify($(\"Parse Contract Structure\").first().json) }}\n\nRISK ANALYSIS:\n\n{{ JSON.stringify($(\"Parse Risk Analysis\").first().json) }}\n\nOBLIGATIONS:\n\n{{ JSON.stringify($(\"Parse Obligations\").first().json) }}\n\nReturn exactly:\n\n{\n  \"recommendation_summary\": {\n    \"overall_priority\": \"\",\n    \"summary\": \"\"\n  },\n\n  \"recommendations\": [\n    {\n      \"recommendation_id\": \"\",\n      \"risk_id\": \"\",\n      \"priority\": \"\",\n      \"issue\": \"\",\n      \"recommended_action\": \"\",\n      \"desired_outcome\": \"\",\n      \"legal_review_recommended\": false\n    }\n  ],\n\n  \"immediate_review_items\": [],\n\n  \"negotiation_items\": [],\n\n  \"operational_follow_up\": [],\n\n  \"legal_escalation_items\": []\n}\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Senior Contract Review and Negotiation Support Specialist.\n\nAnalyze the supplied contract risks and recommend practical review actions.\n\nYou are not providing legal advice.\n\nFor each material risk:\n\n- Identify the risk.\n- Explain why it matters.\n- Recommend a negotiation or review action.\n- Identify the priority.\n- Suggest the desired outcome.\n- Identify whether legal review is recommended.\n\nDo not invent contractual language that is not supported by the analysis.\n\nPriorities:\n\nCritical\nHigh\nMedium\nLow\n\nSeparate:\n\n1. Immediate review items\n2. Negotiation items\n3. Operational follow-up\n4. Legal escalation items\n\nReturn valid JSON only."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2400,
+        -16
+      ],
+      "id": "4e7e674b-774c-467a-912f-f3a7dd01db65",
+      "name": "Contract Recommendation Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        2472,
+        216
+      ],
+      "id": "7158685d-98dc-45e4-af3d-bfdf9b641649",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wkvPLR8iLkAneiWB",
+          "name": "Google Gemini(PaLM) Api account 32"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.output;\n\ntry {\n  let cleaned = String(raw)\n    .replace(/```json/gi, \"\")\n    .replace(/```/g, \"\")\n    .trim();\n\n  const start = cleaned.indexOf(\"{\");\n  const end = cleaned.lastIndexOf(\"}\");\n\n  if (start === -1 || end === -1) {\n    throw new Error(\"No JSON object found\");\n  }\n\n  cleaned = cleaned.substring(start, end + 1);\n\n  return [\n    {\n      json: {\n        ...JSON.parse(cleaned),\n        parse_status: \"success\"\n      }\n    }\n  ];\n\n} catch (error) {\n  return [\n    {\n      json: {\n        parse_status: \"failed\",\n        parse_error: error.message,\n        raw_output: raw\n      }\n    }\n  ];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2752,
+        -16
+      ],
+      "id": "cae6e820-4c65-411d-849e-1bc243c7cd43",
+      "name": "Parse Contract Recommendations"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create the final professional Contract Analysis Report.\n\nCONTRACT STRUCTURE:\n\n{{ JSON.stringify($(\"Parse Contract Structure\").first().json) }}\n\nRISK ANALYSIS:\n\n{{ JSON.stringify($(\"Parse Risk Analysis\").first().json) }}\n\nOBLIGATIONS:\n\n{{ JSON.stringify($(\"Parse Obligations\").first().json) }}\n\nRECOMMENDATIONS:\n\n{{ JSON.stringify($(\"Parse Contract Recommendations\").first().json) }}\n\nReturn exactly:\n\n{\n  \"report_type\": \"AI Contract Analysis Report\",\n\n  \"contract_summary\": {\n    \"title\": \"\",\n    \"type\": \"\",\n    \"parties\": [],\n    \"effective_date\": \"\",\n    \"term\": \"\",\n    \"overall_summary\": \"\"\n  },\n\n  \"risk_assessment\": {\n    \"risk_score\": 0,\n    \"risk_level\": \"\",\n    \"summary\": \"\"\n  },\n\n  \"key_risks\": [\n    {\n      \"risk_id\": \"\",\n      \"clause\": \"\",\n      \"severity\": \"\",\n      \"affected_party\": \"\",\n      \"description\": \"\",\n      \"business_impact\": \"\",\n      \"recommended_action\": \"\"\n    }\n  ],\n\n  \"financial_terms\": {\n    \"payment_terms\": \"\",\n    \"pricing\": \"\",\n    \"liability_cap\": \"\",\n    \"indemnification\": \"\"\n  },\n\n  \"termination_and_renewal\": {\n    \"termination_rights\": \"\",\n    \"notice_period\": \"\",\n    \"renewal_terms\": \"\",\n    \"auto_renewal_risk\": \"\"\n  },\n\n  \"data_and_privacy\": {\n    \"data_processing\": \"\",\n    \"security_requirements\": \"\",\n    \"breach_requirements\": \"\",\n    \"data_return_or_deletion\": \"\"\n  },\n\n  \"intellectual_property\": {\n    \"ownership\": \"\",\n    \"license_rights\": \"\",\n    \"ip_risks\": \"\"\n  },\n\n  \"obligations\": [],\n\n  \"important_dates\": [],\n\n  \"recommendations\": [],\n\n  \"legal_review_items\": [],\n\n  \"final_conclusion\": \"\",\n\n  \"report_confidence\": 0\n}\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Principal Contract Review Analyst.\n\nCreate a final professional contract analysis report from the supplied contract structure, risk analysis, obligations, and recommendations.\n\nYou are not providing legal advice.\n\nThe report must clearly distinguish:\n\n- Facts extracted from the contract\n- AI-identified risks\n- Recommended review actions\n- Items requiring qualified legal review\n\nDo not invent contractual terms.\n\nDo not fabricate dates.\n\nDo not claim that a clause is legally invalid unless the supplied analysis establishes that conclusion.\n\nPrioritize material commercial, financial, operational, privacy, intellectual-property, liability, indemnity, termination, and renewal risks.\n\nReturn valid JSON only.\n\nDo not use Markdown.\nDo not use code fences.\nDo not add commentary outside JSON."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2976,
+        -16
+      ],
+      "id": "6b852ca2-8d20-4fe8-a289-fc121598fc8e",
+      "name": "Final Contract Report Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        3048,
+        216
+      ],
+      "id": "72c988ee-b193-4d89-b61e-4c6bc9c77b10",
+      "name": "Google Gemini Chat Model4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wkvPLR8iLkAneiWB",
+          "name": "Google Gemini(PaLM) Api account 32"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.output;\n\ntry {\n  let cleaned = String(raw)\n    .replace(/```json/gi, \"\")\n    .replace(/```/g, \"\")\n    .trim();\n\n  const start = cleaned.indexOf(\"{\");\n  const end = cleaned.lastIndexOf(\"}\");\n\n  if (start === -1 || end === -1) {\n    throw new Error(\"No JSON object found\");\n  }\n\n  cleaned = cleaned.substring(start, end + 1);\n\n  return [\n    {\n      json: {\n        ...JSON.parse(cleaned),\n        parse_status: \"success\"\n      }\n    }\n  ];\n\n} catch (error) {\n  return [\n    {\n      json: {\n        parse_status: \"failed\",\n        parse_error: error.message,\n        raw_output: raw\n      }\n    }\n  ];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3328,
+        -16
+      ],
+      "id": "35472695-ed14-4575-93d2-dcea980b845d",
+      "name": "Parse Final Contract Report"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Normalize Contract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Contract": {
+      "main": [
+        [
+          {
+            "node": "Contract Structure Analyzer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Contract Structure Analyzer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contract Structure Analyzer": {
+      "main": [
+        [
+          {
+            "node": "Parse Contract Structure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Contract Structure": {
+      "main": [
+        [
+          {
+            "node": "Clause & Risk Analysis Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Clause & Risk Analysis Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clause & Risk Analysis Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse Risk Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Risk Analysis": {
+      "main": [
+        [
+          {
+            "node": "Obligation & Deadline Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Obligation & Deadline Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obligation & Deadline Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse Obligations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Obligations": {
+      "main": [
+        [
+          {
+            "node": "Contract Recommendation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Contract Recommendation Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contract Recommendation Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse Contract Recommendations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Contract Recommendations": {
+      "main": [
+        [
+          {
+            "node": "Final Contract Report Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Final Contract Report Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Contract Report Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse Final Contract Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "8aa463dd-b62b-4eba-a220-5da963014428",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "edbb0d25bd7a66014faefe68083a8f89c418df33feee41a51636a861e015ce95"
+  },
+  "nodeGroups": [],
+  "id": "ACRYqcubDNvpkJ1m",
+  "tags": []
+}

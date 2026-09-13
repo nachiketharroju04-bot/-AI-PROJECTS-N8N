@@ -1,0 +1,514 @@
+{
+  "name": "AI Churn Prediction & Alert System",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -48
+      ],
+      "id": "ef9d325a-0ad1-4bf4-bf0d-04e290365201",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        -48
+      ],
+      "id": "e9c06c7d-a91e-4b5f-af81-741225736db2",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q524jgyHLO03nlDm",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => {\n  const data = item.json;\n\n  const requiredFields = [\n    \"customer_id\",\n    \"customer_name\",\n    \"email\",\n    \"days_inactive\",\n    \"login_30d\",\n    \"login_90d\",\n    \"purchase_90d\",\n    \"support_tickets\",\n    \"unresolved_tickets\",\n    \"satisfaction\",\n    \"payment_failures\"\n  ];\n\n  const missingFields = requiredFields.filter(\n    field =>\n      data[field] === undefined ||\n      data[field] === null ||\n      data[field] === \"\"\n  );\n\n  return {\n    json: {\n      ...data,\n      data_valid: missingFields.length === 0,\n      missing_fields: missingFields\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        -48
+      ],
+      "id": "c7d92ecd-f5d8-47b3-8ce4-85fa4ca9801c",
+      "name": "Validate Customer Data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3a7f07da-2989-40cc-b3b3-3994d5a39a7e",
+              "leftValue": "data_valid",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        -48
+      ],
+      "id": "85cdd0cd-d0a9-41b7-b5b5-25d701a49c2f",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        896,
+        48
+      ],
+      "id": "65dfdc7c-131e-4937-b9be-3290ffb6f761",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q524jgyHLO03nlDm",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => {\n  const data = item.json;\n\n  const daysInactive = Number(data.days_inactive);\n  const login30 = Number(data.login_30d);\n  const unresolved = Number(data.unresolved_tickets);\n  const satisfaction = Number(data.satisfaction);\n  const paymentFailures = Number(data.payment_failures);\n  const purchases = Number(data.purchase_90d);\n\n  let score = 0;\n\n  // Inactivity\n  if (daysInactive >= 30) {\n    score += 30;\n  } else if (daysInactive >= 14) {\n    score += 20;\n  } else if (daysInactive >= 7) {\n    score += 10;\n  }\n\n  // Login frequency\n  if (login30 <= 2) {\n    score += 20;\n  } else if (login30 <= 5) {\n    score += 10;\n  }\n\n  // Unresolved support tickets\n  if (unresolved >= 3) {\n    score += 20;\n  } else if (unresolved >= 1) {\n    score += 10;\n  }\n\n  // Satisfaction\n  if (satisfaction <= 3) {\n    score += 15;\n  } else if (satisfaction <= 5) {\n    score += 10;\n  }\n\n  // Payment failures\n  if (paymentFailures >= 2) {\n    score += 15;\n  } else if (paymentFailures === 1) {\n    score += 5;\n  }\n\n  // Purchases\n  if (purchases === 0) {\n    score += 10;\n  }\n\n  let initialRisk;\n\n  if (score >= 60) {\n    initialRisk = \"High\";\n  } else if (score >= 30) {\n    initialRisk = \"Medium\";\n  } else {\n    initialRisk = \"Low\";\n  }\n\n  return {\n    json: {\n      ...data,\n      initial_churn_score: score,\n      initial_risk_level: initialRisk\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        -144
+      ],
+      "id": "9b446c33-9830-42ad-9dd1-e928e1a809e3",
+      "name": "Calculate Churn Score"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the following customer.\n\nCustomer ID:\n{{ $json.customer_id }}\n\nCustomer Name:\n{{ $json.customer_name }}\n\nSubscription:\n{{ $json.subscription }}\n\nMonthly Value:\n{{ $json.monthly_value }}\n\nDays Inactive:\n{{ $json.days_inactive }}\n\nLogins - Last 30 Days:\n{{ $json.login_30d }}\n\nLogins - Last 90 Days:\n{{ $json.login_90d }}\n\nPurchases - Last 90 Days:\n{{ $json.purchase_90d }}\n\nTotal Spend:\n{{ $json.total_spend }}\n\nSupport Tickets:\n{{ $json.support_tickets }}\n\nUnresolved Tickets:\n{{ $json.unresolved_tickets }}\n\nSatisfaction Score:\n{{ $json.satisfaction }}\n\nPayment Failures:\n{{ $json.payment_failures }}\n\nInitial Churn Score:\n{{ $json.initial_churn_score }}\n\nInitial Risk Level:\n{{ $json.initial_risk_level }}\n\nAnalyze this customer and return the required JSON.",
+        "options": {
+          "systemMessage": "You are an AI Customer Churn Prediction Analyst.\n\nYour job is to analyze customer behavior data and identify customers who may be at risk of churn.\n\nAnalyze the customer using only the information provided.\n\nConsider these factors:\n\n1. Customer inactivity\n2. Login frequency\n3. Historical engagement\n4. Purchase activity\n5. Support ticket volume\n6. Unresolved support issues\n7. Customer satisfaction\n8. Payment failures\n9. Subscription value\n10. Initial churn score\n\nDo not invent customer information.\n\nDo not assume facts that are not provided.\n\nThe initial churn score is a rule-based indicator. You should use it as supporting information, not as the only factor.\n\nDetermine:\n\n- churn_probability\n- risk_level\n- primary_churn_reasons\n- behavioral_signals\n- recommended_retention_action\n- urgency\n- explanation\n\nRisk levels:\n\nLOW:\nCustomer has healthy engagement and few warning signals.\n\nMEDIUM:\nCustomer has meaningful warning signals but does not show strong evidence of imminent churn.\n\nHIGH:\nCustomer has multiple strong churn indicators requiring customer-success intervention.\n\nReturn ONLY valid JSON.\n\nUse exactly this structure:\n\n{\n  \"customer_id\": \"\",\n  \"churn_probability\": 0,\n  \"risk_level\": \"\",\n  \"primary_churn_reasons\": [],\n  \"behavioral_signals\": [],\n  \"recommended_retention_action\": \"\",\n  \"urgency\": \"\",\n  \"explanation\": \"\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1120,
+        -144
+      ],
+      "id": "7cbb165f-8af0-4c75-93a6-6a08b0a461f7",
+      "name": "AI Churn Analyst"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1192,
+        88
+      ],
+      "id": "4dda7fe8-044a-494b-b083-2b340275bac5",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wkvPLR8iLkAneiWB",
+          "name": "Google Gemini(PaLM) Api account 32"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.risk_level }}",
+                    "rightValue": "Low",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "c22168be-0f6d-423e-9d67-3f3aa211e991"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "b01e262f-6777-4380-b345-214600476d22",
+                    "leftValue": "={{ $json.risk_level }}",
+                    "rightValue": "Medium",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "7d63fce2-5c35-4ec8-853c-f8e5457089a5",
+                    "leftValue": "={{ $json.risk_level }}",
+                    "rightValue": "High",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1920,
+        -160
+      ],
+      "id": "1e9e03c0-d420-43ea-a191-48ce5c3f6270",
+      "name": "Risk Level Router"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => {\n  const data = item.json;\n\n  let aiResult = data.output;\n\n  if (typeof aiResult === 'string') {\n    aiResult = aiResult\n      .replace(/```json/g, '')\n      .replace(/```/g, '')\n      .trim();\n\n    try {\n      aiResult = JSON.parse(aiResult);\n    } catch (error) {\n      throw new Error('AI returned invalid JSON');\n    }\n  }\n\n  return {\n    json: {\n      ...data,\n      ...aiResult\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        -144
+      ],
+      "id": "3034bec5-98ac-4280-9380-732f4c7275d1",
+      "name": "Parse AI Churn Result"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => {\n  const data = item.json;\n\n  return {\n    json: {\n      ...data,\n      prediction_id: `PRED-${Date.now()}-${data.customer_id}`,\n      prediction_date: new Date().toISOString(),\n      status: \"Open\"\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1696,
+        -144
+      ],
+      "id": "0a3127b5-ce21-411b-ac3d-687157ffb425",
+      "name": "Creation Prediction Record"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2144,
+        -336
+      ],
+      "id": "97e0b527-6bb9-4301-94b9-617feff08a5c",
+      "name": "Store Low Risk Prediction",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q524jgyHLO03nlDm",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2144,
+        -144
+      ],
+      "id": "642c878e-0506-4878-a3f3-7e9a2802e20f",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q524jgyHLO03nlDm",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2144,
+        48
+      ],
+      "id": "b08c5923-1b53-4c54-86db-dab27343b4cf",
+      "name": "Append row in sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q524jgyHLO03nlDm",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Validate Customer Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Customer Data": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Calculate Churn Score",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Churn Score": {
+      "main": [
+        [
+          {
+            "node": "AI Churn Analyst",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Churn Analyst",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Churn Analyst": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Churn Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Churn Result": {
+      "main": [
+        [
+          {
+            "node": "Creation Prediction Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Creation Prediction Record": {
+      "main": [
+        [
+          {
+            "node": "Risk Level Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Risk Level Router": {
+      "main": [
+        [
+          {
+            "node": "Store Low Risk Prediction",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "4d35c771-d42f-4e42-bbb1-8bb9dcdb32a7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "edbb0d25bd7a66014faefe68083a8f89c418df33feee41a51636a861e015ce95"
+  },
+  "nodeGroups": [],
+  "id": "u18deWVxJCm9zxCi",
+  "tags": []
+}

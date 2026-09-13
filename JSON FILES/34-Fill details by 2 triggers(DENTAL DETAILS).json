@@ -1,0 +1,252 @@
+{
+  "name": "Fill details by 2 triggers",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "1cbbe95f-ca2e-49fd-bf9e-8c6b1e010314",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -112,
+        96
+      ],
+      "id": "a1325f30-20f5-463a-a0fb-0f30f3886409",
+      "name": "Webhook",
+      "webhookId": "1cbbe95f-ca2e-49fd-bf9e-8c6b1e010314"
+    },
+    {
+      "parameters": {
+        "formTitle": "Dental checkup",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "NAME",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "EMAIL",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "AGE",
+              "fieldType": "number",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -112,
+        -96
+      ],
+      "id": "63b6eeee-2652-4a52-ab04-d3e676697726",
+      "name": "On form submission",
+      "webhookId": "e36f3af4-aa98-465f-9634-9d4471ed3950"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "210737c3-8a9f-421a-a536-dd0b6e69a1a2",
+              "name": "NAME",
+              "value": "={{ $json.NAME || $json.body.name  }}",
+              "type": "string"
+            },
+            {
+              "id": "0df554e3-a6ee-46d6-b82c-f5a393f55304",
+              "name": "EMAIL",
+              "value": "={{ $json.EMAIL || $json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "bd276385-6ea2-4024-ac44-c1828300ac94",
+              "name": "AGE",
+              "value": "={{ $json.AGE || $json.body.age }}",
+              "type": "number"
+            },
+            {
+              "id": "82238512-4da8-4798-b3ca-2dbaa57f6f89",
+              "name": "",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        112,
+        0
+      ],
+      "id": "22d92859-62c7-4baa-9ee9-bc6cccc5db74",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1g7HJQRp4Q06Uu8Iw6lbR-W_AIjQOG4Fh6Z0Q1F4-6WA",
+          "mode": "list",
+          "cachedResultName": "Dental details",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1g7HJQRp4Q06Uu8Iw6lbR-W_AIjQOG4Fh6Z0Q1F4-6WA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1g7HJQRp4Q06Uu8Iw6lbR-W_AIjQOG4Fh6Z0Q1F4-6WA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name ": "={{ $json.NAME }}",
+            "Email": "={{ $json.EMAIL }}",
+            "Age": "={{ $json.AGE }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name ",
+              "displayName": "Name ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Age",
+              "displayName": "Age",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        336,
+        0
+      ],
+      "id": "265cb5e9-cbcc-4097-aa8c-268cc5be2e21",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HlAsjOG6L8RjCWX0",
+          "name": "Google Sheets account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "nachiketharroju04@gmail.com",
+        "subject": "Welcome to Dental clinic",
+        "message": "Welcome to Dental clinic",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        0
+      ],
+      "id": "a06f57b4-076d-4e05-b71c-f8d0e36a46e9",
+      "name": "Send a message",
+      "webhookId": "65aac132-96dc-4cb0-893d-da89278e73e2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7iRyEUu9T9cVwtRv",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "cf5cb4ff-8c19-4fe9-9a6a-b10443341da5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "BLJp0RleVMzPAfeP",
+  "tags": []
+}

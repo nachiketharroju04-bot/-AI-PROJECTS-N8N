@@ -1,0 +1,155 @@
+{
+  "name": "AI Content Planner",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI CONTENT PLANNER",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Business Name",
+              "fieldName": "Business Name"
+            },
+            {
+              "fieldLabel": "Main Topic",
+              "fieldName": "Main Topic"
+            },
+            {
+              "fieldLabel": "Target Audience",
+              "fieldName": "Target Audience"
+            },
+            {
+              "fieldLabel": "Content Goal",
+              "fieldType": "textarea",
+              "fieldName": "Content Goal"
+            },
+            {
+              "fieldLabel": "Platforms",
+              "fieldName": "Platforms"
+            },
+            {
+              "fieldLabel": "Posts Per Week",
+              "fieldType": "number",
+              "fieldName": "Posts Per Week"
+            },
+            {
+              "fieldLabel": "Additional Information",
+              "fieldType": "textarea"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "6cbdfd53-1340-4ecd-9832-d3ebbab6a627",
+      "name": "On form submission",
+      "webhookId": "517233ed-9573-4e75-8075-570cbcff24d3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create a content plan based on the following information.\n\nBusiness Name:\n{{ $json['Business Name'] }}\n\nMain Topic:\n{{ $json['Main Topic'] }}\n\nTarget Audience:\n{{ $json['Target Audience'] }}\n\nContent Goal:\n{{ $json['Content Goal'] }}\n\nPlatforms:\n{{ $json['Platforms'] }}\n\nPosts Per Week:\n{{ $json['Posts Per Week'] }}\n\nAdditional Information:\n{{ $json['Additional Information'] }}\n\nCreate a structured content plan.\n\nGenerate:\n\n1. Content strategy summary\n2. Content pillars\n3. Content ideas\n4. Content titles\n5. Content types\n6. Target keywords\n7. Search intent\n8. Content goals\n9. Suggested publishing schedule\n10. Call-to-action suggestions",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an AI Content Planning Specialist.\n\nYour job is to create practical and organized content plans\nbased on the business, audience, topic, goals and platforms\nprovided by the user.\n\nIMPORTANT RULES:\n\n1. Create content ideas relevant to the main topic.\n2. Consider the target audience.\n3. Align content with the stated business goal.\n4. Consider the selected platforms.\n5. Use different content types where appropriate.\n6. Avoid duplicate content ideas.\n7. Create clear and engaging titles.\n8. Suggest relevant keywords.\n9. Identify appropriate search intent for content topics.\n10. Create a realistic publishing schedule.\n11. Do not invent business facts.\n12. Do not claim actual search volume or keyword difficulty\n    unless real SEO data is provided.\n13. Make the plan practical and easy to execute.\n14. Return the result using the required structured output format."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "82921cf3-3b1e-4570-89f9-2c22e02fe375",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        240
+      ],
+      "id": "0a7ce50f-4cfe-45aa-b5e2-8f7d1a628b47",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"business_name\": \"ABC Digital Marketing\",\n  \"strategy_summary\": \"Create educational and conversion-focused content to increase website traffic and generate leads from small business owners.\",\n  \"content_pillars\": [\n    \"SEO\",\n    \"Social Media Marketing\",\n    \"Content Marketing\"\n  ],\n  \"content_ideas\": [\n    {\n      \"title\": \"10 Digital Marketing Strategies for Small Businesses\",\n      \"content_type\": \"Blog\",\n      \"platform\": \"Blog\",\n      \"target_keyword\": \"digital marketing strategies for small businesses\",\n      \"search_intent\": \"Informational\",\n      \"content_goal\": \"Increase website traffic\",\n      \"call_to_action\": \"Contact us for a digital marketing consultation\"\n    },\n    {\n      \"title\": \"5 SEO Tips Every Small Business Should Know\",\n      \"content_type\": \"Carousel\",\n      \"platform\": \"Instagram\",\n      \"target_keyword\": \"SEO tips for small businesses\",\n      \"search_intent\": \"Informational\",\n      \"content_goal\": \"Build awareness\",\n      \"call_to_action\": \"Follow us for more SEO tips\"\n    }\n  ],\n  \"publishing_schedule\": [\n    {\n      \"day\": \"Monday\",\n      \"platform\": \"Blog\",\n      \"content_type\": \"Article\"\n    },\n    {\n      \"day\": \"Wednesday\",\n      \"platform\": \"Instagram\",\n      \"content_type\": \"Carousel\"\n    },\n    {\n      \"day\": \"Friday\",\n      \"platform\": \"LinkedIn\",\n      \"content_type\": \"Post\"\n    }\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        400,
+        208
+      ],
+      "id": "8687f378-81dd-4a37-83f2-17fe420fbca1",
+      "name": "Structured Output Parser"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "62e05f72-3f6f-4ab3-b274-c7ba7f176aa0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "k1cliqYJtfXjzmzD",
+  "tags": []
+}

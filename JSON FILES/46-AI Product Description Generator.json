@@ -1,0 +1,145 @@
+{
+  "name": "AI Product Description Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI Product Description Generator",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Product Name"
+            },
+            {
+              "fieldLabel": "Category"
+            },
+            {
+              "fieldLabel": "Price",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Features",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Target Audience"
+            },
+            {
+              "fieldLabel": "Product Details",
+              "fieldType": "textarea"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0fa444c6-3deb-4f7d-82d1-8ff0125c4607",
+      "name": "On form submission",
+      "webhookId": "79196e3c-9f34-4561-9812-8b3878e1abd2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create a professional product description using the information below.\n\nProduct Name:\n{{ $json['Product Name'] }}\n\nCategory:\n{{ $json['Category'] }}\n\nPrice:\n{{ $json['Price'] }}\n\nFeatures:\n{{ $json['Features'] }}\n\nTarget Audience:\n{{ $json['Target Audience'] }}\n\nProduct Details:\n{{ $json['Product Details'] }}\n\nGenerate:\n\n1. Product name\n2. Short description\n3. Detailed product description\n4. Key features\n5. Main selling points\n6. Target audience\n7. SEO title\n8. Meta description\n9. SEO keywords\n\nMake the description professional, persuasive and easy to understand.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an AI Product Description Generator.\n\nYour job is to create accurate, professional and engaging\nproduct descriptions from the information provided by the user.\n\nIMPORTANT RULES:\n\n1. Use only the product information provided.\n2. Do not invent specifications, certifications, warranties,\n   guarantees or technical features.\n3. Do not make unsupported claims.\n4. Keep the description clear and easy to understand.\n5. Highlight the most important product benefits.\n6. Convert technical features into understandable benefits\n   where appropriate.\n7. Keep the tone professional and persuasive.\n8. Do not use excessive promotional language.\n9. Generate an SEO-friendly title.\n10. Generate a concise SEO meta description.\n11. Generate relevant SEO keywords.\n12. Keep keywords natural and avoid keyword stuffing.\n13. Make the output suitable for an e-commerce product page.\n14. Return the result using the required structured output format."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "ab28387b-d2d1-480a-b3a8-dc8a74ba3b35",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        232,
+        232
+      ],
+      "id": "1fe6b69f-a172-4604-84da-e83c12898003",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"product_name\": \"Wireless Headphones\",\n  \"short_description\": \"Comfortable wireless headphones with active noise cancellation, Bluetooth 5.3 and up to 30 hours of battery life.\",\n  \"product_description\": \"Experience immersive audio with comfortable wireless headphones designed for music, online meetings and travel. Active noise cancellation helps reduce surrounding distractions, while Bluetooth 5.3 provides wireless connectivity. The long-lasting battery supports extended listening throughout the day.\",\n  \"key_features\": [\n    \"Active noise cancellation\",\n    \"Bluetooth 5.3\",\n    \"Up to 30-hour battery life\",\n    \"Fast charging\",\n    \"Built-in microphone\"\n  ],\n  \"selling_points\": [\n    \"Long battery life\",\n    \"Wireless connectivity\",\n    \"Reduced background noise\",\n    \"Suitable for travel and meetings\"\n  ],\n  \"target_audience\": \"Students and professionals\",\n  \"seo_title\": \"Wireless Headphones with Noise Cancellation and Bluetooth 5.3\",\n  \"meta_description\": \"Discover wireless headphones with noise cancellation, Bluetooth 5.3, fast charging and long battery life for music, meetings and travel.\",\n  \"keywords\": [\n    \"wireless headphones\",\n    \"Bluetooth headphones\",\n    \"noise cancellation headphones\",\n    \"headphones for students\",\n    \"headphones for professionals\"\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        360,
+        232
+      ],
+      "id": "d77e4032-58ec-47c1-92da-5f2eeba1151b",
+      "name": "Structured Output Parser"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "0ee8ada0-71cb-4dec-ad69-6bcb64b8d68e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "TrvNFDFLfE03ebgM",
+  "tags": []
+}

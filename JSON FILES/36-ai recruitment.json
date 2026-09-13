@@ -1,0 +1,252 @@
+{
+  "name": "ai recruitment",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "9d4d8cea-7079-46cf-b114-4f46f5499ee0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        48
+      ],
+      "id": "6c79d5fe-9e46-4e3f-b66e-da38c89cf713",
+      "name": "Webhook",
+      "webhookId": "9d4d8cea-7079-46cf-b114-4f46f5499ee0"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        48
+      ],
+      "id": "86deedde-f35a-4577-9cde-79f21cd43def",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "options": {
+          "systemMessage": "You are an AI Resume Screening Agent.\n\nYour job is to carefully analyze the applicant's resume and determine whether the applicant qualifies for the job based on the requirements provided.\n\nYou will receive:\n- Applicant's resume content\n- Applicant's name\n- Applicant's email\n- Applicant's phone number\n- Job requirements, if provided\n\nYour responsibilities are:\n\n1. ANALYZE THE RESUME\nRead the entire resume carefully and identify:\n- Education/qualification\n- Degree\n- Work experience\n- Projects\n- Technical skills\n- Relevant certifications\n- Other relevant information\n\n2. CHECK MINIMUM QUALIFICATION\nThe minimum educational qualification is a Bachelor's degree.\n\nCheck whether the applicant has completed or clearly possesses a Bachelor's degree.\n\nIf the applicant does NOT have a Bachelor's degree:\n- Mark the applicant as DISQUALIFIED.\n- Explain that the minimum qualification was not satisfied.\n- Do not give the applicant a qualifying score of 90 or above.\n\n3. CHECK WORK EXPERIENCE\nAnalyze whether the applicant has valid and relevant work experience for the role.\n\nConsider:\n- Job titles\n- Companies\n- Duration of experience\n- Responsibilities\n- Relevance of the experience to the role\n\nDo not assume experience that is not mentioned in the resume.\n\n4. CHECK PROJECTS\nCarefully examine the projects mentioned in the resume.\n\nDetermine:\n- Whether the applicant has projects\n- Whether the projects are clearly described\n- Whether they are relevant to the role\n- Whether the projects demonstrate useful technical or professional skills\n- Whether the projects appear substantial and meaningful\n\nDo not give high project scores simply because projects are listed. Evaluate their quality and relevance.\n\n5. CHECK SKILLS\nAnalyze the applicant's technical and professional skills.\n\nCompare the skills mentioned in the resume against the skills required for the role.\n\n6. CALCULATE SCORE\nGive the applicant a score from 0 to 100.\n\nUse the following general scoring criteria:\n\n- Education / Qualification: 20 points\n- Relevant Work Experience: 25 points\n- Projects: 25 points\n- Relevant Skills: 20 points\n- Resume Quality / Overall Relevance: 10 points\n\nTotal = 100 points.\n\nThe score must be based only on information available in the resume and job requirements.\n\nDo not invent or assume information.\n\n7. FINAL DECISION\nThe applicant must score at least 90/100 to qualify.\n\nDecision rules:\n\n- Score >= 90 → QUALIFIED\n- Score < 90 → DISQUALIFIED\n\nIMPORTANT:\nEven if the applicant has a high score in other categories, the applicant must satisfy the minimum Bachelor's degree requirement.\n\nIf the applicant does not have the minimum Bachelor's degree:\n- Final decision = DISQUALIFIED.\n\n8. BE PRECISE\nDo not make vague statements.\n\nClearly explain:\n- What qualification the applicant has\n- Whether the Bachelor's degree requirement is satisfied\n- What work experience they have\n- Whether their projects are relevant\n- What important skills they have\n- Their final score\n- Why they qualified or were disqualified\n\n9. OUTPUT FORMAT\n\nAlways return the result in the following format:\n\nApplicant Name: [Name]\n\nEducation:\n[Summarize the applicant's qualification]\n\nBachelor's Degree Requirement:\n[Satisfied / Not Satisfied]\n\nWork Experience:\n[Summarize relevant experience]\n\nProjects:\n[Summarize relevant projects and their quality]\n\nRelevant Skills:\n[List the most relevant skills]\n\nScore Breakdown:\nEducation: [X]/20\nWork Experience: [X]/25\nProjects: [X]/25\nSkills: [X]/20\nOverall Resume Relevance: [X]/10\n\nTotal Score: [X]/100\n\nFinal Decision: [QUALIFIED / DISQUALIFIED]\n\nReason:\n[Give a concise but specific explanation for the final decision.]\n\nIMPORTANT RULE:\nA score of 90 or above is required to qualify.\nAny score below 90 must be marked DISQUALIFIED.\nA missing Bachelor's degree automatically results in DISQUALIFIED.\n\nReturn only the final screening analysis in the format above."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        448,
+        48
+      ],
+      "id": "0e79b8c0-c2ba-4aad-bc69-350accb4c75b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        520,
+        264
+      ],
+      "id": "e7408a00-5ddd-4918-9a04-48d9392ea3e9",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        48
+      ],
+      "id": "dd815b02-9b69-418b-b357-968f82a2f2d3",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f01c97d0-9a12-4821-b9fa-57a3dbdd120a",
+              "leftValue": 0,
+              "rightValue": 90,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1024,
+        48
+      ],
+      "id": "e1200521-9177-4b97-9ca2-00a7d79d66e5",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "nachiketharroju@gmail",
+        "subject": "update on application",
+        "message": "you are disqualified",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1248,
+        144
+      ],
+      "id": "855a7255-3171-4a03-921d-e61c9ccf9af5",
+      "name": "Send a message",
+      "webhookId": "b810f116-9894-4f19-9509-0a6677469116",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7iRyEUu9T9cVwtRv",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "nachiketharroju@gmail.com",
+        "subject": "update on application",
+        "message": "you are qualified",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1248,
+        -48
+      ],
+      "id": "46be4808-9cad-4615-92a1-c551e9beda83",
+      "name": "Send a message1",
+      "webhookId": "aae3c453-3473-4cec-8580-e0112dd5ce96",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7iRyEUu9T9cVwtRv",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "1c26f1af-a43f-4454-8f33-5d25e2beee2d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "Qj9KeSa70vg8Vl5Y",
+  "tags": []
+}

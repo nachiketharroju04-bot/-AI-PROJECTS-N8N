@@ -1,0 +1,468 @@
+{
+  "name": "97-AI Customer Feedback Classifier",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        -96
+      ],
+      "id": "8bc5e5f7-34e5-4066-82c8-e967a4cd120a",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "355486f8-5423-4db1-a7be-a26e0822b864",
+              "leftValue": "={{ $json.data_valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "0d64d7ca-6308-4834-adde-a24730b70c31",
+      "name": "Is Data Valid?"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        144
+      ],
+      "id": "93928b4f-9149-4d77-b8cf-1453726fd059",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wkvPLR8iLkAneiWB",
+          "name": "Google Gemini(PaLM) Api account 32"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nlet result = data.output;\n\nif (typeof result !== \"string\") {\n  result = JSON.stringify(result);\n}\n\nresult = result\n  .replace(/```json/g, \"\")\n  .replace(/```/g, \"\")\n  .trim();\n\nlet parsed;\n\ntry {\n  parsed = JSON.parse(result);\n} catch (error) {\n  throw new Error(\"Invalid JSON returned by AI\");\n}\n\nreturn {\n  json: {\n    ...data,\n    ...parsed\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        -96
+      ],
+      "id": "07c8289f-a5bd-4887-a350-eccc9a0a57fb",
+      "name": "Parse AI Result"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1bn_fVlZXS6-zMS0BXPNH-bCLcsfNYxXyKcaCFksPKh8",
+          "mode": "list",
+          "cachedResultName": "Untitled spreadsheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bn_fVlZXS6-zMS0BXPNH-bCLcsfNYxXyKcaCFksPKh8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bn_fVlZXS6-zMS0BXPNH-bCLcsfNYxXyKcaCFksPKh8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Customer ID",
+              "displayName": "Customer ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Last Login",
+              "displayName": "Last Login",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Login Count",
+              "displayName": "Login Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Purchase Count",
+              "displayName": "Purchase Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Support Tickets",
+              "displayName": "Support Tickets",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Satisfaction",
+              "displayName": "Satisfaction",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Payment Failures",
+              "displayName": "Payment Failures",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Monthly Value",
+              "displayName": "Monthly Value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        -96
+      ],
+      "id": "cda3de4e-b09d-4a95-902f-788639720108",
+      "name": "Get Order Data",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q524jgyHLO03nlDm",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst requiredFields = [\n  \"Order_ID\",\n  \"Customer_ID\",\n  \"Customer_Name\",\n  \"Customer_Email\",\n  \"Product\",\n  \"Order_Date\",\n  \"Expected_Delivery_Days\",\n  \"Current_Status\",\n  \"Shipping_Team\"\n];\n\nconst validItems = [];\nconst invalidItems = [];\n\nfor (const item of items) {\n\n  const data = item.json;\n\n  const missingFields = requiredFields.filter(\n    field =>\n      data[field] === undefined ||\n      data[field] === null ||\n      String(data[field]).trim() === \"\"\n  );\n\n  const expectedDays =\n    Number(data.Expected_Delivery_Days);\n\n  const orderDate =\n    new Date(data.Order_Date);\n\n  const dateValid =\n    !isNaN(orderDate.getTime());\n\n  if (\n    missingFields.length === 0 &&\n    !isNaN(expectedDays) &&\n    expectedDays >= 0 &&\n    dateValid\n  ) {\n\n    validItems.push({\n      ...data,\n      Expected_Delivery_Days: expectedDays\n    });\n\n  } else {\n\n    invalidItems.push({\n      order_id:\n        data.Order_ID || \"Unknown\",\n\n      missing_fields:\n        missingFields\n    });\n  }\n}\n\nreturn [\n  {\n    json: {\n      data_valid:\n        invalidItems.length === 0,\n\n      total_orders:\n        items.length,\n\n      valid_orders:\n        validItems.length,\n\n      invalid_orders:\n        invalidItems.length,\n\n      invalid_details:\n        invalidItems,\n\n      order_data:\n        validItems\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        -96
+      ],
+      "id": "33ab0708-c9c9-49fb-b2ad-b989a0924e37",
+      "name": "Validate Order Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "const orders = $json.order_data;\n\nconst now = new Date();\n\nconst results = [];\n\nfor (const order of orders) {\n\n  const orderDate =\n    new Date(order.Order_Date);\n\n  const expectedDays =\n    Number(order.Expected_Delivery_Days);\n\n  const elapsedMilliseconds =\n    now.getTime() - orderDate.getTime();\n\n  const orderAgeDays =\n    elapsedMilliseconds /\n    (1000 * 60 * 60 * 24);\n\n  const remainingDays =\n    expectedDays - orderAgeDays;\n\n  const delayDays =\n    Math.max(0, orderAgeDays - expectedDays);\n\n  let orderStatus;\n\n  // Already beyond expected delivery\n  if (orderAgeDays > expectedDays) {\n\n    orderStatus = \"DELAYED\";\n\n  }\n\n  // Within 20% of expected delivery deadline\n  else if (\n    remainingDays <= expectedDays * 0.20\n  ) {\n\n    orderStatus = \"AT RISK\";\n\n  }\n\n  else {\n\n    orderStatus = \"ON TIME\";\n  }\n\n  results.push({\n\n    ...order,\n\n    Order_Age_Days:\n      Number(Math.max(orderAgeDays, 0).toFixed(2)),\n\n    Remaining_Days:\n      Number(Math.max(remainingDays, 0).toFixed(2)),\n\n    Delay_Days:\n      Number(delayDays.toFixed(2)),\n\n    Order_Status:\n      orderStatus\n  });\n}\n\nreturn [\n  {\n    json: {\n      processed_orders:\n        results\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        -96
+      ],
+      "id": "98a7c3e0-a777-4a42-8a87-a08fdc50856a",
+      "name": "Calculate Order Status"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze this customer order.\n\nOrder ID:\n{{ $json.Order_ID }}\n\nCustomer:\n{{ $json.Customer_Name }}\n\nProduct:\n{{ $json.Product }}\n\nOrder Date:\n{{ $json.Order_Date }}\n\nExpected Delivery Days:\n{{ $json.Expected_Delivery_Days }}\n\nOrder Age:\n{{ $json.Order_Age_Days }}\n\nRemaining Days:\n{{ $json.Remaining_Days }}\n\nDelay Days:\n{{ $json.Delay_Days }}\n\nCurrent Order Status:\n{{ $json.Current_Status }}\n\nShipping Team:\n{{ $json.Shipping_Team }}\n\nCalculated Order Status:\n{{ $json.Order_Status }}\n\nDetermine:\n\n1. Delay severity\n2. Customer impact\n3. Whether an alert is required\n4. Short summary\n5. Recommended action\n\nDo not change the calculated Order Status.\n\nReturn ONLY valid JSON.",
+        "options": {
+          "systemMessage": "You are an AI Order Delay Analyst.\n\nYour task is to analyze customer orders and determine the severity and appropriate response for orders that may be delayed.\n\nPossible order statuses:\n\nDELAYED:\nThe order has exceeded its expected delivery time.\n\nAT RISK:\nThe order has not exceeded the expected delivery time but is approaching the deadline.\n\nON TIME:\nThe order is currently within the expected delivery window.\n\nFor each order determine:\n\n- Delay severity\n- Customer impact\n- Whether an alert is required\n- Short summary\n- Recommended action\n\nRules:\n\nDELAYED:\nSet alert_required to true.\nRecommend prompt investigation.\n\nAT RISK:\nSet alert_required to true.\nRecommend proactive monitoring or action.\n\nON TIME:\nSet alert_required to false.\nRecommend normal monitoring.\n\nImportant rules:\n\n- Do not change the calculated Order_Status.\n- Do not invent a reason for the delay.\n- Do not assume the carrier caused the delay.\n- Do not assume the customer is unhappy.\n- Do not assume compensation is required.\n- Do not invent delivery dates.\n- Use only the provided information.\n- Keep recommendations practical.\n\nReturn ONLY valid JSON.\n\nUse exactly this structure:\n\n{\n  \"order_id\": \"\",\n  \"delay_severity\": \"\",\n  \"customer_impact\": \"\",\n  \"alert_required\": false,\n  \"summary\": \"\",\n  \"recommended_action\": \"\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1120,
+        -96
+      ],
+      "id": "ffdd78b6-7a97-4595-a21f-fa47866d5a7b",
+      "name": "AI Order Delay Analyst"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n\n      Report_ID:\n        `ORD-${Date.now()}`,\n\n      Report_Date:\n        new Date()\n          .toISOString()\n          .split(\"T\")[0],\n\n      Order_ID:\n        $json.order_id,\n\n      Customer_ID:\n        $json.Customer_ID,\n\n      Customer_Name:\n        $json.Customer_Name,\n\n      Customer_Email:\n        $json.Customer_Email,\n\n      Product:\n        $json.Product,\n\n      Order_Date:\n        $json.Order_Date,\n\n      Expected_Delivery_Days:\n        $json.Expected_Delivery_Days,\n\n      Order_Age_Days:\n        $json.Order_Age_Days,\n\n      Delay_Days:\n        $json.Delay_Days,\n\n      Current_Status:\n        $json.Current_Status,\n\n      Shipping_Team:\n        $json.Shipping_Team,\n\n      Order_Status:\n        $json.Order_Status,\n\n      Delay_Severity:\n        $json.delay_severity,\n\n      Customer_Impact:\n        $json.customer_impact,\n\n      Alert_Required:\n        $json.alert_required,\n\n      AI_Summary:\n        $json.summary,\n\n      Recommended_Action:\n        $json.recommended_action,\n\n      Created_At:\n        new Date().toISOString()\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1696,
+        -96
+      ],
+      "id": "07dda4fe-2198-4439-a10b-f0ab33c1ad69",
+      "name": "Create Delay Report"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7902e957-0876-4961-9c46-72a7b78636c9",
+              "leftValue": "={{ $json.Retention_Action_Required }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1920,
+        -96
+      ],
+      "id": "56cc0ff5-859f-4761-8a6e-cb63a6962719",
+      "name": "Is Alert Required?"
+    },
+    {
+      "parameters": {
+        "sendTo": "nachiketharroju@gmail.com",
+        "subject": "=🚨 Order Delay Alert - {{ $json.Order_Status }} - {{ $json.Order_ID }}",
+        "message": "=Hi Logistics Team,\n\nAn order requires attention.\n\nOrder ID:\n{{ $json.Order_ID }}\n\nCustomer:\n{{ $json.Customer_Name }}\n\nCustomer Email:\n{{ $json.Customer_Email }}\n\nProduct:\n{{ $json.Product }}\n\nOrder Date:\n{{ $json.Order_Date }}\n\nExpected Delivery:\n{{ $json.Expected_Delivery_Days }} days\n\nOrder Age:\n{{ $json.Order_Age_Days }} days\n\nDelay Days:\n{{ $json.Delay_Days }} days\n\nCurrent Status:\n{{ $json.Current_Status }}\n\nShipping Team:\n{{ $json.Shipping_Team }}\n\nOrder Status:\n{{ $json.Order_Status }}\n\nDelay Severity:\n{{ $json.Delay_Severity }}\n\nCustomer Impact:\n{{ $json.Customer_Impact }}\n\nAI Summary:\n{{ $json.AI_Summary }}\n\nRecommended Action:\n{{ $json.Recommended_Action }}\n\nPlease review the order and take the appropriate action.\n\nBest Regards,\nAI Order Delay Manager",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2144,
+        -96
+      ],
+      "id": "4a0bc667-d46a-4957-9709-584f373a5061",
+      "name": "Send Delay Alert",
+      "webhookId": "a45851e0-9a76-4720-89fa-c30f2d7fd469",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "BhfiiIF56c1Uc6dC",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Order Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Data Valid?": {
+      "main": [
+        [
+          {
+            "node": "Calculate Order Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Order Delay Analyst",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Result": {
+      "main": [
+        [
+          {
+            "node": "Create Delay Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Order Data": {
+      "main": [
+        [
+          {
+            "node": "Validate Order Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Order Data": {
+      "main": [
+        [
+          {
+            "node": "Is Data Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Order Status": {
+      "main": [
+        [
+          {
+            "node": "AI Order Delay Analyst",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Order Delay Analyst": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Delay Report": {
+      "main": [
+        [
+          {
+            "node": "Is Alert Required?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Alert Required?": {
+      "main": [
+        [
+          {
+            "node": "Send Delay Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "09505bb3-d8a4-4faf-bcaf-257bd8a74fde",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "edbb0d25bd7a66014faefe68083a8f89c418df33feee41a51636a861e015ce95"
+  },
+  "nodeGroups": [],
+  "id": "S5b18AiSGurgKQ5g",
+  "tags": []
+}

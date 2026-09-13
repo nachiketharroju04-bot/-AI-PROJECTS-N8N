@@ -1,0 +1,371 @@
+{
+  "name": "AI Sales Coach",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI Sales Coach",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Salesperson Name"
+            },
+            {
+              "fieldLabel": "Customer Name"
+            },
+            {
+              "fieldLabel": "Company"
+            },
+            {
+              "fieldLabel": "Product/Service"
+            },
+            {
+              "fieldLabel": "Sales Stage",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Discovery"
+                  },
+                  {
+                    "option": "Qualification"
+                  },
+                  {
+                    "option": "Demo"
+                  },
+                  {
+                    "option": "Negotiation"
+                  },
+                  {
+                    "option": "Closing"
+                  },
+                  {
+                    "option": "Follow-up"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Conversation Transcript",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Sales Goal",
+              "fieldType": "textarea"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        -16
+      ],
+      "id": "73ce8a2d-975d-4aef-9927-571410172e5c",
+      "name": "On form submission",
+      "webhookId": "127b06f4-2de6-4a03-9a5e-209b34d8483a"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const data = $json;\n\nconst transcript = data[\"Conversation Transcript\"] || \"\";\n\nreturn {\n  json: {\n    salesperson_name: data[\"Salesperson Name\"] || \"\",\n    customer_name: data[\"Customer Name\"] || \"\",\n    company_name: data[\"Company\"] || \"\",\n    product_service: data[\"Product/Service\"] || \"\",\n    sales_stage: data[\"Sales Stage\"] || \"\",\n    sales_goal: data[\"Sales Goal\"] || \"\",\n    transcript: transcript.trim(),\n\n    transcript_length: transcript.length,\n\n    submitted_at: new Date().toISOString()\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -16
+      ],
+      "id": "2b9300ec-0897-4236-837f-458297aaab0a",
+      "name": "Normalize Conversation"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the following sales conversation.\n\nSALESPERSON:\n{{ $(\"Normalize Conversation\").first().json.salesperson_name }}\n\nCUSTOMER:\n{{ $(\"Normalize Conversation\").first().json.customer_name }}\n\nCOMPANY:\n{{ $(\"Normalize Conversation\").first().json.company_name }}\n\nPRODUCT / SERVICE:\n{{ $(\"Normalize Conversation\").first().json.product_service }}\n\nSALES STAGE:\n{{ $(\"Normalize Conversation\").first().json.sales_stage }}\n\nSALES GOAL:\n{{ $(\"Normalize Conversation\").first().json.sales_goal }}\n\nCONVERSATION TRANSCRIPT:\n{{ $(\"Normalize Conversation\").first().json.transcript }}\n\nTASK:\n\nAnalyze the conversation and identify:\n\n- Customer pain points\n- Customer needs\n- Customer goals\n- Customer objections\n- Buying signals\n- Customer questions\n- Salesperson questions\n- Missed discovery opportunities\n- Customer sentiment\n- Current sales stage\n- Decision-making information\n- Existing solution\n- Customer urgency\n- Customer interest level\n- Key evidence\n\nDo not invent information.\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are an expert B2B Sales Conversation Analyst.\n\nYour job is to analyze a sales conversation objectively and extract useful sales intelligence.\n\nAnalyze the conversation for:\n\n1. Customer pain points\n2. Customer needs\n3. Customer goals\n4. Customer objections\n5. Buying signals\n6. Customer questions\n7. Salesperson questions\n8. Missed discovery opportunities\n9. Customer sentiment\n10. Current sales stage\n11. Decision-making information\n12. Existing solution or process\n13. Customer urgency\n14. Customer interest level\n\nIMPORTANT RULES:\n\n- Analyze ONLY the transcript and lead information provided.\n- Never invent facts.\n- Never assume a customer problem that was not stated or reasonably inferred.\n- Clearly distinguish facts from inference.\n- If information is unavailable, return \"unknown\".\n- Do not evaluate the salesperson's performance yet.\n- Your job at this stage is to understand what happened in the conversation.\n- Do not provide generic sales advice.\n- Extract evidence directly from the conversation.\n- Return valid JSON only.\n\nFor inferred information, clearly label it as an inference.\n\nUse this JSON structure:\n\n{\n  \"customer_pain_points\": [],\n  \"customer_needs\": [],\n  \"customer_goals\": [],\n  \"customer_objections\": [],\n  \"buying_signals\": [],\n  \"customer_questions\": [],\n  \"salesperson_questions\": [],\n  \"missed_discovery_opportunities\": [],\n  \"customer_sentiment\": \"\",\n  \"current_sales_stage\": \"\",\n  \"decision_making_information\": \"\",\n  \"existing_solution\": \"\",\n  \"customer_urgency\": \"\",\n  \"customer_interest_level\": \"\",\n  \"key_evidence\": [],\n  \"analysis_confidence\": 0\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        448,
+        -16
+      ],
+      "id": "e00ef41f-3fdd-414e-83d5-d4b674e2f8c9",
+      "name": "Conversation Analyzer Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        520,
+        216
+      ],
+      "id": "fa50b9b9-82b1-4677-a158-c29f2a3024a3",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Evaluate this salesperson's performance.\n\nSALESPERSON:\n{{ $(\"Normalize Conversation\").first().json.salesperson_name }}\n\nCUSTOMER:\n{{ $(\"Normalize Conversation\").first().json.customer_name }}\n\nCOMPANY:\n{{ $(\"Normalize Conversation\").first().json.company_name }}\n\nPRODUCT / SERVICE:\n{{ $(\"Normalize Conversation\").first().json.product_service }}\n\nSALES STAGE:\n{{ $(\"Normalize Conversation\").first().json.sales_stage }}\n\nSALES GOAL:\n{{ $(\"Normalize Conversation\").first().json.sales_goal }}\n\nORIGINAL CONVERSATION TRANSCRIPT:\n\n{{ $(\"Normalize Conversation\").first().json.transcript }}\n\nPREVIOUS CONVERSATION ANALYSIS:\n\n{{ $(\"Conversation Analyzer Agent\").first().json.output }}\n\nEvaluate the salesperson based on the actual conversation.\n\nPay special attention to whether the salesperson:\n\n- Asked useful discovery questions\n- Identified the customer's real pain\n- Explored the business impact\n- Asked about the current process\n- Explored the existing CRM\n- Handled the CRM objection properly\n- Investigated budget\n- Investigated timeline\n- Identified the decision maker\n- Established a clear next step\n\nDo not assume that something happened unless it appears in the transcript.\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are an expert B2B Sales Coach and Sales Performance Evaluator.\n\nYour job is to evaluate the salesperson's performance during a sales conversation.\n\nYou will receive:\n1. The original conversation transcript.\n2. The previous Conversation Analyzer Agent's structured analysis.\n\nEvaluate the salesperson objectively.\n\nDo NOT evaluate the customer.\nDo NOT invent information.\nDo NOT give generic advice.\nEvery important criticism should be supported by evidence from the conversation.\n\nEvaluate these areas:\n\n1. Opening and rapport\n2. Discovery questions\n3. Open-ended questioning\n4. Pain discovery\n5. Needs discovery\n6. Impact/quantification\n7. Qualification\n8. Active listening\n9. Objection handling\n10. Value communication\n11. Product positioning\n12. Decision-maker discovery\n13. Budget discovery\n14. Timeline discovery\n15. Next-step control\n\nSCORING:\n\nGive each category a score from 0 to 10.\n\nUse this scale:\n\n0-2 = Very weak\n3-4 = Weak\n5-6 = Average\n7-8 = Good\n9-10 = Excellent\n\nCalculate an overall score out of 100.\n\nDo not simply average the scores and multiply by 10 without considering the quality of the conversation.\n\nIdentify:\n\n- Strongest salesperson behaviors\n- Weakest salesperson behaviors\n- Missed opportunities\n- Questions the salesperson should have asked\n- Better versions of weak questions\n- Specific coaching recommendations\n- Recommended next action\n\nIMPORTANT:\n\nA salesperson should not receive a high score merely because they explained the product well.\n\nStrong discovery requires asking questions and understanding:\n- Current situation\n- Pain\n- Business impact\n- Desired outcome\n- Decision process\n- Budget\n- Timeline\n- Existing solution\n\nIf information was not discussed, mark it as \"Not covered\" rather than assuming it happened.\n\nReturn valid JSON only.\n\nUse exactly this structure:\n\n{\n  \"overall_score\": 0,\n  \"category_scores\": {\n    \"opening_rapport\": 0,\n    \"discovery_questions\": 0,\n    \"open_ended_questioning\": 0,\n    \"pain_discovery\": 0,\n    \"needs_discovery\": 0,\n    \"impact_quantification\": 0,\n    \"qualification\": 0,\n    \"active_listening\": 0,\n    \"objection_handling\": 0,\n    \"value_communication\": 0,\n    \"product_positioning\": 0,\n    \"decision_maker_discovery\": 0,\n    \"budget_discovery\": 0,\n    \"timeline_discovery\": 0,\n    \"next_step_control\": 0\n  },\n  \"strengths\": [],\n  \"weaknesses\": [],\n  \"missed_opportunities\": [],\n  \"questions_salesperson_should_have_asked\": [],\n  \"better_question_examples\": [],\n  \"coaching_recommendations\": [],\n  \"recommended_next_action\": \"\",\n  \"evaluation_confidence\": 0\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        800,
+        -16
+      ],
+      "id": "ac1ffa89-0e34-4615-b312-d09fd317226f",
+      "name": "Discovery Coach"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        872,
+        216
+      ],
+      "id": "2ed7e03f-d38b-40ec-828e-80d15b51718d",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Evaluate the salesperson's objection handling and closing performance.\n\nSALESPERSON:\n{{ $(\"Normalize Conversation\").first().json.salesperson_name }}\n\nCUSTOMER:\n{{ $(\"Normalize Conversation\").first().json.customer_name }}\n\nCOMPANY:\n{{ $(\"Normalize Conversation\").first().json.company_name }}\n\nPRODUCT / SERVICE:\n{{ $(\"Normalize Conversation\").first().json.product_service }}\n\nSALES STAGE:\n{{ $(\"Normalize Conversation\").first().json.sales_stage }}\n\nORIGINAL CONVERSATION:\n\n{{ $(\"Normalize Conversation\").first().json.transcript }}\n\nCONVERSATION ANALYZER OUTPUT:\n\n{{ $(\"Conversation Analyzer Agent\").first().json.output }}\n\nDISCOVERY COACH OUTPUT:\n\n{{ $(\"Discovery Coach\").first().json.output }}\n\nTASK:\n\nAnalyze:\n\n1. Every actual customer objection.\n2. How the salesperson responded.\n3. Whether the salesperson investigated the underlying reason.\n4. Whether the response addressed the customer's actual concern.\n5. Whether the salesperson connected the solution to the customer's needs.\n6. Whether the salesperson handled price appropriately.\n7. Whether the salesperson identified the decision maker.\n8. Whether the salesperson created a concrete next step.\n9. Whether the salesperson controlled the close.\n10. Overall deal risk.\n\nPay special attention to this type of situation:\n\nIf the customer says they already have a CRM, determine whether the salesperson discovered:\n- Which CRM they use\n- What works well\n- What does not work\n- Why they are considering another solution\n- Whether integration is required\n- What business problem remains unsolved\n\nIf the customer says they need to discuss the purchase with a manager, determine whether the salesperson:\n- Identified the manager\n- Asked what the manager cares about\n- Offered to include the manager\n- Proposed a specific meeting\n- Confirmed a date/time\n- Created a clear next step\n\nDo not assume any of these happened unless they appear in the transcript.\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are an expert B2B Sales Objection Handling and Closing Coach.\n\nYour job is to analyze how the salesperson handled customer objections and attempted to move the conversation toward a concrete next step.\n\nYou will receive:\n1. The original sales conversation.\n2. Conversation Analyzer Agent output.\n3. Discovery Coach Agent output.\n\nAnalyze the salesperson objectively.\n\nFOCUS AREAS:\n\n1. Objection identification\n2. Objection severity\n3. Objection acknowledgment\n4. Objection diagnosis\n5. Response quality\n6. Value alignment\n7. Handling of existing-solution objections\n8. Price objection handling\n9. Trust/risk concerns\n10. Decision-maker handling\n11. Closing behavior\n12. Next-step control\n13. Deal risk\n\nIMPORTANT RULES:\n\n- Never invent objections.\n- Only analyze objections actually present in the conversation.\n- If no objection exists, return an empty array.\n- Do not assume the salesperson handled an objection well unless the transcript shows evidence.\n- Do not reward generic product explanations as objection handling.\n- A good objection response should acknowledge the concern, investigate the underlying reason, and connect the response to the customer's specific situation.\n- Do not assume the customer agreed to something unless they explicitly agreed.\n- Distinguish between facts and inference.\n- If information is unavailable, return \"unknown\".\n- Do not rewrite the entire sales conversation.\n- Provide actionable coaching.\n\nCLOSING EVALUATION:\n\nEvaluate whether the salesperson:\n- Asked for a specific next step\n- Proposed a meeting/demo\n- Confirmed timing\n- Identified decision makers\n- Confirmed remaining concerns\n- Created a clear reason to continue the conversation\n- Avoided ending with an indefinite \"I'll send you information\"\n\nSCORING:\n\nScore each category from 0 to 10.\n\n0-2 = Very weak\n3-4 = Weak\n5-6 = Average\n7-8 = Good\n9-10 = Excellent\n\nReturn valid JSON only.\n\nUse exactly this structure:\n\n{\n  \"objections\": [\n    {\n      \"objection\": \"\",\n      \"type\": \"\",\n      \"severity\": \"\",\n      \"customer_evidence\": \"\",\n      \"salesperson_response\": \"\",\n      \"handling_quality_score\": 0,\n      \"what_went_wrong\": \"\",\n      \"better_response\": \"\"\n    }\n  ],\n  \"objection_handling_score\": 0,\n  \"closing_score\": 0,\n  \"next_step_score\": 0,\n  \"decision_maker_score\": 0,\n  \"deal_risk\": \"\",\n  \"deal_risk_reasons\": [],\n  \"closing_strengths\": [],\n  \"closing_weaknesses\": [],\n  \"missed_closing_opportunities\": [],\n  \"recommended_next_step\": \"\",\n  \"recommended_sales_message\": \"\",\n  \"coaching_recommendations\": [],\n  \"confidence\": 0\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1152,
+        -16
+      ],
+      "id": "adb3e423-82c5-4090-9341-3fadd6f1f425",
+      "name": "Objection & Closing Coach"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1224,
+        216
+      ],
+      "id": "ce2484d0-f460-4703-9fc0-4b6a394e5131",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create an overall deal assessment and action plan for this sales opportunity.\n\nSALESPERSON:\n{{ $(\"Normalize Conversation\").first().json.salesperson_name }}\n\nCUSTOMER:\n{{ $(\"Normalize Conversation\").first().json.customer_name }}\n\nCOMPANY:\n{{ $(\"Normalize Conversation\").first().json.company_name }}\n\nPRODUCT / SERVICE:\n{{ $(\"Normalize Conversation\").first().json.product_service }}\n\nSALES STAGE:\n{{ $(\"Normalize Conversation\").first().json.sales_stage }}\n\nSALES GOAL:\n{{ $(\"Normalize Conversation\").first().json.sales_goal }}\n\nORIGINAL CONVERSATION:\n\n{{ $(\"Normalize Conversation\").first().json.transcript }}\n\nCONVERSATION ANALYZER:\n\n{{ $(\"Conversation Analyzer Agent\").first().json.output }}\n\nDISCOVERY COACH:\n\n{{ $(\"Discovery Coach\").first().json.output }}\n\nOBJECTION & CLOSING COACH:\n\n{{ $(\"Objection & Closing Coach\").first().json.output }}\n\nTASK:\n\nDetermine the overall health of this opportunity.\n\nEvaluate:\n\n1. How strong is the customer's pain?\n2. How strong are the buying signals?\n3. How interested is the customer?\n4. How well did the salesperson discover the customer's needs?\n5. How well were objections handled?\n6. Is the decision maker known?\n7. Is the budget known?\n8. Is the timeline known?\n9. Is there a concrete next step?\n10. What is the biggest risk to this opportunity?\n11. What should the salesperson do next?\n12. Who should be involved in the next interaction?\n13. What information must be collected before progressing the deal?\n\nCreate a practical action plan.\n\nFor the recommended message, make it specific to this customer and conversation.\n\nDo not invent information.\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are an expert B2B Sales Deal Strategist and Revenue Operations Coach.\n\nYour job is to evaluate the overall health of a sales opportunity using the conversation and the outputs from multiple AI sales-analysis agents.\n\nYou will receive:\n\n1. Original sales conversation\n2. Conversation Analyzer output\n3. Discovery Coach output\n4. Objection & Closing Coach output\n\nYour task is to combine these signals and produce an objective deal assessment and an actionable sales plan.\n\nEvaluate:\n\n- Customer pain\n- Customer needs\n- Buying signals\n- Customer interest\n- Objections\n- Objection severity\n- Discovery quality\n- Salesperson performance\n- Decision-maker status\n- Budget status\n- Timeline status\n- Next-step quality\n- Deal momentum\n- Deal risk\n\nDEAL HEALTH:\n\nClassify the deal as one of:\n\n- HOT\n- WARM\n- COLD\n- AT_RISK\n- DISQUALIFIED\n\nDEAL SCORE:\n\nCalculate a score from 0 to 100.\n\nUse these factors:\n\nCustomer pain and urgency: 20 points\nBuying signals: 15 points\nCustomer interest: 10 points\nDiscovery quality: 15 points\nObjection handling: 10 points\nDecision-maker access: 10 points\nBudget clarity: 5 points\nTimeline clarity: 5 points\nNext-step commitment: 10 points\n\nDo not blindly use previous agent scores.\n\nUse the evidence from the conversation.\n\nIMPORTANT:\n\n- Never invent facts.\n- If information is missing, mark it as \"unknown\".\n- Clearly distinguish facts from inference.\n- Do not classify a deal as HOT simply because the customer is polite.\n- Asking about price is a buying signal, but does not automatically mean the customer is ready to buy.\n- A customer saying they need to speak with a manager means the decision process is incomplete.\n- An unspecified follow-up is weaker than a confirmed meeting.\n- Existing solutions such as a CRM should be treated as potential competitive friction.\n- Give practical actions that a salesperson can actually perform.\n\nACTION PLAN:\n\nCreate a prioritized action plan.\n\nFor each action include:\n\n- priority\n- action\n- reason\n- expected_outcome\n\nAlso create:\n\n- recommended next step\n- recommended follow-up timing\n- recommended contact/person\n- recommended message\n- deal risks\n- deal strengths\n- information still required\n\nReturn valid JSON only.\n\nUse exactly this structure:\n\n{\n  \"deal_health\": \"\",\n  \"deal_score\": 0,\n  \"risk_level\": \"\",\n  \"deal_summary\": \"\",\n  \"deal_strengths\": [],\n  \"deal_risks\": [],\n  \"missing_information\": [],\n  \"buying_signals\": [],\n  \"decision_maker_status\": \"\",\n  \"budget_status\": \"\",\n  \"timeline_status\": \"\",\n  \"next_step_status\": \"\",\n  \"recommended_next_step\": \"\",\n  \"recommended_follow_up_timing\": \"\",\n  \"recommended_contact\": \"\",\n  \"recommended_message\": \"\",\n  \"action_plan\": [\n    {\n      \"priority\": \"\",\n      \"action\": \"\",\n      \"reason\": \"\",\n      \"expected_outcome\": \"\"\n    }\n  ],\n  \"salesperson_priority\": \"\",\n  \"deal_confidence\": 0\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1504,
+        -16
+      ],
+      "id": "0989ebbe-5440-4eda-a7f2-fe6f26616fcb",
+      "name": "Deal Risk & Action Planner"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1576,
+        216
+      ],
+      "id": "83dc16ff-6d94-4498-bbd1-6b23397dab6d",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function parseAIOutput(value) {\n  if (!value) {\n    return {};\n  }\n\n  // Already an object\n  if (typeof value === \"object\") {\n    return value;\n  }\n\n  let text = String(value).trim();\n\n  // Remove markdown code fences\n  text = text\n    .replace(/^```json\\s*/i, \"\")\n    .replace(/^```\\s*/i, \"\")\n    .replace(/\\s*```$/i, \"\")\n    .trim();\n\n  // First attempt\n  try {\n    return JSON.parse(text);\n  } catch (e) {}\n\n  // Sometimes the AI returns escaped JSON\n  try {\n    const unescaped = text\n      .replace(/\\\\\"/g, '\"')\n      .replace(/\\\\n/g, \"\\n\");\n\n    return JSON.parse(unescaped);\n  } catch (e) {}\n\n  // Try to extract the JSON object\n  const start = text.indexOf(\"{\");\n  const end = text.lastIndexOf(\"}\");\n\n  if (start !== -1 && end !== -1) {\n    try {\n      return JSON.parse(text.substring(start, end + 1));\n    } catch (e) {}\n  }\n\n  return {};\n}\n\n\n// ================================\n// GET DATA FROM PREVIOUS AGENTS\n// ================================\n\nconst normalized = $(\"Normalize Conversation\").first().json;\n\nconst analyzerRaw =\n  $(\"Conversation Analyzer Agent\").first().json.output;\n\nconst discoveryRaw =\n  $(\"Discovery Coach\").first().json.output;\n\nconst objectionRaw =\n  $(\"Objection & Closing Coach\").first().json.output;\n\nconst dealRaw =\n  $(\"Deal Risk & Action Planner\").first().json.output;\n\n\n// Parse AI outputs\nconst analyzer = parseAIOutput(analyzerRaw);\nconst discovery = parseAIOutput(discoveryRaw);\nconst objection = parseAIOutput(objectionRaw);\nconst deal = parseAIOutput(dealRaw);\n\n\n// ================================\n// FINAL REPORT\n// ================================\n\nreturn [\n  {\n    json: {\n\n      report_type: \"AI Sales Coach Report\",\n\n      // ----------------------------\n      // LEAD INFORMATION\n      // ----------------------------\n\n      lead_information: {\n        salesperson: normalized.salesperson_name || \"Unknown\",\n        customer: normalized.customer_name || \"Unknown\",\n        company: normalized.company_name || \"Unknown\",\n        product_service: normalized.product_service || \"Unknown\",\n        sales_stage: normalized.sales_stage || \"Unknown\"\n      },\n\n\n      // ----------------------------\n      // DEAL OVERVIEW\n      // ----------------------------\n\n      deal_overview: {\n        deal_health: deal.deal_health || \"UNKNOWN\",\n        deal_score: deal.deal_score ?? 0,\n        risk_level: deal.risk_level || \"UNKNOWN\",\n        deal_summary: deal.deal_summary || \"\"\n      },\n\n\n      // ----------------------------\n      // CUSTOMER INSIGHTS\n      // ----------------------------\n\n      customer_insights: {\n\n        pain_points:\n          analyzer.customer_pain_points ||\n          analyzer.pain_points ||\n          [],\n\n        needs:\n          analyzer.customer_needs ||\n          analyzer.needs ||\n          [],\n\n        goals:\n          analyzer.customer_goals ||\n          analyzer.goals ||\n          [],\n\n        objections:\n          objection.objections ||\n          [],\n\n        buying_signals:\n          deal.buying_signals ||\n          analyzer.buying_signals ||\n          []\n      },\n\n\n      // ----------------------------\n      // SALES PERSON PERFORMANCE\n      // ----------------------------\n\n      salesperson_performance: {\n\n        overall_score:\n          discovery.overall_score ??\n          null,\n\n        category_scores:\n          discovery.category_scores ||\n          {},\n\n        strengths:\n          discovery.strengths ||\n          [],\n\n        weaknesses:\n          discovery.weaknesses ||\n          [],\n\n        missed_opportunities:\n          discovery.missed_opportunities ||\n          [],\n\n        objection_handling_score:\n          objection.handling_quality_score ??\n          null\n      },\n\n\n      // ----------------------------\n      // DEAL ASSESSMENT\n      // ----------------------------\n\n      deal_assessment: {\n\n        decision_maker_status:\n          deal.decision_maker_status ||\n          \"UNKNOWN\",\n\n        budget_status:\n          deal.budget_status ||\n          \"UNKNOWN\",\n\n        timeline_status:\n          deal.timeline_status ||\n          \"UNKNOWN\",\n\n        next_step_status:\n          deal.next_step_status ||\n          \"UNKNOWN\"\n      },\n\n\n      // ----------------------------\n      // DEAL RISKS\n      // ----------------------------\n\n      deal_risks:\n        deal.deal_risks ||\n        [],\n\n\n      // ----------------------------\n      // MISSING INFORMATION\n      // ----------------------------\n\n      missing_information:\n        deal.missing_information ||\n        [],\n\n\n      // ----------------------------\n      // RECOMMENDED ACTION\n      // ----------------------------\n\n      recommended_action: {\n\n        next_step:\n          deal.recommended_next_step ||\n          \"\",\n\n        follow_up_timing:\n          deal.recommended_follow_up_timing ||\n          \"\",\n\n        recommended_contact:\n          deal.recommended_contact ||\n          \"\",\n\n        message:\n          deal.recommended_message ||\n          \"\"\n      },\n\n\n      // ----------------------------\n      // ACTION PLAN\n      // ----------------------------\n\n      action_plan:\n        deal.action_plan ||\n        [],\n\n\n      // ----------------------------\n      // FINAL COACHING PRIORITY\n      // ----------------------------\n\n      salesperson_priority:\n        deal.salesperson_priority ||\n        \"\",\n\n\n      // ----------------------------\n      // CONFIDENCE\n      // ----------------------------\n\n      confidence:\n        deal.deal_confidence ??\n        null,\n\n\n      // ----------------------------\n      // TIMESTAMP\n      // ----------------------------\n\n      processed_at:\n        new Date().toISOString()\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1856,
+        -16
+      ],
+      "id": "1739f1dd-3c01-49e5-b72f-b2328ae96dd1",
+      "name": "Final Sales Coach Report"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Normalize Conversation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Conversation": {
+      "main": [
+        [
+          {
+            "node": "Conversation Analyzer Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Conversation Analyzer Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conversation Analyzer Agent": {
+      "main": [
+        [
+          {
+            "node": "Discovery Coach",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Discovery Coach",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Discovery Coach": {
+      "main": [
+        [
+          {
+            "node": "Objection & Closing Coach",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Objection & Closing Coach",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Objection & Closing Coach": {
+      "main": [
+        [
+          {
+            "node": "Deal Risk & Action Planner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Deal Risk & Action Planner",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deal Risk & Action Planner": {
+      "main": [
+        [
+          {
+            "node": "Final Sales Coach Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "bfa5ac5a-6bc0-438a-8ad4-c8398c226bdf",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "HK2pN2kC6pCT9szq",
+  "tags": []
+}

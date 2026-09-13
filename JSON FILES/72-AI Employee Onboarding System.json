@@ -1,0 +1,350 @@
+{
+  "name": "AI Employee Onboarding System",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI Employee Onboarding System",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Employee Name"
+            },
+            {
+              "fieldLabel": "Employee Email"
+            },
+            {
+              "fieldLabel": "Department",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "IT"
+                  },
+                  {
+                    "option": "HR"
+                  },
+                  {
+                    "option": "Finance"
+                  },
+                  {
+                    "option": "Sales"
+                  },
+                  {
+                    "option": "Marketing"
+                  },
+                  {
+                    "option": "Operations"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Job Role"
+            },
+            {
+              "fieldLabel": "Joining Date",
+              "fieldType": "date"
+            },
+            {
+              "fieldLabel": "Manager Name"
+            },
+            {
+              "fieldLabel": "Experience Level",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Fresher"
+                  },
+                  {
+                    "option": "Junior"
+                  },
+                  {
+                    "option": "Mid-Level"
+                  },
+                  {
+                    "option": "Senior"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        -96
+      ],
+      "id": "a969a3d6-ba22-4ae5-9df3-35b6ff442268",
+      "name": "On form submission",
+      "webhookId": "8da1a1bc-c6e7-46ca-8a00-93626d0acbac"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nconst requiredFields = [\n  \"Employee Name\",\n  \"Employee Email\",\n  \"Department\",\n  \"Job Role\",\n  \"Joining Date\",\n  \"Manager Name\",\n  \"Experience Level\"\n];\n\nconst missingFields = requiredFields.filter(\n  field =>\n    data[field] === undefined ||\n    data[field] === null ||\n    data[field] === \"\"\n);\n\nreturn [{\n  json: {\n    ...data,\n    data_valid: missingFields.length === 0,\n    missing_fields: missingFields\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -96
+      ],
+      "id": "0f0e97dd-1d1b-45f7-ba90-9e1943137e70",
+      "name": "Validate Employee Data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "dcb08f02-a952-4a94-acff-c9289eb90bbb",
+              "leftValue": "={{ $json.data_valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        -96
+      ],
+      "id": "20ba47ef-8bf0-46a9-86e6-1c048fe77657",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create an onboarding plan for this employee.\n\nEmployee Name:\n{{ $json[\"Employee Name\"] }}\n\nEmployee Email:\n{{ $json[\"Employee Email\"] }}\n\nDepartment:\n{{ $json[\"Department\"] }}\n\nJob Role:\n{{ $json[\"Job Role\"] }}\n\nJoining Date:\n{{ $json[\"Joining Date\"] }}\n\nManager:\n{{ $json[\"Manager Name\"] }}\n\nExperience Level:\n{{ $json[\"Experience Level\"] }}",
+        "options": {
+          "systemMessage": "You are an AI Employee Onboarding Planner.\n\nCreate a simple and practical onboarding plan for a new employee.\n\nUse only the employee information provided.\n\nCreate:\n1. Welcome message\n2. First-day tasks\n3. First-week tasks\n4. Training topics\n5. People to meet\n6. Role-specific tasks\n\nKeep the plan concise and realistic.\n\nDo not invent company policies, systems, or information that was not provided.\n\nReturn valid JSON only using this structure:\n\n{\n  \"welcome_message\": \"\",\n  \"first_day_tasks\": [],\n  \"first_week_tasks\": [],\n  \"training\": [],\n  \"people_to_meet\": [],\n  \"role_specific_tasks\": []\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "026ddd3a-9ad6-470a-91c4-d7003d31b246",
+      "name": "AI Onboarding Planner"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        744,
+        136
+      ],
+      "id": "fc777c16-aa5d-4479-a677-9203fe0553b6",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "MLSkGe5QY8eQGK3q",
+          "name": "Google Gemini(PaLM) Api account 10"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nlet result = data.output;\n\nif (typeof result === \"string\") {\n  result = result\n    .replace(/```json/g, \"\")\n    .replace(/```/g, \"\")\n    .trim();\n\n  result = JSON.parse(result);\n}\n\nreturn {\n  json: {\n    ...data,\n    ...result\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        -96
+      ],
+      "id": "d43133c8-f2c3-4e4c-8d25-655e889adc4b",
+      "name": "Parse Onboarding Plan"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nreturn {\n  json: {\n    employee_id: `EMP-${Date.now()}`,\n    employee_name: data[\"Employee Name\"],\n    employee_email: data[\"Employee Email\"],\n    department: data[\"Department\"],\n    job_role: data[\"Job Role\"],\n    joining_date: data[\"Joining Date\"],\n    manager: data[\"Manager Name\"],\n    experience_level: data[\"Experience Level\"],\n\n    welcome_message: data.welcome_message,\n\n    first_day_tasks: JSON.stringify(data.first_day_tasks),\n    first_week_tasks: JSON.stringify(data.first_week_tasks),\n    training: JSON.stringify(data.training),\n    people_to_meet: JSON.stringify(data.people_to_meet),\n    role_specific_tasks: JSON.stringify(data.role_specific_tasks),\n\n    onboarding_status: \"Not Started\",\n    created_at: new Date().toISOString()\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        -96
+      ],
+      "id": "443f270f-f12e-4c90-a5f2-199b62f86383",
+      "name": "Create Onboarding Record"
+    },
+    {
+      "parameters": {
+        "sendTo": "nachiketharroju@gmail.com",
+        "subject": "=Welcome to the Team",
+        "message": "=Hi {{ $json.employee_name }},  Welcome to the team!  We are excited to have you join us as a {{ $json.job_role }} in the {{ $json.department }} department.  Your manager: {{ $json.manager }}  Joining Date: {{ $json.joining_date }}  Here is your personalized onboarding plan.  FIRST DAY TASKS {{ $json.first_day_tasks }}  FIRST WEEK TASKS {{ $json.first_week_tasks }}  TRAINING {{ $json.training }}  PEOPLE TO MEET {{ $json.people_to_meet }}  ROLE-SPECIFIC TASKS {{ $json.role_specific_tasks }}  We wish you a great start!  Best Regards, HR Team",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1472,
+        -96
+      ],
+      "id": "61010dbd-9e53-4354-981b-8b0b98e3bfc7",
+      "name": "Send Welcome Email",
+      "webhookId": "cca4971e-4165-4557-a3b7-02c4d285318f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "KyGpVSE3ClSAusz1",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1696,
+        -96
+      ],
+      "id": "a437a099-b7c1-43b0-a15e-e5b17d5df34e",
+      "name": "Store Employee Onboarding",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q524jgyHLO03nlDm",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Validate Employee Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Employee Data": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Onboarding Planner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Onboarding Planner",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Onboarding Planner": {
+      "main": [
+        [
+          {
+            "node": "Parse Onboarding Plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Onboarding Plan": {
+      "main": [
+        [
+          {
+            "node": "Create Onboarding Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Onboarding Record": {
+      "main": [
+        [
+          {
+            "node": "Send Welcome Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Welcome Email": {
+      "main": [
+        [
+          {
+            "node": "Store Employee Onboarding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "881137ad-3bf8-4ab4-ad19-dcacb50d1438",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "edbb0d25bd7a66014faefe68083a8f89c418df33feee41a51636a861e015ce95"
+  },
+  "nodeGroups": [],
+  "id": "Jm5IdKyQZHsAn37T",
+  "tags": []
+}

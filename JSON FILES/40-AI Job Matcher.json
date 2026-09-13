@@ -1,0 +1,225 @@
+{
+  "name": "AI Job Matcher",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "JOB",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Candidate Name",
+              "fieldName": "Candidate Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Resume",
+              "fieldType": "textarea",
+              "fieldName": "Resume",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Job Title",
+              "fieldName": "Job Title",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Job Description",
+              "fieldType": "textarea",
+              "fieldName": "Job Description",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0b830289-2d27-4e25-a947-950c334f52e3",
+      "name": "On form submission",
+      "webhookId": "31598d22-a60f-4b82-8e52-079a7f28e001"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the following candidate against the job description.\n\nCANDIDATE NAME:\n{{ $json['Candidate Name'] }}\n\nRESUME:\n{{ $json.Resume }}\n\nJOB TITLE:\n{{ $json['Job Title'] }}\n\nJOB DESCRIPTION:\n{{ $json['Job Description'] }}\n\nCompare the candidate with the job requirements.\n\nProvide:\n\n1. Overall Match Score\n2. Matching Skills\n3. Missing Skills\n4. Relevant Experience\n5. Relevant Projects\n6. Strengths\n7. Skill Gaps\n8. Recommendation\n9. Reason for Recommendation\n10. Interview Preparation Suggestions",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an expert AI Job Matching Assistant.\n\nYour task is to compare a candidate's resume/profile with a job description and determine how well the candidate matches the position.\n\nAnalyze the information objectively.\n\nYou must:\n\n1. Identify skills that match the job requirements.\n2. Identify missing or weak skills.\n3. Compare the candidate's experience with the job requirements.\n4. Identify relevant projects and qualifications.\n5. Calculate a reasonable match score from 0 to 100.\n6. Explain why the candidate received that score.\n7. Identify the candidate's strongest areas.\n8. Identify areas that need improvement.\n9. Give a clear recommendation.\n10. Suggest skills or topics the candidate should learn before applying/interviewing.\n\nDo not invent experience, education, certifications or skills that are not present in the candidate information.\n\nDo not make decisions based on protected characteristics or personal attributes.\n\nFocus only on job-related qualifications, skills, experience and requirements."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "4699315a-7212-4e66-bb51-481863bad086",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        232,
+        232
+      ],
+      "id": "0ca477c8-9dc5-4fcb-8313-7bd690e1f3b8",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"candidate_name\": \"string\",\n  \"job_title\": \"string\",\n  \"match_score\": 0,\n  \"overall_match\": \"string\",\n  \"matching_skills\": [\n    \"string\"\n  ],\n  \"missing_skills\": [\n    \"string\"\n  ],\n  \"relevant_experience\": [\n    \"string\"\n  ],\n  \"relevant_projects\": [\n    \"string\"\n  ],\n  \"strengths\": [\n    \"string\"\n  ],\n  \"skill_gaps\": [\n    \"string\"\n  ],\n  \"recommendation\": \"string\",\n  \"reason\": \"string\",\n  \"interview_preparation\": [\n    \"string\"\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        360,
+        232
+      ],
+      "id": "e70d3e0c-9d5b-4188-9212-39c9e17d3150",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1g7HJQRp4Q06Uu8Iw6lbR-W_AIjQOG4Fh6Z0Q1F4-6WA",
+          "mode": "list",
+          "cachedResultName": "Dental details ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1g7HJQRp4Q06Uu8Iw6lbR-W_AIjQOG4Fh6Z0Q1F4-6WA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1g7HJQRp4Q06Uu8Iw6lbR-W_AIjQOG4Fh6Z0Q1F4-6WA/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        576,
+        0
+      ],
+      "id": "bd806c0d-6072-41ea-9eda-d38721aaec6c",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HlAsjOG6L8RjCWX0",
+          "name": "Google Sheets account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "nachiketharroju@gmail.com",
+        "subject": "hello",
+        "message": "Job matcher",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        800,
+        0
+      ],
+      "id": "ea951886-0384-4201-ab71-d7506837c937",
+      "name": "Send a message",
+      "webhookId": "4c0bfed1-ba8f-483c-b788-03fde4679b1f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7iRyEUu9T9cVwtRv",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "a363d4ae-2ec0-4b24-b26a-7d940d11e222",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "W33RwIqVLX6i4g2T",
+  "tags": []
+}

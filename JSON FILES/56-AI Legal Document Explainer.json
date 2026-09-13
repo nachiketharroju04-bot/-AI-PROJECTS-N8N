@@ -1,0 +1,683 @@
+{
+  "name": "AI Legal Document Explainer",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI Legal Document Explainer",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name"
+            },
+            {
+              "fieldLabel": "Document Type",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Employment Agreement"
+                  },
+                  {
+                    "option": "Rental Agreement"
+                  },
+                  {
+                    "option": "Service Agreement"
+                  },
+                  {
+                    "option": "Non-Disclosure Agreement"
+                  },
+                  {
+                    "option": "Freelance Agreement"
+                  },
+                  {
+                    "option": "Business Contract"
+                  },
+                  {
+                    "option": "Loan Agreement"
+                  },
+                  {
+                    "option": "Terms and Conditions"
+                  },
+                  {
+                    "option": "Privacy Policy"
+                  },
+                  {
+                    "option": "Other"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Legal Jurisdiction"
+            },
+            {
+              "fieldLabel": "Document Text",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Main Concern",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Preferred Explanation",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Simple"
+                  },
+                  {
+                    "option": "Hard"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Urgency",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Normal "
+                  },
+                  {
+                    "option": "Not Normal"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -832,
+        800
+      ],
+      "id": "832831b5-4b4e-4737-ba95-46ed35812b71",
+      "name": "On form submission",
+      "webhookId": "2670736e-e15a-4d69-8e89-14d32745a12f"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "88fbd076-254f-48c6-bef2-1374672e2aad",
+              "name": "Name",
+              "value": "={{ $json.Name }}",
+              "type": "string"
+            },
+            {
+              "id": "bb6119dd-9d10-456f-86f6-f2be6cedf964",
+              "name": "Document Type",
+              "value": "={{ $json['Document Type'] }}",
+              "type": "string"
+            },
+            {
+              "id": "5e5149a0-4804-4775-a8c7-951681bc7aa4",
+              "name": "Legal Jurisdiction",
+              "value": "={{ $json['Legal Jurisdiction'] }}",
+              "type": "string"
+            },
+            {
+              "id": "f994c312-cf5b-4b9d-8b19-c85758f59516",
+              "name": "Document Text",
+              "value": "={{ $json['Document Text'] }}",
+              "type": "string"
+            },
+            {
+              "id": "6bd3250c-6e20-4ee5-b2da-e881ca65df65",
+              "name": "Main Concern",
+              "value": "={{ $json['Main Concern'] }}",
+              "type": "string"
+            },
+            {
+              "id": "d424132d-089e-4e49-b1f7-b8feecaf1468",
+              "name": "Preferred Explanation",
+              "value": "={{ $json['Preferred Explanation'] }}",
+              "type": "string"
+            },
+            {
+              "id": "87fca439-7d84-4c9d-96c6-989370b9f144",
+              "name": "Urgency",
+              "value": "={{ $json.Urgency }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -608,
+        800
+      ],
+      "id": "743b44e9-65f6-4113-a0f9-17d16e08049e",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the following legal document request and prepare it for specialized legal-information analysis.\n\nDocument Type:\n{{ $json['Document Type'] }}\n\nJurisdiction:\n{{ $json['Legal Jurisdiction'] }}\n\nMain Concern:\n{{ $json['Main Concern'] }}\n\nExplanation Preference:\n{{ $json['Preferred Explanation'] }}\n\nDocument Text:\n{{ $json['Document Text'] }}\n\nIdentify the major areas that require analysis, including:\n\n1. Important clauses\n2. Potential risks\n3. Parties' obligations\n4. Dates and deadlines\n5. Legal terminology\n6. User's main concern\n7. Important missing information\n\nDo not provide legal advice or make a definitive legal conclusion.",
+        "options": {
+          "systemMessage": "You are the Legal Document Manager in a multi-agent legal information system.\n\nYour role is to organize and route legal-document information for specialized analysis.\n\nYou must:\n\n1. Understand the document type.\n2. Consider the stated jurisdiction.\n3. Identify the user's primary concern.\n4. Identify important clauses and sections.\n5. Identify information requiring specialist analysis.\n6. Preserve the original meaning of the document.\n7. Never invent clauses or facts.\n8. Never claim that your interpretation is definitive legal advice.\n9. Clearly distinguish between the document's wording and your explanation.\n10. Flag uncertainty when information is missing.\n\nThis system provides legal information and plain-language explanations only. It does not replace a qualified lawyer."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -384,
+        800
+      ],
+      "id": "85183055-4a42-4ed4-89e1-466f41ef4a68",
+      "name": "Legal Document Manager"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -312,
+        1032
+      ],
+      "id": "46032984-67ee-40cd-a956-6da8a0624e70",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the legal document and identify its most important clauses.\n\nDocument:\n{{ $('Edit Fields').item.json['Document Text'] }}\n\nDocument Type:\n{{ $('Edit Fields').item.json['Document Type'] }}\n\nFor each important clause explain:\n\n- Clause name\n- What the clause says\n- What it means in simple language\n- Which party it affects\n- Important conditions\n- Potential concerns\n\nDo not invent information that is not present in the document.\nDo not provide definitive legal advice.",
+        "options": {
+          "systemMessage": "You are the Clause Analysis Agent in a multi-agent AI Legal Document Explainer.\n\nYour responsibility is to identify, organize, and explain the important clauses contained in a legal document.\n\nYour analysis must be based strictly on the document provided.\n\nIMPORTANT RULES:\n\n1. Never invent clauses, sections, dates, amounts, parties, or legal facts.\n2. Only analyze information that appears in the supplied document.\n3. Preserve the original meaning of each clause.\n4. Explain complex legal language in simple, understandable language.\n5. Clearly distinguish between what the document states and your explanation.\n6. Identify which party is affected by each clause whenever possible.\n7. Identify conditions, obligations, restrictions, deadlines, and financial consequences.\n8. Highlight unusual, one-sided, restrictive, or potentially concerning wording.\n9. Do not determine whether a clause is legally valid, invalid, enforceable, or unenforceable.\n10. Do not provide personalized legal advice.\n11. If information is missing, explicitly state \"Not specified in the document.\"\n12. If wording is ambiguous, identify the ambiguity instead of guessing.\n13. Consider the stated jurisdiction only as contextual information; do not make unsupported jurisdiction-specific legal conclusions.\n14. Do not modify or rewrite the legal document as if your version were legally authoritative.\n\nYour output should be structured, accurate, neutral, and useful to a non-lawyer.\n\nThis agent provides legal-document information and explanation only. A qualified lawyer should be consulted for legal advice or decisions."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -32,
+        800
+      ],
+      "id": "bcce486b-e1d8-4c0b-a9df-438aecfc010d",
+      "name": "Clause Analysis Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        40,
+        1032
+      ],
+      "id": "55aa977d-60a1-42ce-821c-c4a98e459660",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze this legal document for potential risks.\n\nDocument:\n{{ $('Edit Fields').item.json['Document Type'] }}\n\nIdentify:\n\n1. Financial risks\n2. Termination risks\n3. Liability risks\n4. Penalty or fee clauses\n5. Automatic renewal clauses\n6. Restrictive clauses\n7. One-sided obligations\n8. Dispute-related concerns\n9. Unclear wording\n10. Missing protections\n\nFor every identified concern provide:\n\nRisk:\nWhy it may matter:\nAffected party:\nRelevant clause:\n\nDo not state that a clause is legally invalid unless the document explicitly establishes this.\nDo not provide legal advice.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -32,
+        1712
+      ],
+      "id": "e35357f5-3f3f-4880-a137-af3942fc051b",
+      "name": "Risk Analysis Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        40,
+        1928
+      ],
+      "id": "52c177e3-0264-492f-9632-2d1cac801264",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the legal document and identify the obligations of each party.\n\nDocument:\n{{ $('Edit Fields').item.json['Document Type'] }}\n\nIdentify:\n\nParty A obligations:\nParty B obligations:\n\nFor each obligation identify:\n\n- Required action\n- Responsible party\n- Deadline or timing\n- Payment obligation\n- Conditions\n- Consequences mentioned in the document\n\nClearly distinguish obligations explicitly stated in the document from assumptions.\n\nDo not invent missing information.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -32,
+        0
+      ],
+      "id": "f5374cd3-4fdc-48c7-9917-edc0ba6cadf2",
+      "name": "Obligation Analysis Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        40,
+        232
+      ],
+      "id": "7e6f24fe-0525-400a-a0f9-9d1dca6b92a3",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the legal document for dates, deadlines, notice periods, renewal periods, termination periods, payment dates, and other time-related requirements.\n\nDocument:\n{{ $('Edit Fields').item.json['Document Type'] }}\n\nExtract:\n\n1. Effective date\n2. Expiration date\n3. Notice periods\n4. Payment deadlines\n5. Renewal dates\n6. Termination notice requirements\n7. Other important deadlines\n\nFor each item provide:\n\nEvent:\nDate or period:\nResponsible party:\nRelevant clause:\nExplanation:\n\nIf a date cannot be determined, state \"Not specified\".\nDo not invent dates.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -32,
+        400
+      ],
+      "id": "925c723e-3264-4815-b5ae-49dbd751f3c7",
+      "name": "Date & Deadline Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        40,
+        632
+      ],
+      "id": "668ebb56-72d7-4824-b974-3c5644f62484",
+      "name": "Google Gemini Chat Model4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the legal terminology in this document.\n\nDocument:\n{{ $('Edit Fields').item.json['Document Type'] }}\n\nIdentify important legal terms and phrases.\n\nFor each term provide:\n\nTerm:\nPlain-English meaning:\nMeaning in this document:\nWhy it matters:\n\nFocus on terminology that an ordinary person may not understand.\n\nDo not change the legal meaning of the original wording.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -32,
+        1200
+      ],
+      "id": "0f589716-c9de-4ba3-940c-baa67209a7d4",
+      "name": "Legal Language Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        40,
+        1432
+      ],
+      "id": "cb5e4a73-5cba-40a5-9a44-4158a06ec859",
+      "name": "Google Gemini Chat Model5",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        320,
+        896
+      ],
+      "id": "ce5b0c94-1f2a-4adb-aaa0-491ea854ad0b",
+      "name": "Merge Legal Research 1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        320,
+        1312
+      ],
+      "id": "f4fa14e3-c007-4339-8eda-49c2eb771d47",
+      "name": "Merge Legal Research 2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        544,
+        1104
+      ],
+      "id": "5de999cf-8253-422f-8d71-8c9bf95a877f",
+      "name": "Merge All Legal Research"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create a clear, structured explanation of the legal document using the specialist analyses provided as input.\n\nThe final explanation must be understandable to a non-lawyer.\n\nOrganize the response into:\n\n1. Document Overview\n2. Parties Involved\n3. Key Clauses\n4. Obligations of Each Party\n5. Important Dates and Deadlines\n6. Financial Terms\n7. Potential Risks and Concerns\n8. Important Legal Terms Explained\n9. User's Main Concern\n10. Questions the User May Want to Ask a Lawyer\n11. Important Missing Information\n12. Overall Plain-English Summary\n\nRules:\n\n- Do not invent facts.\n- Do not invent clauses.\n- Do not alter the meaning of the original document.\n- Clearly distinguish document facts from general explanations.\n- Do not provide definitive legal advice.\n- Do not claim that a clause is illegal or legally enforceable unless that conclusion is explicitly supported by reliable legal information.\n- If jurisdiction-specific information is unavailable, state that clearly.\n- If information is uncertain, say so.\n- Keep the explanation practical and easy to understand.",
+        "options": {
+          "systemMessage": "You are the Legal Synthesizer in a multi-agent AI Legal Document Explainer.\n\nYour job is to combine the outputs of multiple specialist agents into one accurate, neutral, plain-language explanation.\n\nYou must prioritize:\n\n1. Accuracy\n2. Faithful representation of the source document\n3. Clear explanations\n4. Identification of uncertainty\n5. Legal safety\n\nNever fabricate information.\n\nNever present an AI-generated interpretation as a definitive legal conclusion.\n\nNever claim that a contract clause is illegal, valid, enforceable, or unenforceable unless that conclusion is supported by appropriate jurisdiction-specific legal authority.\n\nDo not provide personalized legal advice.\n\nIf the document contains insufficient information, explicitly state what is missing.\n\nThe final response should help the user understand the document and identify questions they may want to discuss with a qualified lawyer.\n\nThis system provides legal information and document explanation only. It does not replace a qualified lawyer."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        768,
+        1104
+      ],
+      "id": "c05d974c-cf19-49cc-ab67-27150ec66535",
+      "name": "Legal Synthesizer"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        840,
+        1336
+      ],
+      "id": "cf65b408-a152-4002-9504-5b653ede146d",
+      "name": "Google Gemini Chat Model6",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Legal Document Manager",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Legal Document Manager",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Legal Document Manager": {
+      "main": [
+        [
+          {
+            "node": "Clause Analysis Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Risk Analysis Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Obligation Analysis Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Date & Deadline Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Legal Language Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Clause Analysis Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clause Analysis Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge Legal Research 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Risk Analysis Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Obligation Analysis Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Date & Deadline Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Legal Language Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Legal Language Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge Legal Research 2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Risk Analysis Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge Legal Research 1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Obligation Analysis Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge Legal Research 1",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge Legal Research 1": {
+      "main": [
+        [
+          {
+            "node": "Merge All Legal Research",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Deadline Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge Legal Research 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Legal Research 2": {
+      "main": [
+        [
+          {
+            "node": "Merge All Legal Research",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge All Legal Research": {
+      "main": [
+        [
+          {
+            "node": "Legal Synthesizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model6": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Legal Synthesizer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "6c4f0f2c-3c21-48a9-81bb-114612d533ad",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "RcudAeBt1jsfFwsu",
+  "tags": []
+}

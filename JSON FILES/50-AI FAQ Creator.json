@@ -1,0 +1,145 @@
+{
+  "name": "AI FAQ Creator",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI FAQ CREATOR",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Product Name"
+            },
+            {
+              "fieldLabel": "Category"
+            },
+            {
+              "fieldLabel": "Description",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Features",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Target Audience"
+            },
+            {
+              "fieldLabel": "Number of FAQs",
+              "fieldType": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "16cbfafd-20d8-473d-bcc5-e5f367f2a806",
+      "name": "On form submission",
+      "webhookId": "47fec413-9184-404e-aed7-03ef3e4f4b64"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create FAQs based on the following product or service information.\n\nProduct/Service Name:\n{{ $json['Product Name'] }}\n\nCategory:\n{{ $json['Category'] }}\n\nDescription:\n{{ $json['Description'] }}\n\nFeatures:\n{{ $json['Features'] }}\n\nTarget Audience:\n{{ $json['Target Audience'] }}\n\nNumber of FAQs:\n{{ $json['Number of FAQs'] }}\n\nGenerate the requested number of useful FAQs.\n\nEach FAQ should contain:\n\n1. Question\n2. Answer\n3. Category\n4. Search intent\n5. Related keywords\n\nMake the questions realistic and useful for customers.\nKeep answers clear, concise and accurate.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an AI FAQ Creator.\n\nYour job is to generate useful, accurate and customer-friendly\nfrequently asked questions based only on the information\nprovided by the user.\n\nIMPORTANT RULES:\n\n1. Use only the information provided.\n2. Do not invent product specifications, policies, warranties,\n   prices or guarantees.\n3. Do not create answers that are unsupported by the provided information.\n4. Create realistic questions customers may ask.\n5. Keep answers concise and easy to understand.\n6. Avoid duplicate questions.\n7. Cover different aspects of the product or service.\n8. Use simple customer-friendly language.\n9. Include search intent for each FAQ.\n10. Include relevant keywords.\n11. Follow the requested number of FAQs.\n12. Return the result using the required structured output format."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "1ca13aa5-57bb-456a-98ba-ee1b517d6a35",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        64,
+        208
+      ],
+      "id": "2f30d5e1-d3e4-424b-91dd-6f47ae659e0b",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"product_name\": \"Wireless Bluetooth Headphones\",\n  \"faqs\": [\n    {\n      \"question\": \"How long does the battery last?\",\n      \"answer\": \"The headphones provide up to 30 hours of battery life.\",\n      \"category\": \"Battery\",\n      \"search_intent\": \"Informational\",\n      \"keywords\": [\n        \"headphone battery life\",\n        \"30 hour headphones\"\n      ]\n    },\n    {\n      \"question\": \"Do the headphones support Bluetooth?\",\n      \"answer\": \"Yes. The headphones support Bluetooth 5.3.\",\n      \"category\": \"Connectivity\",\n      \"search_intent\": \"Informational\",\n      \"keywords\": [\n        \"Bluetooth headphones\",\n        \"Bluetooth 5.3 headphones\"\n      ]\n    }\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        384,
+        208
+      ],
+      "id": "d37872f2-d144-4ada-8b76-9e14bf5fcacb",
+      "name": "Structured Output Parser"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "b2df938a-133e-4eec-bf2b-1abedc959b03",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "HPIEYDNScL0zaE67",
+  "tags": []
+}

@@ -1,0 +1,419 @@
+{
+  "name": "AI Interview Simulator",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI Interview Simulator",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Candidate Name"
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email"
+            },
+            {
+              "fieldLabel": "Job Role"
+            },
+            {
+              "fieldLabel": "Experience Level"
+            },
+            {
+              "fieldLabel": "Interview Type",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Technical"
+                  },
+                  {
+                    "option": "Non Technical"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Question",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Candidate Answer",
+              "fieldType": "textarea"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "be628f0b-200a-4b76-b709-b7f6158b0c4c",
+      "name": "On form submission",
+      "webhookId": "e9444f52-ad97-49d7-bb0f-6a4b7292e639"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\nreturn [\n  {\n    json: {\n      candidate_name: input[\"Candidate Name\"] || \"\",\n      email: input[\"Email\"] || \"\",\n      job_role: input[\"Job Role\"] || \"\",\n      experience_level: input[\"Experience Level\"] || \"\",\n      interview_type: input[\"Interview Type\"] || \"\",\n      question: input[\"Question\"] || \"\",\n      candidate_answer: input[\"Candidate Answer\"] || \"\",\n\n      answer_length:\n        (input[\"Candidate Answer\"] || \"\").length,\n\n      submitted_at: new Date().toISOString()\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "fd037c2f-53cd-4d8d-ab1b-7a3debfbeb98",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze this interview question.\n\nCandidate:\n{{ $(\"Code in JavaScript\").first().json.candidate_name }}\n\nJob Role:\n{{ $(\"Code in JavaScript\").first().json.job_role }}\n\nExperience Level:\n{{ $(\"Code in JavaScript\").first().json.experience_level }}\n\nInterview Type:\n{{ $(\"Code in JavaScript\").first().json.interview_type }}\n\nQuestion:\n{{ $(\"Code in JavaScript\").first().json.question }}\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are an expert technical interviewer and interview question analyst.\n\nAnalyze the interview question based on the candidate's target role and experience level.\n\nDetermine:\n\n- question_category\n- difficulty\n- skills_being_tested\n- expected_concepts\n- ideal_answer_elements\n- common_mistakes\n- scoring_criteria\n\nDo not evaluate the candidate's answer yet.\n\nDo not invent information.\n\nReturn valid JSON only.\n\nUse this structure:\n\n{\n  \"question_category\": \"\",\n  \"difficulty\": \"\",\n  \"skills_being_tested\": [],\n  \"expected_concepts\": [],\n  \"ideal_answer_elements\": [],\n  \"common_mistakes\": [],\n  \"scoring_criteria\": []\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "9a48e281-6a33-4a9a-9503-98fce6ae6c74",
+      "name": "Interview Question Analyzer"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        520,
+        232
+      ],
+      "id": "ad6bfe54-257a-45f9-b8a6-9b0ac70c8a13",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Evaluate the candidate's answer to the interview question.\n\nCANDIDATE:\n{{ $(\"Code in JavaScript\").first().json.candidate_name }}\n\nJOB ROLE:\n{{ $(\"Code in JavaScript\").first().json.job_role }}\n\nEXPERIENCE LEVEL:\n{{ $(\"Code in JavaScript\").first().json.experience_level }}\n\nINTERVIEW TYPE:\n{{ $(\"Code in JavaScript\").first().json.interview_type }}\n\nQUESTION:\n{{ $(\"Code in JavaScript\").first().json.question }}\n\nCANDIDATE ANSWER:\n{{ $(\"Code in JavaScript\").first().json.candidate_answer }}\n\nQUESTION ANALYSIS:\n{{ $(\"Interview Question Analyzer\").first().json.output }}\n\nEvaluate the answer based ONLY on the information provided.\n\nAnalyze:\n\n1. Technical correctness\n2. Relevance to the question\n3. Completeness\n4. Clarity\n5. Understanding of the concept\n6. Accuracy of examples\n7. Important concepts missed\n8. Incorrect statements\n9. Strengths\n10. Weaknesses\n11. Whether the answer is suitable for the candidate's experience level\n12. Overall answer quality\n\nGive a score from 0 to 10.\n\nReturn JSON only.\nDo not invent information.",
+        "options": {
+          "systemMessage": "You are an expert technical interviewer and answer evaluator.\n\nYour responsibility is to objectively evaluate a candidate's interview answer.\n\nRules:\n\n- Evaluate only the information provided.\n- Do not assume knowledge that the candidate did not demonstrate.\n- Do not penalize a fresher for not giving an advanced answer unless the question requires it.\n- Separate factual errors from missing information.\n- Identify exactly what the candidate did correctly.\n- Identify exactly what the candidate got wrong.\n- Identify important concepts that were missing.\n- Compare the answer against the question analysis provided.\n- Give a fair score from 0 to 10.\n- Be strict but constructive.\n- Do not invent facts.\n- Return valid JSON only.\n\nRequired JSON structure:\n\n{\n  \"score\": 0,\n  \"technical_correctness\": 0,\n  \"relevance\": 0,\n  \"completeness\": 0,\n  \"clarity\": 0,\n  \"understanding\": 0,\n  \"strengths\": [],\n  \"weaknesses\": [],\n  \"incorrect_statements\": [],\n  \"missing_concepts\": [],\n  \"improvement_advice\": \"\",\n  \"model_answer\": \"\",\n  \"final_evaluation\": \"\"\n}\n\nScoring guidance:\n\nFor fresher candidates:\n- 9-10 = Excellent understanding with accurate explanation and example\n- 7-8 = Good understanding with minor missing details\n- 5-6 = Basic understanding but important concepts are missing\n- 3-4 = Partial understanding with significant gaps\n- 0-2 = Incorrect or unrelated answer\n\nDo not reduce the score excessively simply because an example was not provided if the core concept is correct."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        800,
+        0
+      ],
+      "id": "5bb5926c-4ea5-4af4-a3b4-cd97b103c55b",
+      "name": "Answer Evaluation Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        872,
+        232
+      ],
+      "id": "632e4236-9e4f-41b9-ad79-92cd0e3dc79f",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are coaching a candidate after an interview question.\n\nCANDIDATE INFORMATION\n\nCandidate:\n{{ $(\"Code in JavaScript\").first().json.candidate_name }}\n\nJob Role:\n{{ $(\"Code in JavaScript\").first().json.job_role }}\n\nExperience Level:\n{{ $(\"Code in JavaScript\").first().json.experience_level }}\n\nInterview Type:\n{{ $(\"Code in JavaScript\").first().json.interview_type }}\n\nQUESTION\n\n{{ $(\"Code in JavaScript\").first().json.question }}\n\nCANDIDATE ANSWER\n\n{{ $(\"Code in JavaScript\").first().json.candidate_answer }}\n\nQUESTION ANALYSIS\n\n{{ $(\"Interview Question Analyzer\").first().json.output }}\n\nANSWER EVALUATION\n\n{{ $(\"Answer Evaluation Agent\").first().json.output }}\n\nTASK\n\nAct as a professional interview coach.\n\nBased on the question, candidate answer, question analysis, and evaluation:\n\n1. Explain what the candidate did well.\n2. Explain what the candidate needs to improve.\n3. Explain the missing concepts in simple language.\n4. Give a better way to structure the answer.\n5. Provide an improved model answer suitable for the candidate's experience level.\n6. Give practical interview advice.\n7. Generate one follow-up interview question.\n8. Give the expected difficulty of the follow-up question.\n9. Give a short hint for answering the follow-up question.\n10. Recommend what the candidate should study next.\n\nDo not invent information.\nDo not criticize the candidate personally.\nKeep the feedback constructive and useful.\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are an expert technical interview coach.\n\nYour job is to help candidates improve their interview performance based on actual interview questions and their submitted answers.\n\nRules:\n\n1. Analyze the candidate's actual answer.\n2. Use the evaluator's findings as the primary source for weaknesses and missing concepts.\n3. Do not invent facts about the candidate.\n4. Do not claim that the candidate said something they did not say.\n5. Explain technical concepts clearly and simply.\n6. Adapt the model answer to the candidate's experience level.\n7. For a fresher, prioritize fundamentals and clarity over unnecessary advanced concepts.\n8. Give constructive feedback rather than personal criticism.\n9. Provide actionable improvement advice.\n10. Generate exactly ONE follow-up question.\n11. The follow-up question should test a concept related to the original question.\n12. The follow-up should be appropriate for the candidate's job role and experience level.\n13. Do not repeat the original question.\n14. Return valid JSON only.\n\nRequired JSON structure:\n\n{\n  \"candidate_name\": \"\",\n  \"overall_feedback\": \"\",\n  \"what_went_well\": [],\n  \"areas_to_improve\": [],\n  \"missing_concepts_explained\": [],\n  \"answer_structure\": [\n    \"\",\n    \"\",\n    \"\"\n  ],\n  \"improved_model_answer\": \"\",\n  \"interview_tips\": [],\n  \"follow_up_question\": \"\",\n  \"follow_up_difficulty\": \"\",\n  \"follow_up_hint\": \"\",\n  \"recommended_topics_to_study\": [],\n  \"confidence_level\": \"\",\n  \"coach_summary\": \"\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1152,
+        0
+      ],
+      "id": "2b5e572b-ef41-4aee-8aaa-04d8387de558",
+      "name": "Interview Coach Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1224,
+        232
+      ],
+      "id": "61f77df6-6970-4522-9e4d-46f51856c1f0",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Generate the next interview question for this candidate based on their actual performance.\n\nCANDIDATE:\n{{ $(\"Code in JavaScript\").first().json.candidate_name }}\n\nJOB ROLE:\n{{ $(\"Code in JavaScript\").first().json.job_role }}\n\nEXPERIENCE LEVEL:\n{{ $(\"Code in JavaScript\").first().json.experience_level }}\n\nORIGINAL QUESTION:\n{{ $(\"Code in JavaScript\").first().json.question }}\n\nCANDIDATE ANSWER:\n{{ $(\"Code in JavaScript\").first().json.candidate_answer }}\n\nQUESTION ANALYSIS:\n{{ $(\"Interview Question Analyzer\").first().json.output }}\n\nANSWER EVALUATION:\n{{ $(\"Answer Evaluation Agent\").first().json.output }}\n\nCOACHING:\n{{ $(\"Interview Coach Agent\").first().json.output }}\n\nTASK:\n\nAct as an adaptive technical interviewer.\n\nIdentify the most important weakness from the candidate's performance.\n\nGenerate exactly ONE follow-up interview question that tests that weakness.\n\nThe question must:\n- Be related to the original topic.\n- Not repeat the original question.\n- Match the candidate's job role.\n- Match the candidate's experience level.\n- Be slightly more challenging than the original question.\n- Test practical understanding rather than memorization.\n\nAlso provide:\n- difficulty\n- skill_being_tested\n- reason_for_question\n- expected_answer_points\n- hint\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are an adaptive technical interviewer.\n\nYour job is to dynamically select the next interview question based on the candidate's actual performance.\n\nRules:\n\n1. Analyze the candidate's weaknesses before generating the question.\n2. Focus on the most important missing concept.\n3. Do not generate random questions.\n4. Do not repeat the original question.\n5. Keep the question related to the original topic.\n6. Increase difficulty gradually.\n7. Adapt difficulty to the candidate's experience level.\n8. For fresher candidates, test fundamentals and practical application.\n9. The question should be answerable without requiring information not provided in the interview context.\n10. Generate exactly ONE follow-up question.\n11. Explain why the question was selected.\n12. Return valid JSON only.\n\nRequired JSON:\n\n{\n  \"follow_up_question\": \"\",\n  \"difficulty\": \"\",\n  \"skill_being_tested\": \"\",\n  \"reason_for_question\": \"\",\n  \"expected_answer_points\": [],\n  \"hint\": \"\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1504,
+        0
+      ],
+      "id": "ab81cda5-04f8-49d7-8303-adafc60b90f4",
+      "name": "Adaptive Follow-up Interviewer"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1576,
+        232
+      ],
+      "id": "166c1f19-4a44-4545-9dab-6060543a43d7",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create a final professional interview performance report.\n\nCANDIDATE INFORMATION\n\nCandidate Name:\n{{ $(\"Code in JavaScript\").first().json.candidate_name }}\n\nEmail:\n{{ $(\"Code in JavaScript\").first().json.email }}\n\nJob Role:\n{{ $(\"Code in JavaScript\").first().json.job_role }}\n\nExperience Level:\n{{ $(\"Code in JavaScript\").first().json.experience_level }}\n\nInterview Type:\n{{ $(\"Code in JavaScript\").first().json.interview_type }}\n\nORIGINAL INTERVIEW QUESTION\n\n{{ $(\"Code in JavaScript\").first().json.question }}\n\nCANDIDATE ANSWER\n\n{{ $(\"Code in JavaScript\").first().json.candidate_answer }}\n\nAGENT 1 — QUESTION ANALYSIS\n\n{{ $(\"Interview Question Analyzer\").first().json.output }}\n\nAGENT 2 — ANSWER EVALUATION\n\n{{ $(\"Answer Evaluation Agent\").first().json.output }}\n\nAGENT 3 — INTERVIEW COACHING\n\n{{ $(\"Interview Coach Agent\").first().json.output }}\n\nAGENT 4 — ADAPTIVE FOLLOW-UP\n\n{{ $(\"Adaptive Follow-up Interviewer\").first().json.output }}\n\nTASK\n\n\nCreate a final professional interview performance report by combining the candidate information and outputs from all previous agents.\n\nThe report must:\n\n1. Evaluate the candidate's overall interview performance.\n2. Summarize the candidate's strengths.\n3. Identify weaknesses and knowledge gaps.\n4. Explain the most important mistakes.\n5. Provide specific improvement recommendations.\n6. Summarize technical understanding.\n7. Evaluate communication and clarity.\n8. Evaluate interview readiness.\n9. Recommend topics to study next.\n10. Provide a final overall score out of 100.\n\nDo not invent information.\n\nIf information is unavailable, use \"Unknown\".\n\nReturn JSON only.\n\nCreate a final interview performance report.\n\nEvaluate the candidate based only on the information provided.\n\nCalculate an overall performance score from 0 to 100.\n\nConsider:\n\n1. Technical correctness\n2. Understanding of the concept\n3. Relevance\n4. Completeness\n5. Clarity\n6. Communication\n7. Ability to explain concepts\n8. Interview readiness\n9. Missing technical knowledge\n10. Ability to handle follow-up questions\n\nAlso determine:\n\n- Overall performance level\n- Technical skill level\n- Communication level\n- Interview readiness\n- Strongest areas\n- Weakest areas\n- Important knowledge gaps\n- Recommended study topics\n- Final recommendation\n\nCreate a concise executive summary that a recruiter, interviewer, or candidate can understand quickly.\n\nDo not invent information.\n\nReturn JSON only.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an expert AI Interview Performance Analyst.\n\nYour responsibility is to create a professional final interview performance report for a candidate.\n\nYou will receive:\n\n- Candidate information\n- Original interview question\n- Candidate answer\n- Question analysis from Agent 1\n- Answer evaluation from Agent 2\n- Coaching recommendations from Agent 3\n- Adaptive follow-up analysis from Agent 4\n\nYour job is to combine all available information objectively.\n\nEvaluate:\n\n1. Technical knowledge\n2. Conceptual understanding\n3. Answer correctness\n4. Answer completeness\n5. Communication clarity\n6. Interview confidence\n7. Ability to explain concepts\n8. Understanding of practical use cases\n9. Handling of interview questions\n10. Overall interview readiness\n\nIMPORTANT RULES:\n\n- Do not invent candidate information.\n- Do not invent interview questions or answers.\n- Base every conclusion on the provided information.\n- Do not blindly copy scores from previous agents.\n- Consider the evidence from all agents before calculating the final score.\n- Give constructive feedback suitable for a fresher.\n- Clearly distinguish strengths from weaknesses.\n- Identify missing technical concepts.\n- Provide practical improvement advice.\n- Recommend specific topics for further study.\n- Keep the report professional and easy to understand.\n\nFINAL SCORE:\n\nCalculate an overall score from 0 to 100.\n\nUse this general interpretation:\n\n90-100 = Excellent\n80-89 = Very Good\n70-79 = Good\n60-69 = Average\n50-59 = Needs Improvement\nBelow 50 = Poor\n\nReturn ONLY valid JSON.\n\nUse exactly this structure:\n\n{\n  \"report_type\": \"AI Interview Performance Report\",\n  \"candidate\": {\n    \"name\": \"\",\n    \"email\": \"\",\n    \"job_role\": \"\",\n    \"experience_level\": \"\",\n    \"interview_type\": \"\"\n  },\n  \"interview_summary\": {\n    \"question\": \"\",\n    \"answer\": \"\",\n    \"question_category\": \"\",\n    \"difficulty\": \"\"\n  },\n  \"overall_assessment\": {\n    \"overall_score\": 0,\n    \"performance_level\": \"\",\n    \"technical_score\": 0,\n    \"communication_score\": 0,\n    \"completeness_score\": 0,\n    \"understanding_score\": 0,\n    \"interview_readiness\": \"\"\n  },\n  \"strengths\": [],\n  \"weaknesses\": [],\n  \"technical_gaps\": [],\n  \"important_mistakes\": [],\n  \"improvement_recommendations\": [],\n  \"recommended_topics\": [],\n  \"better_answer\": \"\",\n  \"final_feedback\": \"\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1856,
+        0
+      ],
+      "id": "c6e2a799-1f24-465d-85cb-adc9e6343260",
+      "name": "Final Interview Report Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1928,
+        232
+      ],
+      "id": "23688557-16d0-4c01-9419-14f5e50dcaae",
+      "name": "Google Gemini Chat Model4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawOutput = $json.output;\n\nif (!rawOutput) {\n  throw new Error(\"No output received from Final Interview Report Agent.\");\n}\n\nlet text = String(rawOutput).trim();\n\n// Remove markdown code fences if present\ntext = text\n  .replace(/^```json\\s*/i, \"\")\n  .replace(/^```\\s*/i, \"\")\n  .replace(/\\s*```$/i, \"\")\n  .trim();\n\n// Find JSON object\nconst start = text.indexOf(\"{\");\nconst end = text.lastIndexOf(\"}\");\n\nif (start === -1 || end === -1) {\n  throw new Error(\"Could not find JSON object in Agent 5 output.\");\n}\n\nconst jsonText = text.substring(start, end + 1);\n\nlet report;\n\ntry {\n  report = JSON.parse(jsonText);\n} catch (error) {\n  throw new Error(\n    \"Invalid JSON returned by Agent 5: \" + error.message\n  );\n}\n\nreturn [\n  {\n    json: report\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2208,
+        0
+      ],
+      "id": "b9a84961-25d7-4fab-995c-8489fdbe7518",
+      "name": "Parse Final Interview Report"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Interview Question Analyzer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Interview Question Analyzer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Interview Question Analyzer": {
+      "main": [
+        [
+          {
+            "node": "Answer Evaluation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Answer Evaluation Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer Evaluation Agent": {
+      "main": [
+        [
+          {
+            "node": "Interview Coach Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Interview Coach Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Interview Coach Agent": {
+      "main": [
+        [
+          {
+            "node": "Adaptive Follow-up Interviewer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Adaptive Follow-up Interviewer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adaptive Follow-up Interviewer": {
+      "main": [
+        [
+          {
+            "node": "Final Interview Report Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Final Interview Report Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Interview Report Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse Final Interview Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "be44f066-56f8-4890-8efd-e5aeb00b9455",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "JItjMNWxUwYjz5Lv",
+  "tags": []
+}

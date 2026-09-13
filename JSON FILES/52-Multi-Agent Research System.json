@@ -1,0 +1,476 @@
+{
+  "name": "Multi-Agent Research System",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Multi-Agent Research System",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Research Topic"
+            },
+            {
+              "fieldLabel": "Research Question",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Research Depth",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Basic"
+                  },
+                  {
+                    "option": "Medium"
+                  },
+                  {
+                    "option": "Hard"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Output Format",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Report"
+                  },
+                  {
+                    "option": "Summary"
+                  },
+                  {
+                    "option": "Bullet points"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c12e5906-1dad-48ee-9170-fd632a71aeef",
+      "name": "On form submission",
+      "webhookId": "7f1343ea-fd06-47d5-b6a6-ab0fc873e3d8"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a33b67b8-f90a-498e-8cee-a705515b416a",
+              "name": "Research Topic",
+              "value": "={{ $json['Research Topic'] }}",
+              "type": "string"
+            },
+            {
+              "id": "75d00c16-36df-4b99-b71d-699424ed0684",
+              "name": "Research Question",
+              "value": "={{ $json['Research Question'] }}",
+              "type": "string"
+            },
+            {
+              "id": "f14a47bd-3db4-4a28-9709-df4d6541aa0f",
+              "name": "Research Depth",
+              "value": "={{ $json['Research Depth'] }}",
+              "type": "string"
+            },
+            {
+              "id": "0dc8fca5-a997-4721-9bd5-ba665ce92e7b",
+              "name": "Output Format",
+              "value": "={{ $json['Output Format'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "fa512943-64fc-4302-b091-25c0c17a7297",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        520,
+        232
+      ],
+      "id": "83e5017b-8a94-4e51-b770-055f2352a49e",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Research Topic:\n{{ $json['Research Topic'] }}\n\n\nResearch Question:\n{{ $json['Research Question'] }}\n\nResearch Depth:\n{{ $json['Research Depth'] }}\n\nOutput Format:\n{{ $json['Output Format'] }}\n\nCreate a research plan for this topic.\n\nBreak the research into 3 independent research tasks.\n\nFor each task provide:\n1. Research objective\n2. Key questions\n3. Information that needs to be collected\n\nDo not write the final report yet.\nOnly create the research plan.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are the Research Manager in a multi-agent research system.\n\nYour responsibility is to analyze the user's research topic and divide the research into clear, independent tasks.\n\nCreate tasks that can be researched separately.\n\nAvoid duplicate tasks.\n\nDo not invent facts.\n\nDo not write the final research report.\n\nReturn a clear research plan that can be passed to other research agents."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "f7ea44bd-8207-4327-a678-faafb22f1d13",
+      "name": "Research Manager"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Research Topic:\n{{ $('Edit Fields').item.json['Research Topic'] }}\n\nResearch Question:\n{{ $('Edit Fields').item.json['Research Question'] }}\n\nResearch Plan from Research Manager:\n{{ $('Research Manager').item.json.output }}\n\nYour role is to handle the general research portion of this plan.\n\nRead the research plan above and identify the task that focuses on:\n- Background information\n- Definitions\n- Important concepts\n- Current developments\n- Major applications\n- General facts\n\nConduct the research for that task.\n\nReturn:\n1. Key findings\n2. Important facts\n3. Relevant examples\n4. Potential sources or evidence\n5. Uncertainties or information that needs verification\n\nDo not write the final research report.",
+        "options": {
+          "systemMessage": "You are the General Research Agent in a multi-agent research system.\n\nYour task is to research the assigned topic thoroughly.\n\nFocus on:\n- Background information\n- Definitions\n- Important concepts\n- Current developments\n- Major applications\n- Important facts\n\nUse reliable information when research tools are available.\n\nDo not invent facts.\nClearly distinguish facts from assumptions.\nDo not write the final report.\n\nReturn structured research findings that another AI agent can use."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        800,
+        0
+      ],
+      "id": "7a5d7acc-15f9-4402-a136-710c8dc92323",
+      "name": "General Research Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        872,
+        232
+      ],
+      "id": "ffcd47bd-873e-4ef7-8510-f893859c54a9",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Research Topic:\n{{ $('Edit Fields').item.json['Research Topic'] }}\n\nResearch Question:\n{{ $('Edit Fields').item.json['Research Question'] }}\n\nResearch Plan:\n{{ $('Research Manager').item.json.output }}\n\nBased on the research plan, identify the task related to market trends,\nbusiness impact, industry applications, opportunities, challenges,\nand future developments.\n\nConduct that research.\n\nReturn:\n\n1. Market Findings\n2. Business Impact\n3. Industry Applications\n4. Opportunities\n5. Challenges\n6. Future Trends\n7. Sources or Evidence to Verify\n8. Uncertainties",
+        "options": {
+          "systemMessage": "You are the Market Research Agent in a multi-agent research system.\n\nYour job is to analyze the assigned research topic from a market and business perspective.\n\nFocus on:\n- Market trends\n- Business impact\n- Industry applications\n- Opportunities\n- Challenges\n- Major companies or competitors when relevant\n- Future market developments\n\nDo not invent statistics, companies, or facts.\n\nClearly identify information that requires verification.\n\nDo not write the final report.\n\nReturn structured research findings that can be given to a research synthesizer."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1152,
+        0
+      ],
+      "id": "6b537b2f-db2c-4ea8-8c58-c5b2e8425cc4",
+      "name": "Market Research Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1224,
+        232
+      ],
+      "id": "1356d6bf-e5ca-431f-a3da-3c113dbb3f12",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Research Topic:\n{{ $('Edit Fields').item.json['Research Topic'] }}\n\nResearch Question:\n{{ $('Edit Fields').item.json['Research Question'] }}\n\nResearch Plan:\n{{ $('Research Manager').item.json.output }}\n\nAnalyze the research plan and identify the task related to\nfact checking and evidence verification.\n\nReturn:\n\n1. Claims requiring verification\n2. Important facts to verify\n3. Potential contradictions\n4. Missing evidence\n5. Risk of misleading information\n6. Recommended verification points\n7. Sources or evidence that should be checked\n8. Uncertainties",
+        "options": {
+          "systemMessage": "You are the Fact Check Research Agent in a multi-agent research system.\n\nYour job is to analyze the research topic and identify important claims\nthat require verification.\n\nFocus on:\n- Important factual claims\n- Statistics and numerical claims\n- Dates and historical claims\n- Company or product claims\n- Potentially misleading statements\n- Contradictions between information\n- Missing evidence\n- Information that needs further verification\n\nDo not invent facts, statistics, or sources.\n\nClearly distinguish verified information from claims that require verification.\n\nDo not write the final research report.\n\nReturn structured fact-checking findings for the Research Synthesizer."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1504,
+        0
+      ],
+      "id": "778d349a-5c6c-4d1e-88a0-8e6e96a9fcb6",
+      "name": "Fact Check Research Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1576,
+        232
+      ],
+      "id": "bd557c1f-22cb-4f4d-b0bd-c3370a150139",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "954d7f9c-107c-4cc0-933b-1c26a63a8704",
+              "name": "general_research",
+              "value": "={{ $('General Research Agent').item.json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "0c46897a-5306-4650-a0cb-ddfc49ea820f",
+              "name": "market_research",
+              "value": "={{ $('Market Research Agent').item.json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "75a677fa-5bb3-48d6-bff1-a400ffb6af81",
+              "name": "fact_check",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1856,
+        0
+      ],
+      "id": "31e58818-a2d5-4228-8525-212e2f31bcc1",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create a final research report using the three research outputs below.\n\nGENERAL RESEARCH:\n{{ $json.general_research }}\n\nMARKET RESEARCH:\n{{ $json.market_research }}\n\nFACT CHECK:\n{{ $json.fact_check }}\n\nCombine the information into one clear, professional research report.\n\nRequirements:\n1. Give a clear introduction.\n2. Summarize the key findings.\n3. Include important market findings.\n4. Include verified/fact-checked information.\n5. Clearly identify claims that could not be verified.\n6. Compare important findings where appropriate.\n7. Give practical conclusions.\n8. Do not invent facts.\n9. Avoid repeating the same information.\n10. Use clear headings and bullet points.",
+        "options": {
+          "systemMessage": "You are the Research Synthesizer in a multi-agent research system.\n\nYour job is to combine research from General Research, Market Research, and Fact Check agents into one accurate final report.\n\nUse only the information provided by the research agents.\n\nDo not invent statistics, sources, facts, or conclusions.\n\nGive priority to fact-checked information.\n\nIf research results conflict, clearly mention the conflict instead of choosing a fact without evidence.\n\nWrite the final report in professional, easy-to-understand language."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2080,
+        0
+      ],
+      "id": "bdc6e34b-066b-4aec-8a33-2c11384efbf5",
+      "name": "Research Synthesizer"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        2152,
+        232
+      ],
+      "id": "5a8ad063-54a7-445d-9903-08b6dfb4cbc4",
+      "name": "Google Gemini Chat Model4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Research Manager",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Research Manager",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Manager": {
+      "main": [
+        [
+          {
+            "node": "General Research Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "General Research Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "General Research Agent": {
+      "main": [
+        [
+          {
+            "node": "Market Research Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Market Research Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Market Research Agent": {
+      "main": [
+        [
+          {
+            "node": "Fact Check Research Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Fact Check Research Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fact Check Research Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Research Synthesizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Research Synthesizer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "912721c7-74e6-4e1b-b5a2-65dd7e1b5b4b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "uczAm43RU4Wn852o",
+  "tags": []
+}

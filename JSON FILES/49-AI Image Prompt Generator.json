@@ -1,0 +1,143 @@
+{
+  "name": "AI Image Prompt Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI Image Prompt Generator",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Subject"
+            },
+            {
+              "fieldLabel": "Image Style"
+            },
+            {
+              "fieldLabel": "Purpose"
+            },
+            {
+              "fieldLabel": "Mood"
+            },
+            {
+              "fieldLabel": "Colors"
+            },
+            {
+              "fieldLabel": "Additional Details"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a6189037-122c-42a5-b834-92afab3fdb49",
+      "name": "On form submission",
+      "webhookId": "d76326a1-10e0-40b3-8975-86b2d99cefb9"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create a detailed image-generation prompt using the following information.\n\nSubject:\n{{ $json['Subject'] }}\n\nImage Style:\n{{ $json['Image Style'] }}\n\nPurpose:\n{{ $json['Purpose'] }}\n\nMood:\n{{ $json['Mood'] }}\n\nColors:\n{{ $json['Colors'] }}\n\nAdditional Details:\n{{ $json['Additional Details'] }}\n\nGenerate a professional image prompt.\n\nThe prompt should describe:\n1. Main subject\n2. Environment/background\n3. Composition\n4. Lighting\n5. Camera or visual perspective when appropriate\n6. Colors\n7. Mood\n8. Artistic or photographic style\n9. Important details\n10. Output format recommendation\n\nAlso generate a negative prompt to identify things that should be avoided.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an AI Image Prompt Generator.\n\nYour job is to transform simple user ideas into detailed,\nclear and useful prompts for image-generation models.\n\nIMPORTANT RULES:\n\n1. Preserve the user's main subject and requirements.\n2. Do not change the intended concept.\n3. Add useful visual details where appropriate.\n4. Describe composition and environment clearly.\n5. Include lighting and mood.\n6. Include suitable visual style.\n7. Include colors when provided.\n8. Suggest an appropriate camera perspective when relevant.\n9. Avoid unnecessary complexity.\n10. Do not add text, logos or watermarks unless explicitly requested.\n11. Generate a useful negative prompt.\n12. Recommend an appropriate aspect ratio based on the purpose.\n13. Do not claim that the prompt guarantees a specific image result.\n14. Return the result using the required structured output format."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "21543938-8707-4974-bf09-eb13eed8be7e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        296,
+        232
+      ],
+      "id": "07e6a28e-99f6-4cc4-99bd-6886f2d3aaa7",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"image_prompt\": \"A cinematic modern luxury coffee shop with large windows, elegant wooden furniture, indoor plants and customers working comfortably on laptops. Warm natural sunlight enters through the windows, creating a premium and inviting atmosphere. Rich brown, gold and cream color palette, realistic commercial photography, balanced composition, eye-level perspective, detailed textures, soft shadows, high-end advertising aesthetic.\",\n  \"negative_prompt\": \"blurry, low resolution, distorted objects, distorted faces, extra fingers, bad anatomy, watermark, unwanted text, oversaturated colors\",\n  \"style\": \"Cinematic commercial photography\",\n  \"mood\": \"Warm and premium\",\n  \"aspect_ratio\": \"1:1\",\n  \"recommended_use\": \"Instagram advertisement\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        400,
+        208
+      ],
+      "id": "fb592045-7601-4316-b191-b0739e4d3b27",
+      "name": "Structured Output Parser"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "e16185ff-65ef-448c-9c24-e54c8da0c8b0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "oyn1IHlzGnJurFsH",
+  "tags": []
+}

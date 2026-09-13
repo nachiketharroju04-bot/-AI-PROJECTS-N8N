@@ -1,0 +1,198 @@
+{
+  "name": "SOCIAL MEDIA AUTOMATION",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "b299d32e-d5d6-4f20-95fd-98a76e429aca",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -96,
+        -112
+      ],
+      "id": "d8c61651-fdd6-4e01-a3fb-1ffd835400be",
+      "name": "Webhook",
+      "webhookId": "b299d32e-d5d6-4f20-95fd-98a76e429aca"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "options": {
+          "systemMessage": "You are a Social Media Content Creation AI Agent.\n\nYour task is to create exactly ONE engaging social media caption and exactly ONE relevant hashtag based on the post title provided as input.\n\nINPUT:\nYou will receive a post title.\n\nTASK:\n1. Understand the topic of the title.\n2. Create ONE short, catchy, viral-style caption.\n3. Create ONE highly relevant hashtag.\n4. The caption and hashtag must be directly related to the title.\n5. Use simple, natural, and engaging language.\n6. Add a hook or curiosity element when appropriate.\n7. Do not invent facts that are not provided in the title.\n8. Do not create multiple captions or hashtags.\n\nOUTPUT FORMAT:\n\nCaption:\n[One caption only]\n\nHashtag:\n[One hashtag only]\n\nIMPORTANT:\n- Generate exactly 1 caption.\n- Generate exactly 1 hashtag.\n- Do not provide explanations.\n- Do not provide multiple options.\n- Do not include extra text.\n- Do not mention that you are an AI."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        128,
+        16
+      ],
+      "id": "f9ae6177-e1a6-4cd0-875c-a6c280f43841",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        240
+      ],
+      "id": "1c0d4fd7-6a84-4df0-bbe9-5082be9a7459",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        16
+      ],
+      "id": "086bae53-657b-45a4-aac0-80157001810a",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "uploadVideo"
+      },
+      "type": "n8n-nodes-upload-post.uploadPost",
+      "typeVersion": 1,
+      "position": [
+        928,
+        -112
+      ],
+      "id": "51499d05-623b-4332-8876-681a956829d6",
+      "name": "Upload a video"
+    },
+    {
+      "parameters": {
+        "operation": "uploadFile",
+        "file": "file",
+        "resource_type_file": "video",
+        "additionalFieldsFile": {}
+      },
+      "type": "n8n-nodes-cloudinary.cloudinary",
+      "typeVersion": 2,
+      "position": [
+        480,
+        -240
+      ],
+      "id": "f0dd7dbf-ae42-4862-a496-dbcb77935f52",
+      "name": "Upload an asset from file data"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        704,
+        -112
+      ],
+      "id": "1de494d1-93af-4cb5-9e37-950b515dd726",
+      "name": "Merge"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Upload an asset from file data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Upload an asset from file data": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Upload a video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "b262808a-ebce-49ec-a1af-9179517d079a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "5ABTyehOgcu5Tb6p",
+  "tags": []
+}

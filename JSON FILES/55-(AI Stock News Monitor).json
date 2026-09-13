@@ -1,0 +1,499 @@
+{
+  "name": "My workflow 3",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c559994e-50cd-4894-b63f-47dcedf9cace",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "202d520f-74e1-4526-b12d-00841bec7ab1",
+              "name": "stock_symbol",
+              "value": "TCS",
+              "type": "string"
+            },
+            {
+              "id": "89951253-8687-4000-b7ab-4eae8682d4ef",
+              "name": "company_name",
+              "value": "Tata Consultancy Services",
+              "type": "string"
+            },
+            {
+              "id": "ad5bf476-adf2-4254-9d23-f62836270a93",
+              "name": "market",
+              "value": "NSE",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "77d99161-3b58-426e-b408-f208d1ac44f2",
+      "name": "Stock Watchlist"
+    },
+    {
+      "parameters": {
+        "url": "https://news.google.com/rss/search?q=TCS+Tata+Consultancy+Services&hl=en-IN&gl=IN&ceid=IN:en",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "c41a3431-1bf6-4ec1-8977-c32f06496bd8",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "843fbc26-70a6-43a7-8d7c-6bd0a98d4dd6",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "TCS",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        0
+      ],
+      "id": "dcc31fbe-1043-46b7-b1a7-a9224ff508fb",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "operation": "removeItemsSeenInPreviousExecutions",
+        "dedupeValue": "link",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        896,
+        0
+      ],
+      "id": "cefe5fee-b400-4bbd-87bc-932071bbe33d",
+      "name": "Remove Duplicates"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze this financial news article for relevance to the monitored company.\n\nCompany:\n{{ $('Stock Watchlist').item.json.company_name }}\n\nStock Symbol:\n{{ $('Stock Watchlist').item.json.stock_symbol }}\n\nNews Title:\n{{ $json.title }}\n\nNews Content:\n{{ $json.contentSnippet || $json.content }}\n\nPublication Date:\n{{ $json.pubDate }}\n\nDetermine the relevance of this article to the monitored company.\n\nReturn ONLY the following format:\n\nCLASSIFICATION: HIGH / MEDIUM / LOW / IRRELEVANT\nRELEVANCE_SCORE: 0-100\nCOMPANY_MENTIONED: YES / NO\nKEY_REASON: <one concise explanation>\nMATERIAL_FACTORS:\n- <factor 1>\n- <factor 2>\n- <factor 3>\n\nRules:\n- HIGH = directly discusses the company, its business, major contracts, earnings, management, products, acquisitions, partnerships, regulations, or other material developments.\n- MEDIUM = indirectly relevant or likely to affect the company/industry.\n- LOW = weak connection to the company.\n- IRRELEVANT = no meaningful connection.\n- Do not invent facts.\n- Base the classification only on the provided article.",
+        "options": {
+          "systemMessage": "You are the News Relevance Agent in a multi-agent AI Stock News Monitoring System.\n\nYour responsibility is to determine whether each financial news article is relevant to the monitored company.\n\nAnalyze:\n1. Direct company mentions\n2. Business developments\n3. Earnings and financial events\n4. Partnerships and contracts\n5. Products and technology\n6. Management changes\n7. Regulatory or legal developments\n8. Industry events that could materially affect the company\n\nClassify every article as HIGH, MEDIUM, LOW, or IRRELEVANT.\n\nHIGH means the article contains a direct and potentially material development involving the monitored company.\n\nMEDIUM means the article is indirectly relevant or contains an industry development that could affect the company.\n\nLOW means the connection is weak.\n\nIRRELEVANT means there is no meaningful connection.\n\nDo not provide investment advice.\nDo not predict stock prices.\nDo not invent information.\nUse only the information provided in the article.\n\nAlways follow the requested output format exactly."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1344,
+        0
+      ],
+      "id": "4b771f72-cf29-40b2-9da4-1a7fd1be47f0",
+      "name": "News Relevance Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1416,
+        232
+      ],
+      "id": "05856b79-2e89-4e76-a617-68445f1a2e66",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "8812df4a-4bf9-4c47-93c1-da932351db79",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the following financial news article and determine its sentiment toward the monitored company.\n\nCOMPANY:\n{{ $('Stock Watchlist').item.json.company_name }}\n\nSTOCK SYMBOL:\n{{ $('Stock Watchlist').item.json.stock_symbol }}\n\nNEWS TITLE:\n{{ $('Limit').item.json.title }}\n\nNEWS CONTENT:\n{{ $('Limit').item.json.contentSnippet || $('Limit').item.json.content }}\n\nNEWS RELEVANCE ANALYSIS:\n{{ $('News Relevance Agent').item.json.output }}\n\nDetermine:\n\n1. Overall sentiment\n2. Sentiment score\n3. Business impact\n4. Positive signals\n5. Negative signals\n6. Neutral facts\n7. Confidence level\n\nReturn ONLY this format:\n\nSENTIMENT: POSITIVE / NEGATIVE / NEUTRAL / MIXED\n\nSENTIMENT_SCORE: -100 to +100\n\nCONFIDENCE: LOW / MEDIUM / HIGH\n\nBUSINESS_IMPACT: POSITIVE / NEGATIVE / NEUTRAL / MIXED\n\nPOSITIVE_SIGNALS:\n- <signal>\n- <signal>\n\nNEGATIVE_SIGNALS:\n- <signal>\n- <signal>\n\nNEUTRAL_FACTS:\n- <fact>\n- <fact>\n\nREASON:\n<short explanation>\n\nRules:\n- Analyze the article objectively.\n- Do not give investment advice.\n- Do not predict the stock price.\n- Do not invent information.\n- Use only the provided article and relevance analysis.\n- A positive business development does not automatically mean the stock price will rise.",
+        "options": {
+          "systemMessage": "You are the Sentiment Analysis Agent in a multi-agent AI Stock News Monitoring System.\n\nYour responsibility is to analyze financial news and determine its sentiment toward the monitored company.\n\nAnalyze the article objectively using:\n\n- Business developments\n- Earnings and financial performance\n- Partnerships\n- Contracts\n- Product launches\n- Technology developments\n- Regulatory developments\n- Legal issues\n- Management changes\n- Market and industry developments\n\nClassify sentiment as:\n\nPOSITIVE:\nThe article contains developments that are generally favorable to the company.\n\nNEGATIVE:\nThe article contains developments that are generally unfavorable to the company.\n\nNEUTRAL:\nThe article contains factual information without a clearly positive or negative business direction.\n\nMIXED:\nThe article contains both significant positive and negative factors.\n\nImportant rules:\n\n1. Do not predict stock prices.\n2. Do not provide investment advice.\n3. Do not invent facts.\n4. Separate business sentiment from stock-price prediction.\n5. Use only the information provided.\n6. Clearly identify positive, negative, and neutral signals.\n7. Follow the requested output format exactly."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1696,
+        0
+      ],
+      "id": "92d76a7d-07be-4a9d-960a-ce139c4062e3",
+      "name": "Sentiment Analysis Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1768,
+        232
+      ],
+      "id": "a007fbde-712e-4ee1-8987-1b11b4b39cc4",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the potential business impact of this financial news article.\n\nCOMPANY:\n{{ $('Stock Watchlist').item.json.company_name }}\n\nSTOCK SYMBOL:\n{{ $('Stock Watchlist').item.json.stock_symbol }}\n\nNEWS TITLE:\n{{ $('Limit').item.json.title }}\n\nNEWS CONTENT:\n{{ $('Limit').item.json.contentSnippet || $('Limit').item.json.content }}\n\nRELEVANCE ANALYSIS:\n{{ $('News Relevance Agent').item.json.output }}\n\nSENTIMENT ANALYSIS:\n{{ $('Sentiment Analysis Agent').item.json.output }}\n\nEvaluate the potential business impact of this news.\n\nReturn ONLY this format:\n\nIMPACT_LEVEL: VERY_HIGH / HIGH / MEDIUM / LOW / MINIMAL\n\nIMPACT_SCORE: 0-100\n\nBUSINESS_AREA:\n<affected business area>\n\nTIME_HORIZON:\nIMMEDIATE / SHORT_TERM / LONG_TERM / UNCERTAIN\n\nPOSITIVE_IMPACTS:\n- <impact>\n- <impact>\n\nNEGATIVE_IMPACTS:\n- <impact>\n- <impact>\n\nKEY_DRIVERS:\n- <driver>\n- <driver>\n\nRISKS:\n- <risk>\n- <risk>\n\nOPPORTUNITIES:\n- <opportunity>\n- <opportunity>\n\nREASON:\n<concise explanation>\n\nCONFIDENCE:\nLOW / MEDIUM / HIGH\n\nRules:\n- Analyze business impact, not stock-price prediction.\n- Do not give investment advice.\n- Do not predict whether the stock will rise or fall.\n- Do not invent information.\n- Distinguish confirmed facts from potential implications.\n- Use only the provided article and previous agent analyses.",
+        "options": {
+          "systemMessage": "You are the Market Impact Agent in a multi-agent AI Stock News Monitoring System.\n\nYour responsibility is to evaluate how significantly a financial news event could affect the monitored company's business.\n\nAnalyze:\n\n1. Revenue impact\n2. Cost impact\n3. Profitability\n4. Customer growth or loss\n5. Major contracts\n6. Partnerships\n7. Products and technology\n8. Competition\n9. Regulation\n10. Legal developments\n11. Management changes\n12. Industry conditions\n13. Strategic opportunities\n14. Business risks\n\nClassify the impact as:\n\nVERY_HIGH:\nPotentially major business consequences.\n\nHIGH:\nPotentially significant business consequences.\n\nMEDIUM:\nMeaningful but limited business consequences.\n\nLOW:\nMinor potential business consequences.\n\nMINIMAL:\nLittle or no meaningful business effect.\n\nImportant:\n\n- Do not predict stock prices.\n- Do not provide investment advice.\n- Do not invent facts.\n- Separate confirmed facts from potential implications.\n- Clearly communicate uncertainty.\n- Use the article and previous agent outputs as evidence.\n- Follow the requested output format exactly."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2048,
+        0
+      ],
+      "id": "c6655b73-ea9b-4830-af78-4bdcd34c4c4b",
+      "name": "Market Impact Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        2120,
+        232
+      ],
+      "id": "5121bd4e-fb93-4172-9373-df03609173a2",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the risks associated with this financial news article.\n\nCOMPANY:\n{{ $('Stock Watchlist').item.json.company_name }}\n\nSTOCK SYMBOL:\n{{ $('Stock Watchlist').item.json.stock_symbol }}\n\nNEWS TITLE:\n{{ $('Limit').item.json.title }}\n\nNEWS CONTENT:\n{{ $('Limit').item.json.contentSnippet || $('Limit').item.json.content }}\n\nNEWS RELEVANCE:\n{{ $('News Relevance Agent').item.json.output }}\n\nSENTIMENT ANALYSIS:\n{{ $('Sentiment Analysis Agent').item.json.output }}\n\nMARKET IMPACT:\n{{ $('Market Impact Agent').item.json.output }}\n\nIdentify the major risks and warning signals associated with this news.\n\nReturn ONLY this format:\n\nOVERALL_RISK_LEVEL: VERY_HIGH / HIGH / MEDIUM / LOW / MINIMAL\n\nRISK_SCORE: 0-100\n\nFINANCIAL_RISK:\n<analysis>\n\nOPERATIONAL_RISK:\n<analysis>\n\nREGULATORY_RISK:\n<analysis>\n\nCOMPETITIVE_RISK:\n<analysis>\n\nREPUTATIONAL_RISK:\n<analysis>\n\nSTRATEGIC_RISK:\n<analysis>\n\nKEY_WARNING_SIGNALS:\n- <signal>\n- <signal>\n- <signal>\n\nPOTENTIAL_MITIGATION:\n- <mitigation>\n- <mitigation>\n\nRISK_REASON:\n<concise explanation>\n\nCONFIDENCE:\nLOW / MEDIUM / HIGH\n\nRules:\n- Do not provide investment advice.\n- Do not predict stock prices.\n- Do not invent facts.\n- Clearly distinguish confirmed risks from potential risks.\n- If a risk category is not supported by the article, state \"No significant evidence identified.\"\n- Use only the provided information.",
+        "options": {
+          "systemMessage": "You are the Risk Analysis Agent in a multi-agent AI Stock News Monitoring System.\n\nYour responsibility is to identify and assess risks associated with financial news affecting the monitored company.\n\nEvaluate these risk categories:\n\n1. Financial Risk\n2. Operational Risk\n3. Regulatory Risk\n4. Competitive Risk\n5. Reputational Risk\n6. Strategic Risk\n\nFor every risk:\n\n- Identify the evidence from the article.\n- Explain the possible business consequence.\n- Distinguish confirmed information from potential implications.\n- Assign an appropriate risk level.\n\nRisk levels:\n\nVERY_HIGH:\nPotential for major negative business consequences.\n\nHIGH:\nSignificant potential business risk.\n\nMEDIUM:\nMeaningful but manageable potential risk.\n\nLOW:\nLimited potential risk.\n\nMINIMAL:\nLittle or no meaningful risk identified.\n\nImportant rules:\n\n- Never predict stock prices.\n- Never provide investment advice.\n- Never invent information.\n- Do not treat speculation as confirmed fact.\n- If evidence is insufficient, clearly state that.\n- Use the previous agents' analysis as supporting context.\n- Follow the requested output format exactly."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2400,
+        0
+      ],
+      "id": "1945e460-edb7-4bd1-b95d-908f513f7608",
+      "name": "Risk Analysis Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        2472,
+        232
+      ],
+      "id": "1d94ed9e-94e2-4120-a75e-81990f5ad763",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create a final professional stock news intelligence report using the information below.\n\nCOMPANY:\n{{ $('Stock Watchlist').item.json.company_name }}\n\nSTOCK SYMBOL:\n{{ $('Stock Watchlist').item.json.stock_symbol }}\n\nNEWS TITLE:\n{{ $('Limit').item.json.title }}\n\nNEWS LINK:\n{{ $('Limit').item.json.link }}\n\nPUBLICATION DATE:\n{{ $('Limit').item.json.pubDate }}\n\nNEWS CONTENT:\n{{ $('Limit').item.json.contentSnippet || $('Limit').item.json.content }}\n\nNEWS RELEVANCE ANALYSIS:\n{{ $('News Relevance Agent').item.json.output }}\n\nSENTIMENT ANALYSIS:\n{{ $('Sentiment Analysis Agent').item.json.output }}\n\nMARKET IMPACT ANALYSIS:\n{{ $('Market Impact Agent').item.json.output }}\n\nRISK ANALYSIS:\n{{ $('Risk Analysis Agent').item.json.output }}\n\nCreate a concise but detailed final intelligence report.\n\nReturn ONLY this structure:\n\n==================================================\nSTOCK NEWS INTELLIGENCE REPORT\n==================================================\n\nCOMPANY:\n<company>\n\nSTOCK SYMBOL:\n<symbol>\n\nNEWS TITLE:\n<title>\n\nPUBLICATION DATE:\n<date>\n\nSOURCE:\n<link>\n\n--------------------------------------------------\n1. EXECUTIVE SUMMARY\n--------------------------------------------------\n<3-5 sentence summary>\n\n--------------------------------------------------\n2. RELEVANCE\n--------------------------------------------------\nClassification:\n<High / Medium / Low / Irrelevant>\n\nRelevance Score:\n<score>\n\n--------------------------------------------------\n3. SENTIMENT\n--------------------------------------------------\nSentiment:\n<Positive / Negative / Neutral / Mixed>\n\nSentiment Score:\n<score>\n\n--------------------------------------------------\n4. MARKET IMPACT\n--------------------------------------------------\nImpact Level:\n<level>\n\nImpact Score:\n<score>\n\nBusiness Area:\n<area>\n\nTime Horizon:\n<time horizon>\n\n--------------------------------------------------\n5. KEY POSITIVE FACTORS\n--------------------------------------------------\n- <factor>\n- <factor>\n- <factor>\n\n--------------------------------------------------\n6. KEY NEGATIVE FACTORS\n--------------------------------------------------\n- <factor>\n- <factor>\n- <factor>\n\n--------------------------------------------------\n7. RISK ASSESSMENT\n--------------------------------------------------\nOverall Risk:\n<level>\n\nRisk Score:\n<score>\n\nKey Risks:\n- <risk>\n- <risk>\n- <risk>\n\n--------------------------------------------------\n8. OPPORTUNITIES\n--------------------------------------------------\n- <opportunity>\n- <opportunity>\n\n--------------------------------------------------\n9. KEY TAKEAWAYS\n--------------------------------------------------\n- <takeaway>\n- <takeaway>\n- <takeaway>\n\n--------------------------------------------------\n10. CONFIDENCE\n--------------------------------------------------\n<Low / Medium / High>\n\nIMPORTANT:\n- Do not provide investment advice.\n- Do not predict the stock price.\n- Do not invent information.\n- Clearly distinguish facts from potential implications.\n- Use only the supplied article and agent analyses.",
+        "options": {
+          "systemMessage": "You are the Final Stock News Synthesizer in a multi-agent AI Stock News Monitoring System.\n\nYour job is to combine the outputs of multiple specialized agents into one accurate and professional stock-news intelligence report.\n\nThe specialized agents provide:\n\n1. News Relevance Analysis\n2. Sentiment Analysis\n3. Market Impact Analysis\n4. Risk Analysis\n\nYou must synthesize these findings without changing their factual meaning.\n\nPrioritize:\n\n- Accuracy\n- Evidence-based conclusions\n- Clear structure\n- Concise explanations\n- Separation of facts and interpretation\n- Consistency between the different analyses\n\nRules:\n\n1. Never invent facts.\n2. Never provide investment advice.\n3. Never predict stock prices.\n4. Never claim certainty when the evidence is uncertain.\n5. Do not introduce information that is not present in the supplied data.\n6. Preserve important risks and opportunities identified by the specialist agents.\n7. If agents disagree, clearly indicate the uncertainty.\n8. Follow the requested report structure exactly."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2752,
+        0
+      ],
+      "id": "30f51fe0-f447-4f48-954a-7e06ec4d1698",
+      "name": "Final Stock News Synthesizer"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        2824,
+        232
+      ],
+      "id": "67fe3415-de00-4b4d-82e2-7a5208b990a7",
+      "name": "Google Gemini Chat Model4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Stock Watchlist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stock Watchlist": {
+      "main": [
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "News Relevance Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "News Relevance Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "News Relevance Agent": {
+      "main": [
+        [
+          {
+            "node": "Sentiment Analysis Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sentiment Analysis Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sentiment Analysis Agent": {
+      "main": [
+        [
+          {
+            "node": "Market Impact Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Market Impact Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Market Impact Agent": {
+      "main": [
+        [
+          {
+            "node": "Risk Analysis Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Risk Analysis Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Risk Analysis Agent": {
+      "main": [
+        [
+          {
+            "node": "Final Stock News Synthesizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Final Stock News Synthesizer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d758c30b-428b-4e1e-b6c0-d75b2fd5c73c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "JSzkxtsF3WIyJ402",
+  "tags": []
+}

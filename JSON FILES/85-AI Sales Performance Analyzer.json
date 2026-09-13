@@ -1,0 +1,414 @@
+{
+  "name": "AI Sales Performance Analyzer",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        -96
+      ],
+      "id": "fbd54941-d977-43d6-909a-1fa7750f4f42",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1bn_fVlZXS6-zMS0BXPNH-bCLcsfNYxXyKcaCFksPKh8",
+          "mode": "list",
+          "cachedResultName": "Untitled spreadsheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bn_fVlZXS6-zMS0BXPNH-bCLcsfNYxXyKcaCFksPKh8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bn_fVlZXS6-zMS0BXPNH-bCLcsfNYxXyKcaCFksPKh8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Customer ID",
+              "displayName": "Customer ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last Login",
+              "displayName": "Last Login",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Login Count",
+              "displayName": "Login Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Purchase Count",
+              "displayName": "Purchase Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Support Tickets",
+              "displayName": "Support Tickets",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Satisfaction",
+              "displayName": "Satisfaction",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Payment Failures",
+              "displayName": "Payment Failures",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Monthly Value",
+              "displayName": "Monthly Value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        -96
+      ],
+      "id": "a022f33d-32df-4d45-9a39-c535d26600a1",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q524jgyHLO03nlDm",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst requiredFields = [\n  \"Date\",\n  \"Salesperson_ID\",\n  \"Salesperson_Name\",\n  \"Region\",\n  \"Target_Sales\",\n  \"Actual_Sales\",\n  \"Target_Orders\",\n  \"Actual_Orders\"\n];\n\nconst validItems = [];\nconst invalidItems = [];\n\nfor (const item of items) {\n\n  const data = item.json;\n\n  const missingFields = requiredFields.filter(\n    field =>\n      data[field] === undefined ||\n      data[field] === null ||\n      String(data[field]).trim() === \"\"\n  );\n\n  if (missingFields.length === 0) {\n\n    validItems.push(data);\n\n  } else {\n\n    invalidItems.push({\n      salesperson_id: data.Salesperson_ID || \"Unknown\",\n      missing_fields: missingFields\n    });\n\n  }\n}\n\nreturn [\n  {\n    json: {\n      data_valid: invalidItems.length === 0,\n      total_records: items.length,\n      valid_records: validItems.length,\n      invalid_records: invalidItems.length,\n      invalid_details: invalidItems,\n      sales_data: validItems\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        -96
+      ],
+      "id": "233d24a7-7cea-4166-8eb1-4b8fe4e24cfa",
+      "name": "Validate Sales Data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a9ffa14d-3357-41a1-a022-0b9c90b50f98",
+              "leftValue": "={{ $json.data_valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "0b406a4a-5dc1-43d3-8240-e8daa6db9347",
+      "name": "Is Sales Data Valid?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json.sales_data;\n\nconst results = [];\n\nfor (const item of data) {\n\n  const targetSales = Number(item.Target_Sales);\n  const actualSales = Number(item.Actual_Sales);\n\n  const targetOrders = Number(item.Target_Orders);\n  const actualOrders = Number(item.Actual_Orders);\n\n  const salesAchievement =\n    targetSales > 0\n      ? (actualSales / targetSales) * 100\n      : 0;\n\n  const orderAchievement =\n    targetOrders > 0\n      ? (actualOrders / targetOrders) * 100\n      : 0;\n\n  const averageOrderValue =\n    actualOrders > 0\n      ? actualSales / actualOrders\n      : 0;\n\n  let performanceStatus;\n\n  if (salesAchievement >= 100) {\n    performanceStatus = \"EXCEEDING\";\n  } else if (salesAchievement >= 90) {\n    performanceStatus = \"ON TRACK\";\n  } else if (salesAchievement >= 70) {\n    performanceStatus = \"AT RISK\";\n  } else {\n    performanceStatus = \"BELOW TARGET\";\n  }\n\n  results.push({\n    ...item,\n\n    sales_achievement:\n      Number(salesAchievement.toFixed(2)),\n\n    order_achievement:\n      Number(orderAchievement.toFixed(2)),\n\n    average_order_value:\n      Number(averageOrderValue.toFixed(2)),\n\n    performance_status:\n      performanceStatus\n  });\n}\n\nreturn [\n  {\n    json: {\n      sales_data: results\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        -96
+      ],
+      "id": "d03f9e17-ef3b-4a39-945b-a2f895b0e782",
+      "name": "Calculate Performance Metrics"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1192,
+        136
+      ],
+      "id": "863d891f-a1d4-4e85-9551-e5131404e447",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wkvPLR8iLkAneiWB",
+          "name": "Google Gemini(PaLM) Api account 32"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the following sales performance data.\n\nSales Performance Data:\n\n{{ JSON.stringify($json.sales_data) }}\n\nFor every salesperson provide:\n\n- Salesperson ID\n- Salesperson Name\n- Region\n- Sales Achievement\n- Order Achievement\n- Average Order Value\n- Performance Status\n- Strengths\n- Improvement Areas\n- Recommendation\n\nAlso provide:\n\n- Overall performance summary\n- Overall status\n- General recommendations\n\nReturn ONLY valid JSON.",
+        "options": {
+          "systemMessage": "You are an AI Sales Performance Analyst.\n\nYour task is to analyze salesperson performance using the calculated sales metrics provided by the workflow.\n\nFor each salesperson analyze:\n\n1. Sales achievement\n2. Order achievement\n3. Average order value\n4. Performance status\n5. Strengths\n6. Improvement areas\n7. Recommended action\n\nUse these performance statuses:\n\nEXCEEDING:\nSales achievement is 100% or higher.\n\nON TRACK:\nSales achievement is between 90% and 99.99%.\n\nAT RISK:\nSales achievement is between 70% and 89.99%.\n\nBELOW TARGET:\nSales achievement is below 70%.\n\nImportant rules:\n\n- Use only the provided data.\n- Do not invent reasons for poor performance.\n- Do not assume customer behavior.\n- Do not assume market conditions.\n- Do not create unsupported business facts.\n- Keep recommendations practical and concise.\n\nReturn ONLY valid JSON.\n\nUse exactly this structure:\n\n{\n  \"overall_summary\": \"\",\n  \"salesperson_analysis\": [],\n  \"overall_status\": \"\",\n  \"recommendations\": []\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1120,
+        -96
+      ],
+      "id": "d06d0d19-cf7e-46d5-8fb1-b5ed58c5f3dd",
+      "name": "AI Sales Performance Analyst"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nlet result = data.output;\n\nif (typeof result !== \"string\") {\n  result = JSON.stringify(result);\n}\n\nresult = result\n  .replace(/```json/g, \"\")\n  .replace(/```/g, \"\")\n  .trim();\n\nlet parsed;\n\ntry {\n  parsed = JSON.parse(result);\n} catch (error) {\n  throw new Error(\"Invalid JSON returned by AI\");\n}\n\nreturn {\n  json: parsed\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        -96
+      ],
+      "id": "96afe7f3-b96c-4837-b862-a6ac9b563a2c",
+      "name": "Parse AI Result"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nreturn data.salesperson_analysis.map(person => ({\n  json: {\n\n    report_id:\n      `PERF-${Date.now()}-${person.salesperson_id}`,\n\n    report_date:\n      new Date().toISOString().split(\"T\")[0],\n\n    salesperson_id:\n      person.salesperson_id,\n\n    salesperson_name:\n      person.salesperson_name,\n\n    region:\n      person.region,\n\n    sales_achievement:\n      person.sales_achievement,\n\n    order_achievement:\n      person.order_achievement,\n\n    average_order_value:\n      person.average_order_value,\n\n    performance_status:\n      person.performance_status,\n\n    strengths:\n      Array.isArray(person.strengths)\n        ? person.strengths.join(\", \")\n        : person.strengths,\n\n    improvement_areas:\n      Array.isArray(person.improvement_areas)\n        ? person.improvement_areas.join(\", \")\n        : person.improvement_areas,\n\n    recommendation:\n      person.recommendation,\n\n    created_at:\n      new Date().toISOString()\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1696,
+        -96
+      ],
+      "id": "b3487919-c6da-4e69-a076-2610bdadd3b8",
+      "name": "Create Performance Report"
+    },
+    {
+      "parameters": {
+        "sendTo": "nachiketharroju@gmail.com ",
+        "subject": "=Sales Performance Report - {{ $json.salesperson_name }} - {{ $json.performance_status }}",
+        "message": "=Hi Team,  A sales performance analysis has been generated.  Salesperson: {{ $json.salesperson_name }}  Salesperson ID: {{ $json.salesperson_id }}  Region: {{ $json.region }}  Sales Achievement: {{ $json.sales_achievement }}%  Order Achievement: {{ $json.order_achievement }}%  Average Order Value: ₹{{ $json.average_order_value }}  Performance Status: {{ $json.performance_status }}  Strengths: {{ $json.strengths }}  Improvement Areas: {{ $json.improvement_areas }}  Recommendation: {{ $json.recommendation }}  Please review the performance and take the appropriate action.  Best Regards, AI Sales Performance Analyzer",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1920,
+        -96
+      ],
+      "id": "1d2d4569-e733-405d-9a78-4f496ea595b9",
+      "name": "Send a message",
+      "webhookId": "2627e8b6-f85d-4957-a1d4-2a39739be97c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "BhfiiIF56c1Uc6dC",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Validate Sales Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Sales Data": {
+      "main": [
+        [
+          {
+            "node": "Is Sales Data Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Sales Data Valid?": {
+      "main": [
+        [
+          {
+            "node": "Calculate Performance Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Performance Metrics": {
+      "main": [
+        [
+          {
+            "node": "AI Sales Performance Analyst",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Sales Performance Analyst",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Sales Performance Analyst": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Result": {
+      "main": [
+        [
+          {
+            "node": "Create Performance Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Performance Report": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "7c82f18f-7b44-4b21-8535-e279c53797dc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "edbb0d25bd7a66014faefe68083a8f89c418df33feee41a51636a861e015ce95"
+  },
+  "nodeGroups": [],
+  "id": "qxns7Ct8FqRo7qWU",
+  "tags": []
+}

@@ -1,0 +1,366 @@
+{
+  "name": "AI Meeting Action Tracker",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI Meeting Action Tracker",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "meeting_title"
+            },
+            {
+              "fieldLabel": "meeting_date",
+              "fieldType": "date"
+            },
+            {
+              "fieldLabel": "meeting_organizer"
+            },
+            {
+              "fieldLabel": "participants",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "transcript",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "meeting_type"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "1338f768-9688-474f-9a2b-7923889371ac",
+      "name": "On form submission",
+      "webhookId": "f25ceaf3-9051-402a-9640-17a6f76ac3f8"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        240
+      ],
+      "id": "7b2701ae-d378-477b-af1e-762411326413",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "DmBclGyDtuulIu7s",
+          "name": "Google Gemini(PaLM) Api account 31"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1104,
+        240
+      ],
+      "id": "fa1ae277-3fbc-414d-98f3-798eb42635df",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "oBl8uRmeBD54wUiq",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1456,
+        240
+      ],
+      "id": "f1bcd451-408b-413a-8133-51ba617138f5",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "3aGZVsfU4wgPBD70",
+          "name": "Google Gemini(PaLM) Api account 28"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1808,
+        240
+      ],
+      "id": "f3f32f59-e74d-417d-a02c-d59906b68444",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wkvPLR8iLkAneiWB",
+          "name": "Google Gemini(PaLM) Api account 32"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\n\nreturn [\n  {\n    json: {\n      meeting_title: data.meeting_title || \"Untitled Meeting\",\n      meeting_date: data.meeting_date || \"Unknown\",\n      meeting_organizer: data.meeting_organizer || \"Unknown\",\n      participants: data.participants || \"\",\n      meeting_type: data.meeting_type || \"General\",\n      transcript: data.transcript || \"\",\n      processed_at: new Date().toISOString()\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "4a14f29c-a8c6-4aa4-b4cd-6f0c097d386f",
+      "name": "Normalize Meeting"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the following meeting transcript.\n\nMEETING TITLE:\n\n{{ $(\"Normalize Meeting\").first().json.meeting_title }}\n\nMEETING DATE:\n\n{{ $(\"Normalize Meeting\").first().json.meeting_date }}\n\nORGANIZER:\n\n{{ $(\"Normalize Meeting\").first().json.meeting_organizer }}\n\nPARTICIPANTS:\n\n{{ $(\"Normalize Meeting\").first().json.participants }}\n\nTRANSCRIPT:\n\n{{ $(\"Normalize Meeting\").first().json.transcript }}\n\nExtract:\n\n- Action items\n- Owners\n- Deadlines\n- Decisions\n- Blockers\n- Dependencies\n- Follow-ups\n- Questions\n\nReturn exactly this structure:\n\n{\n  \"action_items\": [\n    {\n      \"task\": \"\",\n      \"owner\": \"\",\n      \"deadline\": \"\",\n      \"status\": \"\",\n      \"evidence\": \"\",\n      \"dependencies\": []\n    }\n  ],\n\n  \"decisions\": [],\n\n  \"blockers\": [],\n\n  \"dependencies\": [],\n\n  \"follow_ups\": [],\n\n  \"open_questions\": []\n}\n\nDo not invent information.\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are an expert Meeting Intelligence and Project Management Analyst.\n\nYour job is to analyze meeting transcripts and extract actionable\ninformation.\n\nIdentify:\n\n- Action items\n- Task owners\n- Deadlines\n- Task status\n- Decisions\n- Blockers\n- Dependencies\n- Follow-up items\n- Questions requiring follow-up\n\nIMPORTANT RULES:\n\n1. Analyze only the supplied transcript.\n2. Never invent an action item.\n3. Never invent a task owner.\n4. Never invent a deadline.\n5. If an owner is not explicitly or reasonably identified, use \"Unassigned\".\n6. If a deadline is not mentioned, use \"TBD\".\n7. Distinguish decisions from suggestions.\n8. Distinguish completed tasks from newly assigned tasks.\n9. Preserve the meaning of the original speaker's statement.\n10. Do not assume that every statement is an action item.\n11. Identify explicit commitments such as \"I will\", \"we need to\", or\n    clearly assigned responsibilities.\n12. If a task is mentioned but ownership is unclear, mark it as Unassigned.\n13. Do not infer sensitive personal information.\n14. Return valid JSON only.\n15. Do not return Markdown.\n16. Do not use code fences.\n17. Do not provide explanations outside the JSON."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "cd3e0966-3769-47b1-bd7b-414a6783c9d7",
+      "name": "Meeting Action Extraction Agent"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.output;\n\ntry {\n  let cleaned = String(raw)\n    .replace(/```json/gi, \"\")\n    .replace(/```/g, \"\")\n    .trim();\n\n  const start = cleaned.indexOf(\"{\");\n  const end = cleaned.lastIndexOf(\"}\");\n\n  if (start === -1 || end === -1) {\n    throw new Error(\"No JSON object found\");\n  }\n\n  cleaned = cleaned.substring(start, end + 1);\n\n  const result = JSON.parse(cleaned);\n\n  return [\n    {\n      json: {\n        ...result,\n        parse_status: \"success\"\n      }\n    }\n  ];\n\n} catch (error) {\n\n  return [\n    {\n      json: {\n        parse_status: \"failed\",\n        parse_error: error.message,\n        raw_output: raw\n      }\n    }\n  ];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        0
+      ],
+      "id": "9e53361f-8325-44a2-bb5e-0b26bedfc23b",
+      "name": "Parse Action Extraction"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Prioritize the following meeting action items.\n\nMEETING:\n\n{{ $(\"Normalize Meeting\").first().json.meeting_title }}\n\nACTION EXTRACTION:\n\n{{ JSON.stringify($(\"Parse Action Extraction\").first().json) }}\n\nFor each action item determine:\n\n- priority\n- priority_score\n- reason\n- recommended_action\n\npriority_score must be between 1 and 100.\n\nReturn:\n\n{\n  \"prioritized_tasks\": [\n    {\n      \"task\": \"\",\n      \"owner\": \"\",\n      \"deadline\": \"\",\n      \"priority\": \"\",\n      \"priority_score\": 0,\n      \"reason\": \"\",\n      \"recommended_action\": \"\"\n    }\n  ]\n}\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Senior Project Manager responsible for prioritizing meeting\naction items.\n\nAnalyze the extracted meeting tasks and determine their priority.\n\nPriority levels:\n\nCRITICAL\nHIGH\nMEDIUM\nLOW\n\nConsider:\n\n- Business impact\n- Deadline\n- Dependency\n- Blocking status\n- Customer impact\n- Project impact\n- Explicit urgency\n\nRules:\n\n1. Do not mark every task as High or Critical.\n2. Do not invent deadlines.\n3. Do not invent business impact.\n4. A blocker may receive high priority when it prevents other work.\n5. A task with an explicit near-term deadline should receive appropriate\n   priority.\n6. If insufficient information exists, use Medium.\n7. Explain the reason for each priority.\n8. Return JSON only."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1024,
+        0
+      ],
+      "id": "3c487d2f-53b7-4dcb-aee8-f7452d41f22c",
+      "name": "Task Priority Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the meeting decisions and project blockers.\n\nORIGINAL TRANSCRIPT:\n\n{{ $(\"Normalize Meeting\").first().json.transcript }}\n\nACTION EXTRACTION:\n\n{{ JSON.stringify($(\"Parse Action Extraction\").first().json) }}\n\nIdentify:\n\n- confirmed_decisions\n- pending_decisions\n- blockers\n- dependencies\n- risks\n- follow_up_requirements\n\nFor every blocker provide:\n\n- blocker\n- impact\n- affected_task\n- dependency\n- recommended_action\n\nFor every decision provide:\n\n- decision\n- evidence\n- impact\n\nReturn:\n\n{\n  \"confirmed_decisions\": [],\n  \"pending_decisions\": [],\n  \"blockers\": [],\n  \"dependencies\": [],\n  \"risks\": [],\n  \"follow_up_requirements\": []\n}\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Senior Project Delivery Manager.\n\nAnalyze meeting information and identify:\n\n- Confirmed decisions\n- Pending decisions\n- Blockers\n- Dependencies\n- Risks\n- Follow-up requirements\n\nRules:\n\n1. A decision must be supported by the transcript.\n2. Do not treat suggestions as confirmed decisions.\n3. A blocker must represent something that prevents or delays work.\n4. Do not invent risks.\n5. Clearly distinguish blockers from general concerns.\n6. Identify dependencies only when supported by the transcript.\n7. Use \"TBD\" when information is unavailable.\n8. Return valid JSON only.\n9. Do not return Markdown.\n10. Do not use code fences."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1376,
+        0
+      ],
+      "id": "acd4ee23-4ce7-4bfa-8137-2f9877fa6e4c",
+      "name": "Decision & Blocker Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create the final AI Meeting Action Tracker.\n\nMEETING INFORMATION:\n\n{{ JSON.stringify($(\"Normalize Meeting\").first().json) }}\n\nACTION EXTRACTION:\n\n{{ JSON.stringify($(\"Parse Action Extraction\").first().json) }}\n\nTASK PRIORITIES:\n\n{{ JSON.stringify($(\"Task Priority Agent\").first().json) }}\n\nDECISIONS AND BLOCKERS:\n\n{{ JSON.stringify($(\"Decision & Blocker Agent\").first().json) }}\n\nReturn exactly this JSON structure:\n\n{\n  \"report_type\": \"AI Meeting Action Tracker\",\n\n  \"meeting\": {\n    \"title\": \"\",\n    \"date\": \"\",\n    \"organizer\": \"\",\n    \"participants\": [],\n    \"type\": \"\"\n  },\n\n  \"executive_summary\": \"\",\n\n  \"action_items\": [\n    {\n      \"task_id\": \"\",\n      \"task\": \"\",\n      \"owner\": \"\",\n      \"deadline\": \"\",\n      \"priority\": \"\",\n      \"status\": \"\",\n      \"dependencies\": [],\n      \"evidence\": \"\"\n    }\n  ],\n\n  \"unassigned_tasks\": [],\n\n  \"overdue_or_at_risk_items\": [],\n\n  \"confirmed_decisions\": [],\n\n  \"pending_decisions\": [],\n\n  \"blockers\": [],\n\n  \"dependencies\": [],\n\n  \"risks\": [],\n\n  \"follow_up_requirements\": [],\n\n  \"open_questions\": [],\n\n  \"recommended_next_actions\": [],\n\n  \"overall_meeting_status\": \"\",\n\n  \"final_assessment\": \"\"\n}\n\noverall_meeting_status must be one of:\n\nON_TRACK\nNEEDS_ATTENTION\nAT_RISK\nBLOCKED\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Principal Project Manager and Meeting Intelligence Specialist.\n\nCreate a professional Meeting Action Tracker from the supplied meeting\ninformation and AI analysis.\n\nThe final report must clearly show:\n\n- Meeting information\n- Executive summary\n- Action items\n- Owners\n- Deadlines\n- Priorities\n- Decisions\n- Blockers\n- Dependencies\n- Risks\n- Follow-ups\n- Unassigned tasks\n- Recommended next actions\n\nRules:\n\n1. Never invent information.\n2. Never create an owner that is not supported by the meeting.\n3. Never create a deadline that is not supported by the meeting.\n4. Preserve the meaning of the transcript.\n5. Distinguish decisions from suggestions.\n6. Distinguish blockers from general concerns.\n7. Do not duplicate tasks.\n8. Highlight unassigned tasks.\n9. Highlight blocked tasks.\n10. Use \"TBD\" where information is unavailable.\n11. Return valid JSON only.\n12. Do not return Markdown.\n13. Do not use code fences.\n14. Do not add explanations outside JSON."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1728,
+        0
+      ],
+      "id": "81de2ecd-8294-41c5-87f5-0578ba786e62",
+      "name": "Final Meeting Action Tracker Agent"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.output;\n\ntry {\n  let cleaned = String(raw)\n    .replace(/```json/gi, \"\")\n    .replace(/```/g, \"\")\n    .trim();\n\n  const start = cleaned.indexOf(\"{\");\n  const end = cleaned.lastIndexOf(\"}\");\n\n  if (start === -1 || end === -1) {\n    throw new Error(\"No JSON object found\");\n  }\n\n  cleaned = cleaned.substring(start, end + 1);\n\n  const report = JSON.parse(cleaned);\n\n  return [\n    {\n      json: {\n        report_type:\n          report.report_type || \"AI Meeting Action Tracker\",\n\n        meeting:\n          report.meeting || {},\n\n        executive_summary:\n          report.executive_summary || \"TBD\",\n\n        action_items:\n          report.action_items || [],\n\n        unassigned_tasks:\n          report.unassigned_tasks || [],\n\n        overdue_or_at_risk_items:\n          report.overdue_or_at_risk_items || [],\n\n        confirmed_decisions:\n          report.confirmed_decisions || [],\n\n        pending_decisions:\n          report.pending_decisions || [],\n\n        blockers:\n          report.blockers || [],\n\n        dependencies:\n          report.dependencies || [],\n\n        risks:\n          report.risks || [],\n\n        follow_up_requirements:\n          report.follow_up_requirements || [],\n\n        open_questions:\n          report.open_questions || [],\n\n        recommended_next_actions:\n          report.recommended_next_actions || [],\n\n        overall_meeting_status:\n          report.overall_meeting_status || \"TBD\",\n\n        final_assessment:\n          report.final_assessment || \"TBD\",\n\n        parse_status: \"success\"\n      }\n    }\n  ];\n\n} catch (error) {\n\n  return [\n    {\n      json: {\n        report_type: \"AI Meeting Action Tracker\",\n\n        parse_status: \"failed\",\n\n        parse_error: error.message,\n\n        raw_output: raw\n      }\n    }\n  ];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        0
+      ],
+      "id": "a2e10c76-45ff-487c-9ae5-6a931dc76661",
+      "name": "Parse Final Action Tracker"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Normalize Meeting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Meeting Action Extraction Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Task Priority Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Decision & Blocker Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Final Meeting Action Tracker Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Meeting": {
+      "main": [
+        [
+          {
+            "node": "Meeting Action Extraction Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Meeting Action Extraction Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse Action Extraction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Action Extraction": {
+      "main": [
+        [
+          {
+            "node": "Task Priority Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Task Priority Agent": {
+      "main": [
+        [
+          {
+            "node": "Decision & Blocker Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decision & Blocker Agent": {
+      "main": [
+        [
+          {
+            "node": "Final Meeting Action Tracker Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Meeting Action Tracker Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse Final Action Tracker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "6d1e37a3-4bff-438f-afa4-a47bf5be3554",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "edbb0d25bd7a66014faefe68083a8f89c418df33feee41a51636a861e015ce95"
+  },
+  "nodeGroups": [],
+  "id": "HaHq7VdjSD3SAaZu",
+  "tags": []
+}

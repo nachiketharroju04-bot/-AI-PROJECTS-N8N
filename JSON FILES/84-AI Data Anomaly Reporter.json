@@ -1,0 +1,319 @@
+{
+  "name": "AI Data Anomaly Reporter",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        -96
+      ],
+      "id": "8bc5e5f7-34e5-4066-82c8-e967a4cd120a",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1bn_fVlZXS6-zMS0BXPNH-bCLcsfNYxXyKcaCFksPKh8",
+          "mode": "list",
+          "cachedResultName": "Untitled spreadsheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bn_fVlZXS6-zMS0BXPNH-bCLcsfNYxXyKcaCFksPKh8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bn_fVlZXS6-zMS0BXPNH-bCLcsfNYxXyKcaCFksPKh8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {}
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        -96
+      ],
+      "id": "cda3de4e-b09d-4a95-902f-788639720108",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q524jgyHLO03nlDm",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst requiredFields = [\n  \"Date\",\n  \"Transaction_ID\",\n  \"Product\",\n  \"Category\",\n  \"Sales\",\n  \"Cost\",\n  \"Profit\",\n  \"Quantity\",\n  \"Customer_ID\"\n];\n\nconst validItems = [];\nconst invalidItems = [];\n\nfor (const item of items) {\n\n  const data = item.json;\n\n  const missing = requiredFields.filter(\n    field =>\n      data[field] === undefined ||\n      data[field] === null ||\n      String(data[field]).trim() === \"\"\n  );\n\n  if (missing.length === 0) {\n    validItems.push(data);\n  } else {\n    invalidItems.push({\n      transaction_id: data.Transaction_ID || \"Unknown\",\n      missing_fields: missing\n    });\n  }\n}\n\nreturn [\n  {\n    json: {\n      data_valid: invalidItems.length === 0,\n      total_records: items.length,\n      valid_records: validItems.length,\n      invalid_records: invalidItems.length,\n      invalid_details: invalidItems,\n      business_data: validItems\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        -96
+      ],
+      "id": "33ab0708-c9c9-49fb-b2ad-b989a0924e37",
+      "name": "Validate Business Data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "355486f8-5423-4db1-a7be-a26e0822b864",
+              "leftValue": "={{ $json.data_valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "0d64d7ca-6308-4834-adde-a24730b70c31",
+      "name": "Is Data Valid?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json.business_data;\n\nconst salesValues = data.map(item => Number(item.Sales));\n\nconst averageSales =\n  salesValues.reduce((sum, value) => sum + value, 0)\n  / salesValues.length;\n\nconst anomalies = [];\n\nfor (const item of data) {\n\n  const sales = Number(item.Sales);\n\n  let anomalyType = null;\n  let severity = null;\n\n  if (sales > averageSales * 2) {\n    anomalyType = \"UNUSUALLY HIGH SALES\";\n    severity = \"HIGH\";\n  } \n  else if (sales < averageSales * 0.3) {\n    anomalyType = \"UNUSUALLY LOW SALES\";\n    severity = \"MEDIUM\";\n  }\n\n  if (anomalyType) {\n    anomalies.push({\n      ...item,\n      anomaly_type: anomalyType,\n      severity: severity\n    });\n  }\n}\n\nreturn [\n  {\n    json: {\n      average_sales: Number(averageSales.toFixed(2)),\n      anomaly_count: anomalies.length,\n      anomaly_data: anomalies\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        -96
+      ],
+      "id": "98a7c3e0-a777-4a42-8a87-a08fdc50856a",
+      "name": "Detect Anomalies"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the following detected anomalies.\n\nAverage Sales:\n\n{{ $json.average_sales }}\n\nDetected Anomalies:\n\n{{ JSON.stringify($json.anomaly_data) }}\n\nFor every anomaly provide:\n\n- Transaction ID\n- Product\n- Category\n- Sales\n- Cost\n- Profit\n- Quantity\n- Anomaly Type\n- Severity\n- Explanation\n- Recommendation\n\nAlso provide:\n\n- Overall anomaly summary\n- Overall status\n- General recommendations\n\nReturn ONLY valid JSON.",
+        "options": {
+          "systemMessage": "You are an AI Business Data Anomaly Analyst.\n\nYour task is to analyze unusual business transactions detected by an automated anomaly detection system.\n\nFor each anomaly:\n\n1. Identify the anomaly type.\n2. Explain why the transaction appears unusual.\n3. Use only the provided numbers and information.\n4. Preserve the severity supplied by the workflow.\n5. Provide one practical recommendation.\n\nDo not:\n- Invent business reasons.\n- Assume fraud.\n- Assume customer behavior.\n- Assume operational problems.\n- Create information that is not present in the input.\n\nAn anomaly is not automatically fraud or an error.\n\nReturn ONLY valid JSON.\n\nUse exactly this structure:\n\n{\n  \"overall_summary\": \"\",\n  \"anomalies\": [],\n  \"overall_status\": \"\",\n  \"recommendations\": []\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1120,
+        -96
+      ],
+      "id": "ffdd78b6-7a97-4595-a21f-fa47866d5a7b",
+      "name": "AI Anomaly Analyst"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1192,
+        136
+      ],
+      "id": "93928b4f-9149-4d77-b8cf-1453726fd059",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wkvPLR8iLkAneiWB",
+          "name": "Google Gemini(PaLM) Api account 32"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nlet result = data.output;\n\nif (typeof result !== \"string\") {\n  result = JSON.stringify(result);\n}\n\nresult = result\n  .replace(/```json/g, \"\")\n  .replace(/```/g, \"\")\n  .trim();\n\nlet parsed;\n\ntry {\n  parsed = JSON.parse(result);\n} catch (error) {\n  throw new Error(\"Invalid JSON returned by AI\");\n}\n\nreturn {\n  json: {\n    ...parsed\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        -96
+      ],
+      "id": "07c8289f-a5bd-4887-a350-eccc9a0a57fb",
+      "name": "Parse AI Result"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nreturn data.anomalies.map(anomaly => ({\n  json: {\n    report_id: `ANOM-${Date.now()}-${anomaly.transaction_id}`,\n\n    report_date: new Date()\n      .toISOString()\n      .split(\"T\")[0],\n\n    transaction_id: anomaly.transaction_id,\n\n    product: anomaly.product,\n\n    category: anomaly.category,\n\n    sales: anomaly.sales,\n\n    cost: anomaly.cost,\n\n    profit: anomaly.profit,\n\n    quantity: anomaly.quantity,\n\n    anomaly_type: anomaly.anomaly_type,\n\n    severity: anomaly.severity,\n\n    explanation: anomaly.explanation,\n\n    recommendation: anomaly.recommendation,\n\n    created_at: new Date().toISOString()\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1696,
+        -96
+      ],
+      "id": "07dda4fe-2198-4439-a10b-f0ab33c1ad69",
+      "name": "Create Anomaly Report"
+    },
+    {
+      "parameters": {
+        "sendTo": "nachiketharroju@gmail.com",
+        "subject": "=Data Anomaly Alert - {{ $json.transaction_id }} - {{ $json.severity }}",
+        "message": "=Hi Team,  A data anomaly has been detected.  Transaction ID: {{ $json.transaction_id }}  Product: {{ $json.product }}  Category: {{ $json.category }}  Sales: ₹{{ $json.sales }}  Cost: ₹{{ $json.cost }}  Profit: ₹{{ $json.profit }}  Quantity: {{ $json.quantity }}  Anomaly Type: {{ $json.anomaly_type }}  Severity: {{ $json.severity }}  Explanation: {{ $json.explanation }}  Recommended Action: {{ $json.recommendation }}  Please review this transaction.  Best Regards, AI Data Anomaly Reporter",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1920,
+        -96
+      ],
+      "id": "4a0bc667-d46a-4957-9709-584f373a5061",
+      "name": "Send a message",
+      "webhookId": "a45851e0-9a76-4720-89fa-c30f2d7fd469",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "BhfiiIF56c1Uc6dC",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Validate Business Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Business Data": {
+      "main": [
+        [
+          {
+            "node": "Is Data Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Data Valid?": {
+      "main": [
+        [
+          {
+            "node": "Detect Anomalies",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detect Anomalies": {
+      "main": [
+        [
+          {
+            "node": "AI Anomaly Analyst",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Anomaly Analyst",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Anomaly Analyst": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Result": {
+      "main": [
+        [
+          {
+            "node": "Create Anomaly Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Anomaly Report": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "225b7bec-0a4f-41c9-80df-d68bb635e821",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "edbb0d25bd7a66014faefe68083a8f89c418df33feee41a51636a861e015ce95"
+  },
+  "nodeGroups": [],
+  "id": "S5b18AiSGurgKQ5g",
+  "tags": []
+}

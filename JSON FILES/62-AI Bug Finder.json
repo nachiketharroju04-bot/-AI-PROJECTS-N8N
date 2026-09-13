@@ -1,0 +1,602 @@
+{
+  "name": "AI Bug Finder",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI Bug Finder",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Developer Name"
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email"
+            },
+            {
+              "fieldLabel": "Programming Language"
+            },
+            {
+              "fieldLabel": "Project Type"
+            },
+            {
+              "fieldLabel": "Code",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Expected Behavior",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Actual Behavior",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Error Message",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Context",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Difficulty",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Easy"
+                  },
+                  {
+                    "option": "Medium"
+                  },
+                  {
+                    "option": "Hard"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b6f5883e-619c-4be4-8ad4-918be2455879",
+      "name": "On form submission",
+      "webhookId": "931c50ca-4ceb-46d9-b257-8608a038c4fd"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nreturn {\n  developer_name: data[\"Developer Name\"] || \"\",\n  email: data[\"Email\"] || \"\",\n  language: data[\"Programming Language\"] || \"\",\n  project_type: data[\"Project Type\"] || \"\",\n  code: data[\"Code\"] || \"\",\n  expected_behavior: data[\"Expected Behavior\"] || \"\",\n  actual_behavior: data[\"Actual Behavior\"] || \"\",\n  error_message: data[\"Error Message\"] || \"\",\n  context: data[\"Context\"] || \"\",\n  difficulty: data[\"Difficulty\"] || \"\",\n  submitted_at: new Date().toISOString()\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "c63b16d6-9efd-4074-a23b-a7aa4096655c",
+      "name": "Normalize Bug Report"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are analyzing a software code submission for bugs.\n\nDEVELOPER:\n{{ $(\"Normalize Bug Report\").first().json.developer_name }}\n\nPROGRAMMING LANGUAGE:\n{{ $(\"Normalize Bug Report\").first().json.language }}\n\nPROJECT TYPE:\n{{ $(\"Normalize Bug Report\").first().json.project_type }}\n\nSOURCE CODE:\n{{ $(\"Normalize Bug Report\").first().json.code }}\n\nEXPECTED BEHAVIOR:\n{{ $(\"Normalize Bug Report\").first().json.expected_behavior }}\n\nACTUAL BEHAVIOR:\n{{ $(\"Normalize Bug Report\").first().json.actual_behavior }}\n\nERROR MESSAGE:\n{{ $(\"Normalize Bug Report\").first().json.error_message }}\n\nCONTEXT:\n{{ $(\"Normalize Bug Report\").first().json.context }}\n\nTASK:\n\nPerform a deep bug analysis.\n\nCheck the code for:\n\n1. Syntax errors\n2. Runtime errors\n3. Logical errors\n4. Incorrect calculations\n5. Null/None handling\n6. Missing validation\n7. Boundary conditions\n8. Empty input handling\n9. Invalid input handling\n10. Exception handling\n11. Data structure errors\n12. Incorrect assumptions\n13. Infinite loops\n14. Resource management problems\n15. Performance problems\n16. Concurrency problems if applicable\n17. Security-related defects if visible\n18. API misuse if applicable\n\nFor every confirmed or strongly supported bug identify:\n\n- bug_id\n- bug_type\n- severity\n- location\n- problematic_code\n- explanation\n- root_cause\n- impact\n- reproduction_scenario\n- confidence\n\nSeverity must be:\n\nCRITICAL\nHIGH\nMEDIUM\nLOW\n\nDo not report simple style preferences as bugs.\n\nDo not invent bugs.\n\nIf no bug exists in a category, do not create one.\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Senior Software Bug Detection Engineer.\n\nYour responsibility is to identify genuine defects in source code.\n\nYou must reason about how the code actually executes.\n\nAnalyze:\n\n- control flow\n- data flow\n- inputs\n- outputs\n- conditions\n- loops\n- functions\n- calculations\n- exception paths\n- boundary conditions\n- failure scenarios\n\nDistinguish between:\n\n1. Confirmed bug\n2. Potential bug\n3. Code smell\n4. Performance concern\n5. Security vulnerability\n\nOnly classify something as a confirmed bug when the supplied code provides sufficient evidence.\n\nNever invent missing requirements.\n\nNever assume behavior that is not supported by the input.\n\nSeverity rules:\n\nCRITICAL:\nApplication-breaking issue, severe security problem, data corruption, or catastrophic failure.\n\nHIGH:\nMajor functional defect, significant runtime failure, or important security issue.\n\nMEDIUM:\nMeaningful defect that affects a specific scenario.\n\nLOW:\nMinor defect with limited practical impact.\n\nConfidence must be between 0 and 1.\n\nReturn valid JSON only.\n\nRequired structure:\n\n{\n  \"bugs\": [],\n  \"bug_count\": 0,\n  \"overall_assessment\": \"\",\n  \"highest_severity\": \"\",\n  \"analysis_confidence\": 0\n}t"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "c197b114-4bcb-43e4-be63-8ccb47ba48ea",
+      "name": "Bug Detection Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        520,
+        232
+      ],
+      "id": "506bffc8-18e3-474e-b9cb-d8b8b405c992",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "EHnbJSLIWbbE8y2o",
+          "name": "Google Gemini(PaLM) Api account 8"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Perform a professional software code quality review.\n\nPROGRAMMING LANGUAGE:\n{{ $(\"Normalize Bug Report\").first().json.language }}\n\nPROJECT TYPE:\n{{ $(\"Normalize Bug Report\").first().json.project_type }}\n\nSOURCE CODE:\n{{ $(\"Normalize Bug Report\").first().json.code }}\n\nBUG FINDINGS:\n{{ $(\"Bug Detection Agent\").first().json.output }}\n\nEvaluate:\n\n1. Readability\n2. Maintainability\n3. Function design\n4. Naming\n5. Code duplication\n6. Complexity\n7. Error handling\n8. Input validation\n9. Separation of concerns\n10. Scalability\n11. Testability\n12. Performance\n13. Python/language best practices\n\nImportant:\n\nDo not classify normal style differences as bugs.\n\nIdentify actual code smells separately from functional bugs.\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Senior Software Architect.\n\nReview source code for maintainability, reliability and engineering quality.\n\nDo not invent problems.\n\nDo not confuse style preferences with defects.\n\nAnalyze:\n\n- complexity\n- maintainability\n- readability\n- function responsibilities\n- error handling\n- validation\n- scalability\n- testability\n- duplication\n- language-specific best practices\n\nReturn valid JSON only.\n\nStructure:\n\n{\n  \"quality_score\": 0,\n  \"code_smells\": [],\n  \"maintainability_issues\": [],\n  \"performance_concerns\": [],\n  \"architecture_observations\": [],\n  \"recommendations\": []\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        800,
+        0
+      ],
+      "id": "75442a22-8825-491e-a554-9731e65e167f",
+      "name": "Code Quality Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        872,
+        232
+      ],
+      "id": "7554a201-f787-412c-a597-6097cdcfb4fc",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "RodpupNXf5eAoFpY",
+          "name": "Google Gemini(PaLM) Api account 9"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Perform a security-focused source-code review.\n\nLANGUAGE:\n{{ $(\"Normalize Bug Report\").first().json.language }}\n\nPROJECT TYPE:\n{{ $(\"Normalize Bug Report\").first().json.project_type }}\n\nSOURCE CODE:\n{{ $(\"Normalize Bug Report\").first().json.code }}\n\nAnalyze the code for security weaknesses.\n\nCheck for:\n\n- SQL injection\n- command injection\n- path traversal\n- hardcoded secrets\n- unsafe deserialization\n- authentication weaknesses\n- authorization problems\n- insecure input validation\n- sensitive information exposure\n- unsafe file operations\n- insecure API usage\n- dangerous execution patterns\n- improper error exposure\n\nFor each finding provide:\n\n- vulnerability_id\n- vulnerability_type\n- severity\n- location\n- evidence\n- attack_scenario\n- impact\n- recommendation\n- confidence\n\nDo not invent vulnerabilities.\n\nIf there are no security issues, return an empty findings array.\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Senior Application Security Engineer.\n\nAnalyze source code for realistic security vulnerabilities.\n\nOnly report vulnerabilities supported by the supplied code.\n\nDo not assume external infrastructure.\n\nDo not claim a vulnerability exists merely because a certain library or function can sometimes be dangerous.\n\nExplain the evidence.\n\nSeverity:\n\nCRITICAL\nHIGH\nMEDIUM\nLOW\n\nReturn valid JSON only.\n\nStructure:\n\n{\n  \"security_score\": 0,\n  \"findings\": [],\n  \"overall_security_assessment\": \"\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1152,
+        0
+      ],
+      "id": "a41533b0-4fef-4280-802a-d49da4f82718",
+      "name": "SECURITY ANALYSIS AGENT"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1224,
+        232
+      ],
+      "id": "4b25d2af-95fc-48b4-896c-888e461222a4",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "MLSkGe5QY8eQGK3q",
+          "name": "Google Gemini(PaLM) Api account 10"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are receiving findings from multiple software analysis agents.\n\nSOURCE CODE:\n\n{{ $(\"Normalize Bug Report\").first().json.code }}\n\nBUG DETECTION RESULTS:\n\n{{ $(\"Bug Detection Agent\").first().json.output }}\n\nCODE QUALITY RESULTS:\n\n{{ $(\"Code Quality Agent\").first().json.output }}\n\nSECURITY RESULTS:\n{{ $(\"SECURITY ANALYSIS AGENT\").first().json.output }}\n\nYour job is to consolidate the findings.\n\nPerform the following:\n\n1. Remove duplicate findings.\n2. Identify overlapping findings.\n3. Merge findings caused by the same root cause.\n4. Separate functional bugs from code smells.\n5. Separate security vulnerabilities from normal bugs.\n6. Re-evaluate severity.\n7. Re-evaluate confidence.\n8. Identify the root cause.\n9. Determine business/technical impact.\n10. Rank findings by priority.\n\nDo not invent new findings.\n\nEvery finding must be supported by the supplied code or agent evidence.\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Principal Software Engineer responsible for consolidating code-review findings.\n\nMultiple AI reviewers have analyzed the same source code.\n\nThey may disagree.\n\nYou must:\n\n- compare evidence\n- remove duplicates\n- resolve contradictions\n- identify root causes\n- prioritize findings\n\nDo not automatically trust every previous agent.\n\nIf two findings describe the same underlying defect, merge them.\n\nDo not create unsupported bugs.\n\nReturn valid JSON only.\n\nStructure:\n\n{\n  \"confirmed_bugs\": [],\n  \"potential_bugs\": [],\n  \"code_quality_issues\": [],\n  \"security_issues\": [],\n  \"root_causes\": [],\n  \"priority_order\": [],\n  \"overall_risk\": \"\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1504,
+        0
+      ],
+      "id": "e55dd28f-134e-46fb-9142-3d063bb455af",
+      "name": "Bug Correlation Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1576,
+        232
+      ],
+      "id": "b1cb7263-109b-4a11-a81f-5e3132a6b657",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "yHSSNN7ASt9fdi6V",
+          "name": "Google Gemini(PaLM) Api account 11"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Generate test cases for the identified software defects.\n\nSOURCE CODE:\n\n{{ $(\"Normalize Bug Report\").first().json.code }}\n\nLANGUAGE:\n\n{{ $(\"Normalize Bug Report\").first().json.language }}\n\nCORRELATED BUGS:\n\n{{ $(\"Bug Correlation Agent\").first().json.output }}\n\nGenerate tests for:\n\n1. Normal inputs\n2. Empty inputs\n3. Null/None inputs\n4. Boundary values\n5. Invalid values\n6. Large inputs\n7. Missing fields\n8. Unknown IDs\n9. Incorrect data types\n10. Security-related inputs where applicable\n\nFor every test provide:\n\n- test_id\n- bug_id\n- category\n- input\n- expected_result\n- actual_failure_expected\n- purpose\n\nThe tests must be logically executable against the supplied code.\n\nDo not invent functions that do not exist.\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Senior QA Automation Engineer.\n\nYour job is to design test cases capable of reproducing software defects.\n\nTests must be:\n\n- realistic\n- reproducible\n- directly related to the source code\n- traceable to a bug\n\nInclude:\n\n- happy path\n- edge cases\n- boundary cases\n- invalid input\n- missing data\n- failure scenarios\n\nDo not invent APIs or functions.\n\nReturn valid JSON only."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1856,
+        0
+      ],
+      "id": "c6e725da-55a5-4ff6-bd4b-0a14e3faa9f6",
+      "name": "Test Case Generator Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1928,
+        232
+      ],
+      "id": "9ead75c6-ad0b-4981-ac06-9e3307b48388",
+      "name": "Google Gemini Chat Model4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "hUVbfUCvBERXmart",
+          "name": "Google Gemini(PaLM) Api account 12"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Generate a corrected version of the source code.\n\nORIGINAL SOURCE CODE:\n\n{{ $(\"Normalize Bug Report\").first().json.code }}\n\nIDENTIFIED BUGS:\n\n{{ $(\"Bug Correlation Agent\").first().json.output }}\n\nGENERATED TEST CASES:\n\n{{ $(\"Test Case Generator Agent\").first().json.output }}\n\nLANGUAGE:\n\n{{ $(\"Normalize Bug Report\").first().json.language }}\n\nEXPECTED BEHAVIOR:\n\n{{ $(\"Normalize Bug Report\").first().json.expected_behavior }}\n\nFix the confirmed bugs.\n\nRules:\n\n1. Preserve existing functionality.\n2. Do not add unnecessary features.\n3. Do not rewrite the entire application unless necessary.\n4. Handle identified edge cases.\n5. Maintain readable code.\n6. Avoid introducing new vulnerabilities.\n7. Explain every modification.\n8. Ensure the proposed code passes the generated test scenarios.\n\nReturn:\n\n{\n  \"corrected_code\": \"\",\n  \"fixes_applied\": [],\n  \"reasoning\": \"\",\n  \"remaining_concerns\": []\n}\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Senior Software Developer specializing in debugging and remediation.\n\nYou receive:\n\n- original source code\n- confirmed defects\n- test cases\n\nYour responsibility is to produce the smallest reasonable correction that resolves the identified problems.\n\nDo not introduce unrelated functionality.\n\nDo not remove required functionality.\n\nDo not hide errors merely to make tests pass.\n\nThe corrected code must remain understandable and maintainable.\n\nReturn valid JSON only."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2208,
+        0
+      ],
+      "id": "20db3bfd-9672-41ad-b110-4d1ceba38e59",
+      "name": "Fix Generator Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        2280,
+        232
+      ],
+      "id": "143fbfc3-7d30-4534-b3f6-b2e2c421b1f6",
+      "name": "Google Gemini Chat Model5",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "mRDiZR5MnhRCAbA7",
+          "name": "Google Gemini(PaLM) Api account 13"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Act as an independent senior code reviewer.\n\nORIGINAL CODE:\n\n{{ $(\"Normalize Bug Report\").first().json.code }}\n\nORIGINAL BUG FINDINGS:\n\n{{ $(\"Bug Correlation Agent\").first().json.output }}\n\nTEST CASES:\n\n{{ $(\"Test Case Generator Agent\").first().json.output }}\n\nPROPOSED FIX:\n\n{{ $(\"Fix Generator Agent\").first().json.output }}\n\nVerify the proposed correction.\n\nCheck:\n\n1. Was every confirmed bug fixed?\n2. Would the generated test cases pass?\n3. Were any bugs left unresolved?\n4. Did the fix introduce new bugs?\n5. Did behavior change unexpectedly?\n6. Did complexity increase?\n7. Did security risk increase?\n8. Are edge cases handled?\n9. Is the code production-ready?\n\nBe skeptical.\n\nDo not assume the fix is correct.\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are an independent Principal Software Verification Engineer.\n\nYou must challenge the proposed fix.\n\nNever assume the generated code is correct.\n\nCompare:\n\nORIGINAL CODE\nBUG FINDINGS\nTEST CASES\nCORRECTED CODE\n\nDetermine:\n\n- bugs fixed\n- bugs remaining\n- regressions\n- new risks\n- test results\n- production readiness\n\nOnly mark production_ready as true when the evidence supports it.\n\nReturn valid JSON only.\n\nStructure:\n\n{\n  \"verification_status\": \"\",\n  \"bugs_fixed\": [],\n  \"remaining_bugs\": [],\n  \"regressions\": [],\n  \"test_results\": [],\n  \"verification_score\": 0,\n  \"production_ready\": false,\n  \"explanation\": \"\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2560,
+        0
+      ],
+      "id": "1892bf92-6ba7-46eb-b588-514bd130f864",
+      "name": "FIX VERIFICATION AGENT"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        2632,
+        232
+      ],
+      "id": "d20756d6-cc9c-4fc4-90a4-f6ab4a915e68",
+      "name": "Google Gemini Chat Model6",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "64YXTNLpwme70zgC",
+          "name": "Google Gemini(PaLM) Api account 14"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create a professional final AI Bug Analysis Report.\n\nDEVELOPER:\n\n{{ $(\"Normalize Bug Report\").first().json.developer_name }}\n\nEMAIL:\n\n{{ $(\"Normalize Bug Report\").first().json.email }}\n\nLANGUAGE:\n\n{{ $(\"Normalize Bug Report\").first().json.language }}\n\nPROJECT TYPE:\n\n{{ $(\"Normalize Bug Report\").first().json.project_type }}\n\nORIGINAL CODE:\n\n{{ $(\"Normalize Bug Report\").first().json.code }}\n\nBUG DETECTION:\n\n{{ $(\"Bug Detection Agent\").first().json.output }}\n\nCODE QUALITY:\n\n{{ $(\"Code Quality Agent\").first().json.output }}\n\nSECURITY:\n{{ $(\"SECURITY ANALYSIS AGENT\").first().json.output }}\n\nCORRELATED FINDINGS:\n\n{{ $(\"Bug Correlation Agent\").first().json.output }}\n\nTEST CASES:\n\n{{ $(\"Test Case Generator Agent\").first().json.output }}\n\nFIX:\n\n{{ $(\"Fix Generator Agent\").first().json.output }}\n\nVERIFICATION:\n{{ $(\"FIX VERIFICATION AGENT\").first().json.output }}\n\nCreate a professional final report.\n\nInclude:\n\n1. Developer information\n2. Project information\n3. Code summary\n4. Total bugs\n5. Severity distribution\n6. Confirmed bugs\n7. Potential bugs\n8. Security findings\n9. Code quality\n10. Test cases\n11. Fixes\n12. Verification\n13. Remaining risks\n14. Code health score\n15. Production readiness\n16. Final recommendations\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Principal Software Engineering Auditor.\n\nCreate the final professional assessment from the supplied analysis.\n\nYou must synthesize the findings instead of blindly copying them.\n\nResolve duplicate findings.\n\nDistinguish:\n\n- confirmed bug\n- potential bug\n- code smell\n- security vulnerability\n- performance concern\n\nDo not invent facts.\n\nUse evidence from the supplied code and analysis.\n\nCalculate the code health score from 0 to 100.\n\n100 = excellent code with no meaningful issues.\n\n0 = critically unsafe or unusable.\n\nProduction readiness must be:\n\ntrue\n\nonly when the verification evidence supports it.\n\nReturn valid JSON only.\n\nRequired structure:\n\n{\n  \"report_type\": \"AI Bug Analysis Report\",\n\n  \"developer\": {\n    \"name\": \"\",\n    \"email\": \"\"\n  },\n\n  \"project\": {\n    \"language\": \"\",\n    \"type\": \"\",\n    \"summary\": \"\"\n  },\n\n  \"bug_summary\": {\n    \"total\": 0,\n    \"critical\": 0,\n    \"high\": 0,\n    \"medium\": 0,\n    \"low\": 0\n  },\n\n  \"confirmed_bugs\": [],\n\n  \"potential_bugs\": [],\n\n  \"security_findings\": [],\n\n  \"code_quality\": {\n    \"score\": 0,\n    \"issues\": [],\n    \"recommendations\": []\n  },\n\n  \"testing\": {\n    \"test_count\": 0,\n    \"coverage_summary\": \"\",\n    \"verification_status\": \"\"\n  },\n\n  \"fix_assessment\": {\n    \"bugs_fixed\": [],\n    \"remaining_bugs\": [],\n    \"regressions\": []\n  },\n\n  \"code_health_score\": 0,\n\n  \"overall_severity\": \"\",\n\n  \"production_ready\": false,\n\n  \"final_recommendation\": \"\",\n\n  \"final_summary\": \"\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2912,
+        0
+      ],
+      "id": "83e54e15-c2f3-4e83-83c1-e1f42edba72a",
+      "name": "Final Bug Report Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        2984,
+        232
+      ],
+      "id": "d040869e-7716-42dc-b3b6-94fd46e0baab",
+      "name": "Google Gemini Chat Model7",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "BAHhDt6Sf7ZPkE2b",
+          "name": "Google Gemini(PaLM) Api account 15"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "/// Get the AI output\nlet raw = $json.output;\n\n// Make sure output exists\nif (!raw) {\n  throw new Error(\"Final Bug Report Agent returned no output.\");\n}\n\n// Convert to string\nraw = String(raw).trim();\n\n// Remove Markdown code fences if the AI returned ```json ... ```\nraw = raw\n  .replace(/^```json\\s*/i, \"\")\n  .replace(/^```\\s*/i, \"\")\n  .replace(/\\s*```$/i, \"\")\n  .trim();\n\nlet report;\n\n// Try to parse JSON\ntry {\n  report = JSON.parse(raw);\n} catch (error) {\n  // Try to extract the JSON object if extra text was returned\n  const start = raw.indexOf(\"{\");\n  const end = raw.lastIndexOf(\"}\");\n\n  if (start === -1 || end === -1) {\n    throw new Error(\n      \"Final Bug Report Agent did not return valid JSON.\\n\\nOutput:\\n\" + raw\n    );\n  }\n\n  const jsonText = raw.substring(start, end + 1);\n\n  try {\n    report = JSON.parse(jsonText);\n  } catch (secondError) {\n    throw new Error(\n      \"Unable to parse Final Bug Report Agent output as JSON.\\n\\nOutput:\\n\" +\n      raw\n    );\n  }\n}\n\n// Return clean structured JSON\nreturn [\n  {\n    json: report\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3264,
+        0
+      ],
+      "id": "1ca066ba-eb5e-440c-9156-e167f456f6ae",
+      "name": "Parse Final Bug Report"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Normalize Bug Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Bug Report": {
+      "main": [
+        [
+          {
+            "node": "Bug Detection Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Bug Detection Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Code Quality Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bug Detection Agent": {
+      "main": [
+        [
+          {
+            "node": "Code Quality Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Quality Agent": {
+      "main": [
+        [
+          {
+            "node": "SECURITY ANALYSIS AGENT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "SECURITY ANALYSIS AGENT",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SECURITY ANALYSIS AGENT": {
+      "main": [
+        [
+          {
+            "node": "Bug Correlation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Bug Correlation Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bug Correlation Agent": {
+      "main": [
+        [
+          {
+            "node": "Test Case Generator Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Test Case Generator Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Case Generator Agent": {
+      "main": [
+        [
+          {
+            "node": "Fix Generator Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Fix Generator Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fix Generator Agent": {
+      "main": [
+        [
+          {
+            "node": "FIX VERIFICATION AGENT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model6": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "FIX VERIFICATION AGENT",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FIX VERIFICATION AGENT": {
+      "main": [
+        [
+          {
+            "node": "Final Bug Report Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model7": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Final Bug Report Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Bug Report Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse Final Bug Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "feb36046-acb3-4b2e-bde7-4a28850f4968",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "edbb0d25bd7a66014faefe68083a8f89c418df33feee41a51636a861e015ce95"
+  },
+  "nodeGroups": [],
+  "id": "aoEnEc9jcmPEnaKK",
+  "tags": []
+}

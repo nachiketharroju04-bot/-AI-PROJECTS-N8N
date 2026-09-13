@@ -1,0 +1,451 @@
+{
+  "name": "91-AI Customer Escalation Manager",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1192,
+        -88
+      ],
+      "id": "863d891f-a1d4-4e85-9551-e5131404e447",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wkvPLR8iLkAneiWB",
+          "name": "Google Gemini(PaLM) Api account 32"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a9ffa14d-3357-41a1-a022-0b9c90b50f98",
+              "leftValue": "={{ $json.data_valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        -320
+      ],
+      "id": "0b406a4a-5dc1-43d3-8240-e8daa6db9347",
+      "name": "Valid Data?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nlet result = data.output;\n\nif (typeof result !== \"string\") {\n  result = JSON.stringify(result);\n}\n\nresult = result\n  .replace(/```json/g, \"\")\n  .replace(/```/g, \"\")\n  .trim();\n\nlet parsed;\n\ntry {\n  parsed = JSON.parse(result);\n} catch (error) {\n  throw new Error(\"Invalid JSON returned by AI\");\n}\n\nreturn {\n  json: {\n    ...data,\n    ...parsed\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        -320
+      ],
+      "id": "96afe7f3-b96c-4837-b862-a6ac9b563a2c",
+      "name": "Parse AI Result"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1bn_fVlZXS6-zMS0BXPNH-bCLcsfNYxXyKcaCFksPKh8",
+          "mode": "list",
+          "cachedResultName": "Untitled spreadsheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bn_fVlZXS6-zMS0BXPNH-bCLcsfNYxXyKcaCFksPKh8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bn_fVlZXS6-zMS0BXPNH-bCLcsfNYxXyKcaCFksPKh8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Customer ID",
+              "displayName": "Customer ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last Login",
+              "displayName": "Last Login",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Login Count",
+              "displayName": "Login Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Purchase Count",
+              "displayName": "Purchase Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Support Tickets",
+              "displayName": "Support Tickets",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Satisfaction",
+              "displayName": "Satisfaction",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Payment Failures",
+              "displayName": "Payment Failures",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Monthly Value",
+              "displayName": "Monthly Value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        -320
+      ],
+      "id": "a022f33d-32df-4d45-9a39-c535d26600a1",
+      "name": "Get Customer Tickets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q524jgyHLO03nlDm",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst requiredFields = [\n  \"Ticket_ID\",\n  \"Customer_ID\",\n  \"Customer_Name\",\n  \"Customer_Email\",\n  \"Issue\",\n  \"Category\",\n  \"Priority\",\n  \"Days_Open\",\n  \"Previous_Escalations\"\n];\n\nconst validItems = [];\nconst invalidItems = [];\n\nfor (const item of items) {\n\n  const data = item.json;\n\n  const missingFields = requiredFields.filter(\n    field =>\n      data[field] === undefined ||\n      data[field] === null ||\n      String(data[field]).trim() === \"\"\n  );\n\n  const daysOpen = Number(data.Days_Open);\n  const previousEscalations =\n    Number(data.Previous_Escalations);\n\n  if (\n    missingFields.length === 0 &&\n    !isNaN(daysOpen) &&\n    !isNaN(previousEscalations)\n  ) {\n\n    validItems.push({\n      ...data,\n      Days_Open: daysOpen,\n      Previous_Escalations: previousEscalations\n    });\n\n  } else {\n\n    invalidItems.push({\n      ticket_id: data.Ticket_ID || \"Unknown\",\n      missing_fields: missingFields\n    });\n\n  }\n}\n\nreturn [\n  {\n    json: {\n      data_valid: invalidItems.length === 0,\n      total_tickets: items.length,\n      valid_tickets: validItems.length,\n      invalid_tickets: invalidItems.length,\n      invalid_details: invalidItems,\n      ticket_data: validItems\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        -320
+      ],
+      "id": "233d24a7-7cea-4166-8eb1-4b8fe4e24cfa",
+      "name": "Validate Ticket Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json.ticket_data;\n\nconst analyzedTickets = [];\n\nfor (const ticket of data) {\n\n  const priority =\n    String(ticket.Priority).toLowerCase();\n\n  const daysOpen =\n    Number(ticket.Days_Open);\n\n  const previousEscalations =\n    Number(ticket.Previous_Escalations);\n\n  let escalationScore = 0;\n\n  if (priority === \"critical\") {\n    escalationScore += 4;\n  } else if (priority === \"high\") {\n    escalationScore += 3;\n  } else if (priority === \"medium\") {\n    escalationScore += 2;\n  } else {\n    escalationScore += 1;\n  }\n\n  if (daysOpen >= 7) {\n    escalationScore += 3;\n  } else if (daysOpen >= 3) {\n    escalationScore += 2;\n  }\n\n  if (previousEscalations >= 2) {\n    escalationScore += 3;\n  } else if (previousEscalations === 1) {\n    escalationScore += 1;\n  }\n\n  let initialSeverity;\n\n  if (escalationScore >= 7) {\n    initialSeverity = \"CRITICAL\";\n  } else if (escalationScore >= 5) {\n    initialSeverity = \"HIGH\";\n  } else if (escalationScore >= 3) {\n    initialSeverity = \"MEDIUM\";\n  } else {\n    initialSeverity = \"LOW\";\n  }\n\n  analyzedTickets.push({\n    ...ticket,\n    escalation_score: escalationScore,\n    initial_severity: initialSeverity\n  });\n}\n\nreturn [\n  {\n    json: {\n      analyzed_tickets: analyzedTickets\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        -320
+      ],
+      "id": "d03f9e17-ef3b-4a39-945b-a2f895b0e782",
+      "name": "Analyze Ticket Severity"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze this customer support ticket.\n\nTicket ID:\n{{ $json.Ticket_ID }}\n\nCustomer:\n{{ $json.Customer_Name }}\n\nIssue:\n{{ $json.Issue }}\n\nCategory:\n{{ $json.Category }}\n\nOriginal Priority:\n{{ $json.Priority }}\n\nDays Open:\n{{ $json.Days_Open }}\n\nPrevious Escalations:\n{{ $json.Previous_Escalations }}\n\nInitial Severity:\n{{ $json.initial_severity }}\n\nEscalation Score:\n{{ $json.escalation_score }}\n\nDetermine:\n\n- Severity\n- Urgency\n- Customer impact\n- Whether escalation is required\n- Escalation level\n- Assigned team\n- Summary\n- Recommended action\n\nReturn ONLY valid JSON.",
+        "options": {
+          "systemMessage": "=You are an AI Customer Escalation Analyst.\n\nYour task is to analyze customer support tickets and determine whether escalation is required.\n\nEvaluate:\n\n1. Issue severity\n2. Urgency\n3. Customer impact\n4. Ticket age\n5. Previous escalations\n6. Original priority\n7. Appropriate support team\n\nEscalation should generally be considered when:\n\n- The issue is critical or high impact.\n- The customer has experienced a significant service problem.\n- The ticket has remained unresolved for a long period.\n- The ticket has already been escalated.\n- The issue involves serious billing or payment problems.\n- The issue significantly affects the customer's ability to use the service.\n\nImportant rules:\n\n- Do not invent facts.\n- Do not assume financial loss unless provided.\n- Do not assume fraud.\n- Do not assume customer behavior.\n- Do not change facts from the ticket.\n- Treat escalation as a recommendation based on the provided information.\n\nPossible escalation levels:\n\nLEVEL 1:\nNormal support handling.\n\nLEVEL 2:\nPriority support review.\n\nLEVEL 3:\nImmediate management or specialist attention.\n\nReturn ONLY valid JSON.\n\nUse exactly this structure:\n\n{\n  \"ticket_id\": \"\",\n  \"severity\": \"\",\n  \"urgency\": \"\",\n  \"impact\": \"\",\n  \"escalation_required\": false,\n  \"escalation_level\": \"\",\n  \"assigned_team\": \"\",\n  \"summary\": \"\",\n  \"recommended_action\": \"\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1120,
+        -320
+      ],
+      "id": "d06d0d19-cf7e-46d5-8fb1-b5ed58c5f3dd",
+      "name": "AI Escalation Analyst"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "67d89445-2069-424b-8839-779e04eea30c",
+              "leftValue": "={{ $json.escalation_required }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1696,
+        -320
+      ],
+      "id": "d28fba80-1e69-4740-b699-ac1ebf76bfcf",
+      "name": "Is Escalation Required?"
+    },
+    {
+      "parameters": {
+        "sendTo": "nachiketharroju@gmail.com ",
+        "subject": "=🚨 Customer Escalation - {{ $json.ticket_id }} - {{ $json.severity }}",
+        "message": "=Hi Support Team,\n\nA customer ticket requires escalation.\n\nTicket ID:\n{{ $json.ticket_id }}\n\nCustomer:\n{{ $json.Customer_Name }}\n\nCustomer Email:\n{{ $json.Customer_Email }}\n\nIssue:\n{{ $json.Issue }}\n\nCategory:\n{{ $json.Category }}\n\nOriginal Priority:\n{{ $json.Priority }}\n\nSeverity:\n{{ $json.severity }}\n\nUrgency:\n{{ $json.urgency }}\n\nCustomer Impact:\n{{ $json.impact }}\n\nEscalation Level:\n{{ $json.escalation_level }}\n\nAssigned Team:\n{{ $json.assigned_team }}\n\nAI Summary:\n{{ $json.summary }}\n\nRecommended Action:\n{{ $json.recommended_action }}\n\nPlease review and take the appropriate action.\n\nBest Regards,\nAI Customer Escalation Manager",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1920,
+        -416
+      ],
+      "id": "1d2d4569-e733-405d-9a78-4f496ea595b9",
+      "name": "Send Escalation Alert",
+      "webhookId": "2627e8b6-f85d-4957-a1d4-2a39739be97c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "BhfiiIF56c1Uc6dC",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1920,
+        -224
+      ],
+      "id": "3ecd8489-8188-43a6-9644-f63b3f6bcabb",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n\n      Report_ID:\n        `ESC-${Date.now()}-${$json.ticket_id}`,\n\n      Report_Date:\n        new Date().toISOString().split(\"T\")[0],\n\n      Ticket_ID:\n        $json.ticket_id,\n\n      Customer_ID:\n        $json.Customer_ID,\n\n      Customer_Name:\n        $json.Customer_Name,\n\n      Issue:\n        $json.Issue,\n\n      Category:\n        $json.Category,\n\n      Original_Priority:\n        $json.Priority,\n\n      Severity:\n        $json.severity,\n\n      Urgency:\n        $json.urgency,\n\n      Impact:\n        $json.impact,\n\n      Escalation_Required:\n        $json.escalation_required,\n\n      Escalation_Level:\n        $json.escalation_level,\n\n      Assigned_Team:\n        $json.assigned_team,\n\n      AI_Summary:\n        $json.summary,\n\n      Recommended_Action:\n        $json.recommended_action,\n\n      Created_At:\n        new Date().toISOString()\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2144,
+        -416
+      ],
+      "id": "ca9cafc8-843e-4305-87b7-133427cc6083",
+      "name": "Create Escalation Report"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Escalation Analyst",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid Data?": {
+      "main": [
+        [
+          {
+            "node": "Analyze Ticket Severity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Result": {
+      "main": [
+        [
+          {
+            "node": "Is Escalation Required?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Customer Tickets": {
+      "main": [
+        [
+          {
+            "node": "Validate Ticket Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Ticket Data": {
+      "main": [
+        [
+          {
+            "node": "Valid Data?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Ticket Severity": {
+      "main": [
+        [
+          {
+            "node": "AI Escalation Analyst",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Escalation Analyst": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Escalation Required?": {
+      "main": [
+        [
+          {
+            "node": "Send Escalation Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Escalation Alert": {
+      "main": [
+        [
+          {
+            "node": "Create Escalation Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "2ff00c76-2b8e-4f1f-b46e-f8622f6ab860",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "edbb0d25bd7a66014faefe68083a8f89c418df33feee41a51636a861e015ce95"
+  },
+  "nodeGroups": [],
+  "id": "qxns7Ct8FqRo7qWU",
+  "tags": []
+}

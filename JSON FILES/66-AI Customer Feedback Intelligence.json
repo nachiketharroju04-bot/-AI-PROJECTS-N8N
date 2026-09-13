@@ -1,0 +1,367 @@
+{
+  "name": "AI Customer Feedback Intelligence",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI Customer Feedback Intelligence",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "customer_name"
+            },
+            {
+              "fieldLabel": "customer_email",
+              "fieldType": "email"
+            },
+            {
+              "fieldLabel": "feedback",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "rating",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "product"
+            },
+            {
+              "fieldLabel": "feedback_source",
+              "fieldType": "textarea"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "1338f768-9688-474f-9a2b-7923889371ac",
+      "name": "On form submission",
+      "webhookId": "f25ceaf3-9051-402a-9640-17a6f76ac3f8"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\n\nreturn [\n  {\n    json: {\n      customer_name: data.customer_name || \"Unknown\",\n      customer_email: data.customer_email || \"Unknown\",\n      feedback: data.feedback || \"\",\n      rating: Number(data.rating) || 0,\n      product: data.product || \"Unknown\",\n      feedback_source: data.feedback_source || \"Unknown\",\n      submitted_at: new Date().toISOString()\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "4a14f29c-a8c6-4aa4-b4cd-6f0c097d386f",
+      "name": "Normalize Feedback"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the following customer feedback.\n\nCUSTOMER NAME:\n\n{{ $(\"Normalize Feedback\").first().json.customer_name }}\n\nCUSTOMER EMAIL:\n\n{{ $(\"Normalize Feedback\").first().json.customer_email }}\n\nFEEDBACK:\n\n{{ $(\"Normalize Feedback\").first().json.feedback }}\n\nRATING:\n\n{{ $(\"Normalize Feedback\").first().json.rating }}\n\nPRODUCT:\n\n{{ $(\"Normalize Feedback\").first().json.product }}\n\nFEEDBACK SOURCE:\n\n{{ $(\"Normalize Feedback\").first().json.feedback_source }}\n\nReturn exactly this JSON structure:\n\n{\n  \"sentiment\": \"\",\n  \"sentiment_score\": 0,\n  \"satisfaction_score\": 0,\n\n  \"category\": \"\",\n  \"subcategory\": \"\",\n\n  \"topics\": [],\n\n  \"positive_points\": [],\n  \"negative_points\": [],\n  \"pain_points\": [],\n\n  \"feature_requests\": [],\n  \"improvement_suggestions\": [],\n\n  \"customer_intent\": \"\",\n\n  \"urgency\": \"\",\n  \"business_impact\": \"\",\n\n  \"churn_risk\": \"\",\n\n  \"evidence\": [],\n\n  \"analysis_reason\": \"\"\n}\n\nRules:\n\n- sentiment_score must be between -1 and 1.\n- satisfaction_score must be between 0 and 10.\n- Do not invent information.\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are an expert Customer Feedback Analyst.\n\nYour job is to analyze individual customer feedback and convert it into\nstructured business intelligence.\n\nAnalyze the feedback for:\n\n- Overall sentiment\n- Sentiment score\n- Customer satisfaction\n- Main category\n- Subcategory\n- Topics\n- Positive points\n- Negative points\n- Pain points\n- Feature requests\n- Product improvement suggestions\n- Customer intent\n- Urgency\n- Business impact\n- Churn risk\n- Evidence\n\nAllowed sentiment values:\n\nPositive\nNeutral\nMixed\nNegative\n\nAllowed urgency values:\n\nCritical\nHigh\nMedium\nLow\n\nAllowed impact values:\n\nCritical\nHigh\nMedium\nLow\n\nAllowed categories:\n\nProduct\nTechnical\nBilling\nSupport\nService\nFeature Request\nPricing\nPerformance\nUser Experience\nOther\n\nRules:\n\n1. Analyze only the supplied feedback.\n2. Never invent customer statements.\n3. Never invent problems that are not supported by the feedback.\n4. Do not infer sensitive personal information.\n5. Clearly distinguish evidence from interpretation.\n6. If information is unavailable, use \"Unknown\".\n7. Rating must be considered together with the written feedback.\n8. Do not assume a customer will churn unless there is evidence supporting\n   churn risk.\n9. Return valid JSON only.\n10. Do not return Markdown.\n11. Do not use code fences.\n12. Do not provide explanations outside JSON."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "cd3e0966-3769-47b1-bd7b-414a6783c9d7",
+      "name": "AI Feedback Analyzer"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        240
+      ],
+      "id": "7b2701ae-d378-477b-af1e-762411326413",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "DmBclGyDtuulIu7s",
+          "name": "Google Gemini(PaLM) Api account 31"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.output;\n\ntry {\n  let cleaned = String(raw)\n    .replace(/```json/gi, \"\")\n    .replace(/```/g, \"\")\n    .trim();\n\n  const start = cleaned.indexOf(\"{\");\n  const end = cleaned.lastIndexOf(\"}\");\n\n  if (start === -1 || end === -1) {\n    throw new Error(\"No JSON object found\");\n  }\n\n  cleaned = cleaned.substring(start, end + 1);\n\n  const result = JSON.parse(cleaned);\n\n  return [\n    {\n      json: {\n        ...result,\n        parse_status: \"success\"\n      }\n    }\n  ];\n\n} catch (error) {\n\n  return [\n    {\n      json: {\n        parse_status: \"failed\",\n        parse_error: error.message,\n        raw_output: raw\n      }\n    }\n  ];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        0
+      ],
+      "id": "9e53361f-8325-44a2-bb5e-0b26bedfc23b",
+      "name": "Parse Feedback Analysis"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the customer feedback intelligence below.\n\nFEEDBACK ANALYSIS:\n\n{{ JSON.stringify($(\"Parse Feedback Analysis\").first().json) }}\n\nIdentify:\n\n- major_themes\n- positive_themes\n- negative_themes\n- product_strengths\n- product_weaknesses\n- pain_points\n- feature_requests\n- improvement_opportunities\n- customer_experience_issues\n- retention_risks\n\nFor every important insight include:\n\n- insight\n- evidence\n- impact\n- confidence\n\nReturn:\n\n{\n  \"major_themes\": [],\n  \"positive_themes\": [],\n  \"negative_themes\": [],\n  \"product_strengths\": [],\n  \"product_weaknesses\": [],\n  \"pain_points\": [],\n  \"feature_requests\": [],\n  \"improvement_opportunities\": [],\n  \"customer_experience_issues\": [],\n  \"retention_risks\": []\n}\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Senior Customer Experience Analyst.\n\nYour responsibility is to transform analyzed customer feedback into\nactionable business insights.\n\nAnalyze the supplied feedback analysis and identify:\n\n- Major themes\n- Recurring pain points\n- Product strengths\n- Product weaknesses\n- Feature requests\n- Improvement opportunities\n- Customer experience issues\n- Potential retention risks\n\nRules:\n\n1. Use only the supplied analysis.\n2. Do not invent trends.\n3. A recurring trend should be supported by multiple pieces of evidence\n   when multiple feedback records are available.\n4. Do not treat one isolated complaint as a company-wide problem.\n5. Clearly distinguish individual feedback from recurring patterns.\n6. Use \"Unknown\" when information is insufficient.\n7. Return valid JSON only.\n8. Do not return Markdown."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1024,
+        0
+      ],
+      "id": "3c487d2f-53b7-4dcb-aee8-f7452d41f22c",
+      "name": "Feedback Insight Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Prioritize the customer feedback insights.\n\nFEEDBACK ANALYSIS:\n\n{{ JSON.stringify($(\"Parse Feedback Analysis\").first().json) }}\n\nINSIGHT ANALYSIS:\n\n{{ JSON.stringify($(\"Feedback Insight Agent\").first().json) }}\n\nDetermine:\n\n- critical_issues\n- high_priority_issues\n- medium_priority_issues\n- low_priority_issues\n- immediate_actions\n- product_improvements\n- customer_experience_improvements\n- retention_actions\n\nFor every priority item provide:\n\n- issue\n- priority\n- reason\n- evidence\n- recommended_action\n- expected_business_impact\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Customer Experience Strategy Manager.\n\nYour job is to prioritize customer feedback insights based on:\n\n- Customer impact\n- Business impact\n- Frequency\n- Severity\n- Urgency\n- Retention risk\n- Product importance\n\nPriority levels:\n\nCritical\nHigh\nMedium\nLow\n\nRules:\n\n1. Do not mark every issue as Critical.\n2. Priority must be supported by evidence.\n3. Do not invent frequency when only one feedback record exists.\n4. Distinguish severity from frequency.\n5. A high-severity issue may be important even if it occurs rarely.\n6. Use \"Unknown\" when evidence is insufficient.\n7. Provide actionable recommendations.\n8. Return JSON only."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1376,
+        0
+      ],
+      "id": "acd4ee23-4ce7-4bfa-8137-2f9877fa6e4c",
+      "name": "Trend & Priority Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1104,
+        240
+      ],
+      "id": "fa1ae277-3fbc-414d-98f3-798eb42635df",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "oBl8uRmeBD54wUiq",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1456,
+        240
+      ],
+      "id": "f1bcd451-408b-413a-8133-51ba617138f5",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "3aGZVsfU4wgPBD70",
+          "name": "Google Gemini(PaLM) Api account 28"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create the final AI Customer Feedback Intelligence Report.\n\nORIGINAL FEEDBACK:\n\n{{ JSON.stringify($(\"Normalize Feedback\").first().json) }}\n\nFEEDBACK ANALYSIS:\n\n{{ JSON.stringify($(\"Parse Feedback Analysis\").first().json) }}\n\nCUSTOMER INSIGHTS:\n\n{{ JSON.stringify($(\"Feedback Insight Agent\").first().json) }}\n\nPRIORITY ANALYSIS:\n\n{{ JSON.stringify($(\"Trend & Priority Agent\").first().json) }}\n\nReturn exactly this structure:\n\n{\n  \"report_type\": \"AI Customer Feedback Intelligence Report\",\n\n  \"feedback_summary\": \"\",\n\n  \"sentiment\": {\n    \"overall_sentiment\": \"\",\n    \"sentiment_score\": 0,\n    \"satisfaction_score\": 0\n  },\n\n  \"categories\": [],\n\n  \"major_themes\": [],\n\n  \"positive_feedback\": [],\n\n  \"negative_feedback\": [],\n\n  \"pain_points\": [],\n\n  \"product_strengths\": [],\n\n  \"product_weaknesses\": [],\n\n  \"feature_requests\": [],\n\n  \"improvement_opportunities\": [],\n\n  \"retention_risks\": [],\n\n  \"priority_issues\": [],\n\n  \"recommended_actions\": [],\n\n  \"business_impact\": \"\",\n\n  \"overall_feedback_status\": \"\",\n\n  \"final_assessment\": \"\"\n}\n\noverall_feedback_status must be exactly one of:\n\nPOSITIVE\nMIXED\nNEEDS_ATTENTION\nCRITICAL\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Principal Customer Experience and Product Intelligence Analyst.\n\nYour responsibility is to create the final Customer Feedback Intelligence\nReport.\n\nSynthesize the supplied customer feedback analysis, business insights,\nand priority analysis into one professional report.\n\nThe report should help product, customer-success, support, and management\nteams understand what customers are saying and what actions should be taken.\n\nRules:\n\n1. Never invent customer feedback.\n2. Never fabricate trends.\n3. Clearly distinguish isolated feedback from recurring patterns.\n4. Preserve evidence.\n5. Do not expose customer credentials or sensitive information.\n6. Do not infer sensitive personal attributes.\n7. Do not overstate churn risk.\n8. Recommendations must be actionable.\n9. Use \"Unknown\" when evidence is insufficient.\n10. Return valid JSON only.\n11. Do not return Markdown.\n12. Do not use code fences.\n13. Do not add explanations outside JSON."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1728,
+        0
+      ],
+      "id": "81de2ecd-8294-41c5-87f5-0578ba786e62",
+      "name": "Final Feedback Intelligence Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1808,
+        240
+      ],
+      "id": "f3f32f59-e74d-417d-a02c-d59906b68444",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wkvPLR8iLkAneiWB",
+          "name": "Google Gemini(PaLM) Api account 32"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.output;\n\ntry {\n  let cleaned = String(raw)\n    .replace(/```json/gi, \"\")\n    .replace(/```/g, \"\")\n    .trim();\n\n  const start = cleaned.indexOf(\"{\");\n  const end = cleaned.lastIndexOf(\"}\");\n\n  if (start === -1 || end === -1) {\n    throw new Error(\"No JSON object found\");\n  }\n\n  cleaned = cleaned.substring(start, end + 1);\n\n  const report = JSON.parse(cleaned);\n\n  return [\n    {\n      json: {\n        report_type:\n          report.report_type ||\n          \"AI Customer Feedback Intelligence Report\",\n\n        feedback_summary:\n          report.feedback_summary || \"Unknown\",\n\n        sentiment:\n          report.sentiment || {},\n\n        categories:\n          report.categories || [],\n\n        major_themes:\n          report.major_themes || [],\n\n        positive_feedback:\n          report.positive_feedback || [],\n\n        negative_feedback:\n          report.negative_feedback || [],\n\n        pain_points:\n          report.pain_points || [],\n\n        product_strengths:\n          report.product_strengths || [],\n\n        product_weaknesses:\n          report.product_weaknesses || [],\n\n        feature_requests:\n          report.feature_requests || [],\n\n        improvement_opportunities:\n          report.improvement_opportunities || [],\n\n        retention_risks:\n          report.retention_risks || [],\n\n        priority_issues:\n          report.priority_issues || [],\n\n        recommended_actions:\n          report.recommended_actions || [],\n\n        business_impact:\n          report.business_impact || \"Unknown\",\n\n        overall_feedback_status:\n          report.overall_feedback_status || \"Unknown\",\n\n        final_assessment:\n          report.final_assessment || \"Unknown\",\n\n        parse_status: \"success\"\n      }\n    }\n  ];\n\n} catch (error) {\n\n  return [\n    {\n      json: {\n        report_type:\n          \"AI Customer Feedback Intelligence Report\",\n\n        parse_status: \"failed\",\n\n        parse_error: error.message,\n\n        raw_output: raw\n      }\n    }\n  ];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        0
+      ],
+      "id": "a2e10c76-45ff-487c-9ae5-6a931dc76661",
+      "name": "Parse Final Feedback Report"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Normalize Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Feedback": {
+      "main": [
+        [
+          {
+            "node": "AI Feedback Analyzer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Feedback Analyzer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Feedback Analyzer": {
+      "main": [
+        [
+          {
+            "node": "Parse Feedback Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Feedback Analysis": {
+      "main": [
+        [
+          {
+            "node": "Feedback Insight Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Feedback Insight Agent": {
+      "main": [
+        [
+          {
+            "node": "Trend & Priority Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Feedback Insight Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Trend & Priority Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trend & Priority Agent": {
+      "main": [
+        [
+          {
+            "node": "Final Feedback Intelligence Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Final Feedback Intelligence Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Feedback Intelligence Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse Final Feedback Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "2bee7fde-4243-486a-837d-2d4a8f3b38e0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "edbb0d25bd7a66014faefe68083a8f89c418df33feee41a51636a861e015ce95"
+  },
+  "nodeGroups": [],
+  "id": "HaHq7VdjSD3SAaZu",
+  "tags": []
+}

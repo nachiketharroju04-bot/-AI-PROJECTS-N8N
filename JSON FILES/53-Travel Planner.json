@@ -1,0 +1,650 @@
+{
+  "name": "Travel Planner",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Travel Planner",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Traveler Name"
+            },
+            {
+              "fieldLabel": "Destination"
+            },
+            {
+              "fieldLabel": "Start Date",
+              "fieldType": "date"
+            },
+            {
+              "fieldLabel": "End Date",
+              "fieldType": "date"
+            },
+            {
+              "fieldLabel": "Travelers",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Budget",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Interests",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Travel Style",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Balanced"
+                  },
+                  {
+                    "option": "Relaxed"
+                  },
+                  {
+                    "option": "Adventure"
+                  },
+                  {
+                    "option": "Luxury"
+                  },
+                  {
+                    "option": "Budget"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Accommodation Preference",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Budget"
+                  },
+                  {
+                    "option": "Mid-range"
+                  },
+                  {
+                    "option": "Luxury"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Transportation Preference",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Public Transport"
+                  },
+                  {
+                    "option": "Taxi"
+                  },
+                  {
+                    "option": "Rental Car"
+                  },
+                  {
+                    "option": "Mixed"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -96,
+        272
+      ],
+      "id": "280eae0c-13ec-4cb9-83a3-ea1423d2feae",
+      "name": "On form submission",
+      "webhookId": "724a7023-5399-4d72-a34e-bfcf07d24f2a"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6cae46fb-74f3-4a1e-beb1-be8b573442ca",
+              "name": "Traveler Name",
+              "value": "={{ $json['Traveler Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "d57f3d4a-d009-4abb-8286-f736d317a95e",
+              "name": "Destination",
+              "value": "={{ $json.Destination }}",
+              "type": "string"
+            },
+            {
+              "id": "937cdddd-acc7-457b-93e3-dec90928ca21",
+              "name": "Start Date",
+              "value": "={{ $json['Start Date'] }}",
+              "type": "string"
+            },
+            {
+              "id": "20b9bd71-d458-4d20-954b-08a8ff1274f0",
+              "name": "End Date",
+              "value": "={{ $json['End Date'] }}",
+              "type": "string"
+            },
+            {
+              "id": "0eafad1a-d2bb-4966-a660-78a395df99e2",
+              "name": "Travelers",
+              "value": "={{ $json.Travelers }}",
+              "type": "number"
+            },
+            {
+              "id": "72a12814-56b2-4f91-b3e3-66dc3607d637",
+              "name": "Budget",
+              "value": "={{ $json.Budget }}",
+              "type": "number"
+            },
+            {
+              "id": "e2b2dc20-a00a-439f-b779-f9910e400fb9",
+              "name": "Interests",
+              "value": "={{ $json.Interests }}",
+              "type": "string"
+            },
+            {
+              "id": "add00cd0-ec78-4dd3-8014-6b621ddbd129",
+              "name": "Travel Style",
+              "value": "={{ $json['Travel Style'] }}",
+              "type": "string"
+            },
+            {
+              "id": "1327e599-0851-4b1f-9f00-7357d3a24c9e",
+              "name": "Accommodation Preference",
+              "value": "={{ $json['Accommodation Preference'] }}",
+              "type": "string"
+            },
+            {
+              "id": "4831bc5d-3837-4701-9018-b3a190aa6a5a",
+              "name": "Transportation Preference",
+              "value": "={{ $json['Transportation Preference'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        128,
+        272
+      ],
+      "id": "c57326db-c25b-4b44-898d-9be256543c77",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        424,
+        488
+      ],
+      "id": "e394d2d4-4160-4268-a0bf-ae4f925dc5b0",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Traveler Name:\n{{ $json['Traveler Name'] }}\n\nDestination:\n{{ $json['Destination'] }}\n\nStart Date:\n{{ $json['Start Date'] }}\n\nEnd Date:\n{{ $json['End Date'] }}\n\nNumber of Travelers:\n{{ $json['Travelers'] }}\n\nBudget:\n{{ $json['Budget'] }}\n\nInterests:\n{{ $json['Interests'] }}\n\nTravel Style:\n{{ $json['Travel Style'] }}\n\nAccommodation Preference:\n{{ $json['Accommodation Preference'] }}\n\nTransportation Preference:\n{{ $json['Transportation Preference'] }}\n\nTASK:\n\nAnalyze the travel request and create a detailed travel planning strategy.\n\nBreak the planning into these specialized tasks:\n\n1. ACTIVITIES & DESTINATIONS\n- Identify suitable activities and attractions.\n- Consider the traveler's interests and travel style.\n- Organize activities logically by day.\n\n2. BUDGET PLANNING\n- Estimate how the budget should be distributed across accommodation, transportation, food, activities, and miscellaneous expenses.\n- Check whether the requested budget is realistic.\n- Identify areas where the traveler can save money.\n\n3. TRANSPORTATION\n- Recommend suitable transportation options based on the destination, budget, and preferences.\n- Consider local transportation between major activities.\n\n4. ACCOMMODATION\n- Recommend the type of accommodation that matches the budget and travel style.\n- Explain the reasoning.\n\n5. TRIP STRUCTURE\n- Determine how many days are available.\n- Create a logical structure for the trip.\n- Avoid overloading each day.\n\nIMPORTANT:\nDo not invent real-time prices, hotel availability, flight availability, weather, or schedules.\nDo not make bookings.\nProvide planning recommendations only.\n\nReturn the result as a structured travel planning strategy that can be passed to specialized travel agents.",
+        "options": {
+          "systemMessage": "You are the Travel Manager in a multi-agent travel planning system.\n\nYour responsibility is to analyze the user's travel requirements\nand create a structured travel planning strategy.\n\nAnalyze:\n\n- Destination\n- Travel dates\n- Number of travelers\n- Budget\n- Interests\n- Travel style\n- Accommodation preference\n- Transportation preference\n\nBreak the planning task into independent tasks for:\n\n1. Activity planning\n2. Budget planning\n3. Transportation planning\n\nDo not create the final itinerary.\n\nDo not invent real-time prices, availability, weather conditions,\nhotel availability, or transportation schedules.\n\nThe specialized agents will handle their respective tasks."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        352,
+        272
+      ],
+      "id": "629e0d9e-68e6-4162-a378-74c85b978d58",
+      "name": "Travel Manager"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are the Activities Research Agent.\n\nAnalyze the travel request and identify suitable activities and attractions.\n\nTRAVEL REQUEST:\n\nDestination:\n{{ $('Edit Fields').item.json['Destination'] }}\n\nStart Date:\n{{ $('Edit Fields').item.json['Start Date'] }}\n\nEnd Date:\n{{ $('Edit Fields').item.json['End Date'] }}\n\nTravelers:\n{{ $('Edit Fields').item.json['Travelers'] }}\n\nBudget:\n{{ $('Edit Fields').item.json['Budget'] }}\n\nInterests:\n{{ $('Edit Fields').item.json['Interests'] }}\n\nTravel Style:\n{{ $('Edit Fields').item.json['Travel Style'] }}\n\nAccommodation Preference:\n{{ $('Edit Fields').item.json['Accommodation Preference'] }}\n\nTransportation Preference:\n{{ $('Edit Fields').item.json['Transportation Preference'] }}\n\nTASK:\n\nIdentify suitable attractions and activities.\n\nFor each activity provide:\n- Activity name\n- Suggested day\n- Why it matches the traveler\n- Approximate duration\n- Estimated cost category\n- Priority\n\nAvoid inventing real-time availability or exact prices.\nDo not make bookings.\n\nReturn the results in a structured format that another AI agent can use to create the final itinerary.",
+        "options": {
+          "systemMessage": "You are an Activities Research Agent.\n\nYour job is to identify activities and attractions that match the traveler's destination, interests, budget, travel style, and available dates.\n\nPrioritize practical recommendations.\n\nDo not invent real-time availability.\nDo not claim that tickets or reservations are available.\nDo not make bookings.\n\nReturn clear structured research for the final itinerary agent."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        704,
+        672
+      ],
+      "id": "e8b8d56c-5de5-4703-883e-a1d31f606cad",
+      "name": "Activities Research Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        776,
+        888
+      ],
+      "id": "e5c4d897-57c6-4c1c-9542-1f46c397beba",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are the Budget Planning Agent.\n\nAnalyze this travel request:\n\nDestination:\n{{ $('Edit Fields').item.json['Destination'] }}\n\nStart Date:\n{{ $('Edit Fields').item.json['Start Date'] }}\n\nEnd Date:\n{{ $('Edit Fields').item.json['End Date'] }}\n\nTravelers:\n{{ $('Edit Fields').item.json['Travelers'] }}\n\nTotal Budget:\n{{ $('Edit Fields').item.json['Budget'] }}\n\nTravel Style:\n{{ $('Edit Fields').item.json['Travel Style'] }}\n\nAccommodation Preference:\n{{ $('Edit Fields').item.json['Accommodation Preference'] }}\n\nTransportation Preference:\n{{ $('Edit Fields').item.json['Transportation Preference'] }}\n\nTASK:\n\nCreate a practical budget allocation for:\n\n1. Accommodation\n2. Transportation\n3. Food\n4. Activities\n5. Miscellaneous/emergency expenses\n\nCalculate the approximate amount and percentage for each category.\n\nCheck whether the total requested budget appears realistic.\n\nDo not invent exact real-time prices.\n\nReturn a structured budget plan for the final itinerary agent.",
+        "options": {
+          "systemMessage": "You are the Budget Planning Agent in a multi-agent travel planning system.\n\nYour job is to analyze the traveler's budget and create a practical financial plan for the trip.\n\nIMPORTANT RULES:\n\n1. Use the traveler's provided budget, number of travelers, dates, destination, and preferences.\n2. Divide the budget into:\n   - Accommodation\n   - Transportation\n   - Food\n   - Activities\n   - Miscellaneous/Emergency\n3. Calculate the approximate amount and percentage for each category.\n4. Check whether the overall budget appears realistic for the requested trip.\n5. Identify areas where the traveler can reduce spending if necessary.\n6. Prioritize the traveler's stated preferences.\n7. Do not invent real-time prices, availability, hotel rates, flight fares, or transportation schedules.\n8. Do not make bookings or payments.\n9. Clearly state when an amount is only an estimate.\n10. Return structured information that can be used by the final Travel Synthesizer Agent.\n\nYour output must be practical, clear, and easy for another AI agent to process."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        704,
+        -128
+      ],
+      "id": "5c652778-f98f-4169-9363-2f43457acf5d",
+      "name": "Budget Planning Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        776,
+        104
+      ],
+      "id": "49ad626a-6e7b-4758-b268-f051da1c2d02",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the following travel request.\n\nTraveler Name:\n{{ $('Edit Fields').item.json['Traveler Name'] }}\n\nDestination:\n{{ $('Edit Fields').item.json['Destination'] }}\n\nStart Date:\n{{ $('Edit Fields').item.json['Start Date'] }}\n\nEnd Date:\n{{ $('Edit Fields').item.json['End Date'] }}\n\nNumber of Travelers:\n{{ $('Edit Fields').item.json['Travelers'] }}\n\nBudget:\n{{ $('Edit Fields').item.json['Budget'] }}\n\nInterests:\n{{ $('Edit Fields').item.json['Interests'] }}\n\nTravel Style:\n{{ $('Edit Fields').item.json['Travel Style'] }}\n\nAccommodation Preference:\n{{ $('Edit Fields').item.json['Accommodation Preference'] }}\n\nTransportation Preference:\n{{ $('Edit Fields').item.json['Transportation Preference'] }}\n\nTASK:\n\nCreate a transportation plan for this trip.\n\nAnalyze:\n\n1. Arrival transportation\n2. Local transportation\n3. Transportation between major activities\n4. Convenience\n5. Budget impact\n6. Alternative transportation options\n\nRank the options by suitability.\n\nDo not invent real-time schedules, availability, or exact fares.\n\nReturn a structured transportation research report for the Travel Synthesizer Agent.",
+        "options": {
+          "systemMessage": "You are the Transportation Planning Agent in a multi-agent travel planning system.\n\nYour responsibility is to analyze transportation requirements for the traveler's trip.\n\nIMPORTANT RULES:\n\n1. Consider the destination, travel dates, number of travelers, budget, travel style, and transportation preference.\n2. Analyze suitable transportation options for the trip.\n3. Consider:\n   - Arrival transportation\n   - Local transportation\n   - Transportation between major attractions\n   - Convenience\n   - Estimated budget impact\n   - Suitable alternatives\n4. Rank transportation options from most suitable to least suitable.\n5. Prefer options that match the traveler's stated preferences.\n6. Do not invent real-time schedules or availability.\n7. Do not claim that a vehicle, flight, train, or ticket is available unless verified by a connected tool.\n8. Do not make bookings or payments.\n9. Clearly identify estimates as estimates.\n10. Return structured recommendations that can be used by the Travel Synthesizer Agent.\n\nYour goal is to provide transportation research, not a final itinerary."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1056,
+        416
+      ],
+      "id": "3150dd5b-12c6-47cb-b830-4b3ce1d2ff66",
+      "name": "Transportation Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1128,
+        648
+      ],
+      "id": "f67bbe94-38a4-4917-82b2-a5b41bc7f26d",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Analyze the following travel request and create an accommodation strategy.\n\nTraveler Name:\n{{ $('Edit Fields').item.json['Traveler Name'] }}\n\nDestination:\n{{ $('Edit Fields').item.json['Destination'] }}\n\nStart Date:\n{{ $('Edit Fields').item.json['Start Date'] }}\n\nEnd Date:\n{{ $('Edit Fields').item.json['End Date'] }}\n\nNumber of Travelers:\n{{ $('Edit Fields').item.json['Travelers'] }}\n\nTotal Budget:\n{{ $('Edit Fields').item.json['Budget'] }}\n\nInterests:\n{{ $('Edit Fields').item.json['Interests'] }}\n\nTravel Style:\n{{ $('Edit Fields').item.json['Travel Style'] }}\n\nAccommodation Preference:\n{{ $('Edit Fields').item.json['Accommodation Preference'] }}\n\nTransportation Preference:\n{{ $('Edit Fields').item.json['Transportation Preference'] }}\n\nTASK:\n\nAnalyze the accommodation requirements for this trip.\n\nProvide:\n\n1. Recommended accommodation type\n2. Recommended area or location\n3. Estimated accommodation budget\n4. Proximity to major attractions\n5. Transportation convenience\n6. Advantages\n7. Disadvantages\n8. Alternative accommodation options\n9. Final recommendation\n\nDo not invent real-time hotel availability or exact current prices.\n\nClearly identify estimates.\n\nReturn a structured accommodation research report for the Travel Synthesizer Agent.",
+        "options": {
+          "systemMessage": "You are the Accommodation Planning Agent in a multi-agent travel planning system.\n\nYour job is to analyze the traveler's accommodation requirements and provide a practical accommodation strategy.\n\nIMPORTANT RULES:\n\n1. Consider the destination, travel dates, number of travelers, total budget, travel style, interests, and accommodation preference.\n2. Recommend the most suitable accommodation type.\n3. Recommend suitable areas or neighborhoods based on the traveler's interests and activities.\n4. Consider proximity to attractions and transportation.\n5. Consider the traveler's budget.\n6. Provide budget estimates only when sufficient information is available.\n7. Clearly label estimates as estimates.\n8. Do not invent real-time hotel availability, room availability, or exact current prices.\n9. Do not make bookings or payments.\n10. Provide alternative accommodation options when appropriate.\n11. Explain the reasoning behind your recommendations.\n12. Return your findings as structured research that another AI agent can use.\n13. Do not create the final travel itinerary. Your responsibility is only accommodation research.\n\nYour output should contain:\n\n- Recommended accommodation type\n- Recommended area/location\n- Budget considerations\n- Proximity to attractions\n- Transportation convenience\n- Advantages\n- Disadvantages\n- Alternative options\n- Final accommodation recommendation"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1408,
+        176
+      ],
+      "id": "f04ccdc0-545d-49f5-bcab-7187a6fb3990",
+      "name": "Accommodation Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1480,
+        392
+      ],
+      "id": "ac6bcb17-e6df-40cf-82e6-e7df680bd5df",
+      "name": "Google Gemini Chat Model4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create the final travel plan using the research provided by the specialist agents.\n\nTRAVELER DETAILS\n\nTraveler Name:\n{{ $('Edit Fields').item.json['Traveler Name'] }}\n\nDestination:\n{{ $('Edit Fields').item.json['Destination'] }}\n\nStart Date:\n{{ $('Edit Fields').item.json['Start Date'] }}\n\nEnd Date:\n{{ $('Edit Fields').item.json['End Date'] }}\n\nNumber of Travelers:\n{{ $('Edit Fields').item.json['Travelers'] }}\n\nBudget:\n{{ $('Edit Fields').item.json['Budget'] }}\n\nInterests:\n{{ $('Edit Fields').item.json['Interests'] }}\n\nTravel Style:\n{{ $('Edit Fields').item.json['Travel Style'] }}\n\nAccommodation Preference:\n{{ $('Edit Fields').item.json['Accommodation Preference'] }}\n\nTransportation Preference:\n{{ $('Edit Fields').item.json['Transportation Preference'] }}\n\n\nSPECIALIST AGENT RESEARCH\n\nUse all research received from the previous Merge node:\n\n{{ JSON.stringify($input.all()) }}\n\n\nYOUR TASK\n\nSynthesize the specialist research into one complete and practical travel plan.\n\nCreate:\n\n1. Trip Overview\n2. Day-by-Day Itinerary\n3. Accommodation Recommendation\n4. Transportation Plan\n5. Activities Plan\n6. Food and Dining Suggestions\n7. Budget Breakdown\n8. Estimated Total Cost\n9. Important Assumptions\n10. Travel Tips\n11. Final Recommendation\n\n\nDAY-BY-DAY ITINERARY\n\nFor each day include:\n\n- Morning\n- Afternoon\n- Evening\n- Suggested activities\n- Transportation considerations\n- Food/dining suggestions\n- Estimated spending\n- Rest/free time when appropriate\n\n\nIMPORTANT RULES\n\n- Respect the traveler's dates.\n- Respect the number of travelers.\n- Stay within the stated budget whenever possible.\n- Prioritize the traveler's interests.\n- Follow the selected travel style.\n- Follow the accommodation preference.\n- Follow the transportation preference.\n- Group geographically close activities together.\n- Avoid unnecessary travel.\n- Create a realistic daily schedule.\n- Resolve conflicts between specialist recommendations intelligently.\n- Do not blindly copy the specialist agents.\n- Clearly identify estimated costs.\n- Do not invent real-time prices.\n- Do not invent hotel availability.\n- Do not invent transportation schedules.\n- Do not claim that anything has been booked.\n- Clearly mention assumptions and limitations.",
+        "options": {
+          "systemMessage": "You are the Travel Synthesizer Agent in a hard-level multi-agent travel planning system.\n\nYour responsibility is to combine and critically evaluate the outputs from multiple specialist travel agents and produce one coherent final travel plan.\n\nSPECIALIST AGENTS\n\nThe research may include:\n\n1. Activities Research Agent\n2. Budget Planning Agent\n3. Transportation Agent\n4. Accommodation Agent\n\nYour job is to synthesize their findings rather than simply repeat them.\n\nRULES:\n\n1. Analyze all specialist outputs before creating the final plan.\n2. Resolve conflicts between specialist recommendations.\n3. Prioritize the traveler's destination, dates, budget, interests, travel style, accommodation preference, and transportation preference.\n4. Keep the itinerary realistic.\n5. Group geographically close activities together.\n6. Avoid excessive travel between locations.\n7. Balance sightseeing with meals and rest.\n8. Keep estimated spending aligned with the traveler's budget.\n9. Clearly distinguish estimates from confirmed information.\n10. Never invent real-time prices, hotel availability, transportation schedules, weather, or bookings.\n11. Never claim that a reservation or booking has been completed.\n12. State important assumptions when information is unavailable.\n13. Do not blindly follow a specialist recommendation if it conflicts with the traveler's requirements.\n14. Produce a practical itinerary that a traveler could actually follow.\n15. The final response should be organized, readable, and professional.\n\nYou are the final decision-making and synthesis layer of the travel planning workflow."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1984,
+        16
+      ],
+      "id": "7021b313-3da3-4460-a2d2-6561c9467847",
+      "name": "Travel Synthesizer"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        2056,
+        248
+      ],
+      "id": "60c29f26-8b68-47a7-a296-b9d2fc7af408",
+      "name": "Google Gemini Chat Model5",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1120,
+        -128
+      ],
+      "id": "eff05b58-a012-41b0-bdea-6b57ea17e435",
+      "name": "Merge Research 1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1472,
+        -128
+      ],
+      "id": "20e946b9-a940-4446-88eb-58df2314cbc6",
+      "name": "Merge Research 2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1760,
+        16
+      ],
+      "id": "54b32c05-21bd-4b3c-864b-d6ea780cadb8",
+      "name": "Merge All Research"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Travel Manager",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Travel Manager",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Travel Manager": {
+      "main": [
+        [
+          {
+            "node": "Transportation Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Budget Planning Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Activities Research Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Accommodation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Activities Research Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Activities Research Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge Research 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Budget Planning Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Transportation Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transportation Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge Research 2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Accommodation Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Accommodation Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge All Research",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Travel Synthesizer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Budget Planning Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge Research 1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Research 1": {
+      "main": [
+        [
+          {
+            "node": "Merge Research 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Research 2": {
+      "main": [
+        [
+          {
+            "node": "Merge All Research",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge All Research": {
+      "main": [
+        [
+          {
+            "node": "Travel Synthesizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "609f5524-3964-4f2a-a841-9b0578f9b594",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "yr2OioE3KQk59JdC",
+  "tags": []
+}

@@ -1,0 +1,270 @@
+{
+  "name": "AI Proposal Writer",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Form",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Client Name",
+              "fieldName": "client_name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Project name",
+              "fieldName": "project_name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Project requirments",
+              "fieldName": "requirments",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "budget",
+              "fieldName": "Budget",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "timeline",
+              "fieldName": "timeline",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "company_name",
+              "fieldName": "company_name",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -96,
+        0
+      ],
+      "id": "48757ce0-add9-4ab1-96f6-e2da94b79cc0",
+      "name": "On form submission",
+      "webhookId": "164a560b-e5b3-434f-8971-ac9d061958b2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create a professional business proposal using the client information below.\n\nCLIENT INFORMATION\n\nClient Name:\n{{ $json.client_name }}\n\nProject Name:\n{{ $json.project_name }}\n\nCompany Name:\n{{ $json.company_name }}\n\nProject Requirements:\n{{ $json.requirments }}\n\nBudget:\n{{ $json.Budget }}\n\nTimeline:\n{{ $json.timeline }}\n\nWrite a complete professional proposal.\n\nThe proposal must contain:\n\n1. Proposal Title\n2. Executive Summary\n3. Understanding of Client Requirements\n4. Proposed Solution\n5. Key Features\n6. Project Scope\n7. Deliverables\n8. Technology / Implementation Approach\n9. Project Timeline\n10. Pricing\n11. Assumptions\n12. Terms and Conditions\n13. Next Steps\n14. Conclusion\n\nRequirements:\n\n- Use professional business language.\n- Clearly explain the proposed solution.\n- Do not invent requirements that were not provided.\n- If important information is missing, make a reasonable assumption and clearly label it as an assumption.\n- Make the proposal persuasive but not exaggerated.\n- Keep the structure easy to read.\n- Use headings and bullet points where appropriate.\n- Make the proposal suitable for sending directly to a client.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a heYou are an expert B2B proposal writer.\n\nYour job is to create professional, accurate and persuasive business proposals based only on the information provided by the user.\n\nFollow these rules:\n\n1. Never fabricate client requirements.\n2. Never invent guaranteed results.\n3. Clearly separate confirmed information from assumptions.\n4. Use professional and persuasive business language.\n5. Focus on business value and measurable deliverables.\n6. Make the proposal easy for a client to understand.\n7. Use clear headings and bullet points.\n8. Keep pricing exactly as provided unless instructed otherwise.\n9. Keep the timeline exactly as provided unless instructed otherwise.\n10. If information is missing, identify it under Assumptions or Information Required.\n11. Do not mention that you are an AI.\n12. Produce only the final proposal content.lpful assistant"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        128,
+        0
+      ],
+      "id": "1bd92d67-53aa-4eea-93c6-163fdb1cfe64",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        136,
+        232
+      ],
+      "id": "9c0c728d-5dc8-4297-86c4-a64b34164f5b",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"proposal_title\": \"string\",\n  \"client_name\": \"string\",\n  \"project_name\": \"string\",\n  \"executive_summary\": \"string\",\n  \"requirements\": \"string\",\n  \"proposed_solution\": \"string\",\n  \"key_features\": [\n    \"string\"\n  ],\n  \"deliverables\": [\n    \"string\"\n  ],\n  \"technology\": \"string\",\n  \"timeline\": \"string\",\n  \"pricing\": \"string\",\n  \"assumptions\": [\n    \"string\"\n  ],\n  \"next_steps\": [\n    \"string\"\n  ],\n  \"conclusion\": \"string\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        264,
+        232
+      ],
+      "id": "f6e59b79-fa6f-4f52-beb6-84230b01ed45",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1g7HJQRp4Q06Uu8Iw6lbR-W_AIjQOG4Fh6Z0Q1F4-6WA",
+          "mode": "list",
+          "cachedResultName": "Dental details ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1g7HJQRp4Q06Uu8Iw6lbR-W_AIjQOG4Fh6Z0Q1F4-6WA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1g7HJQRp4Q06Uu8Iw6lbR-W_AIjQOG4Fh6Z0Q1F4-6WA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name ",
+              "displayName": "Name ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Age",
+              "displayName": "Age",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        480,
+        0
+      ],
+      "id": "853cd52b-e3cd-45cd-917b-67939a9e55eb",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HlAsjOG6L8RjCWX0",
+          "name": "Google Sheets account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "nachiketharroju04@gmail.com",
+        "subject": "hello",
+        "message": "Your message",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        704,
+        0
+      ],
+      "id": "e5198491-1704-4410-9cf1-02d1c8ae30db",
+      "name": "Send a message",
+      "webhookId": "1bc51a5a-fb87-41e1-ae38-e9b3ee904870",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7iRyEUu9T9cVwtRv",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "788468d3-e481-4810-b534-4a62b3d7942a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "PqZLAtBCtb4qk7cw",
+  "tags": []
+}

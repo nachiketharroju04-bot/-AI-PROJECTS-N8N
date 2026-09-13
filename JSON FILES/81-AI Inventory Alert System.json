@@ -1,0 +1,286 @@
+{
+  "name": "AI Inventory Alert System",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        -96
+      ],
+      "id": "754d2aaa-de2c-4784-a6bc-62c40226a810",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        -96
+      ],
+      "id": "bd9a747a-3a80-4951-8063-924c86fca8b3",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q524jgyHLO03nlDm",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst requiredFields = [\n  \"Product_ID\",\n  \"Product_Name\",\n  \"Category\",\n  \"Current_Stock\",\n  \"Minimum_Stock\",\n  \"Maximum_Stock\",\n  \"Unit_Price\",\n  \"Supplier\",\n  \"Last_Restock_Date\"\n];\n\nconst validItems = [];\nconst invalidItems = [];\n\nfor (const item of items) {\n  const data = item.json;\n\n  const missingFields = requiredFields.filter(\n    field =>\n      data[field] === undefined ||\n      data[field] === null ||\n      String(data[field]).trim() === \"\"\n  );\n\n  if (missingFields.length === 0) {\n    validItems.push(data);\n  } else {\n    invalidItems.push({\n      product_id: data.Product_ID || \"Unknown\",\n      missing_fields: missingFields\n    });\n  }\n}\n\nreturn [\n  {\n    json: {\n      data_valid: invalidItems.length === 0,\n      total_products: items.length,\n      valid_products: validItems.length,\n      invalid_products: invalidItems.length,\n      invalid_details: invalidItems,\n      inventory_data: validItems\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        -96
+      ],
+      "id": "e7ab197e-f087-48ca-b40f-7e8fbfb671de",
+      "name": "Validate Inventory Data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "bd8a5c2f-6586-4760-9f58-ef20dfebcd6a",
+              "leftValue": "={{ $json.data_valid }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "bfab0b77-49bc-4d91-af73-80bb2af31aec",
+      "name": "Is Inventory Data Valid?"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the following inventory data.\n\nInventory Data:\n\n{{ JSON.stringify($json.inventory_data) }}\n\nIdentify products that require attention.\n\nFor each product requiring attention, provide:\n\n- Product ID\n- Product name\n- Current stock\n- Stock status\n- Alert priority\n- Recommended action\n- Reason\n\nAlso provide:\n\n- Overall inventory status\n- General recommendations\n\nReturn ONLY the required JSON structure.",
+        "options": {
+          "systemMessage": "You are an AI Inventory Analyst.\n\nYour task is to analyze inventory data and identify products that require attention.\n\nFor each product, evaluate:\n\n1. Current stock\n2. Minimum stock\n3. Maximum stock\n4. Stock condition\n5. Alert priority\n6. Recommended action\n\nUse these stock statuses:\n\nLOW STOCK:\nCurrent stock is below or equal to the minimum stock level.\n\nNORMAL:\nCurrent stock is above the minimum stock level and below the maximum stock level.\n\nOVERSTOCK:\nCurrent stock is at or above the maximum stock level.\n\nUse these priorities:\n\nLOW:\nInventory is normal and no immediate action is required.\n\nMEDIUM:\nInventory requires monitoring or planning.\n\nHIGH:\nInventory is low and restocking should be considered soon.\n\nCRITICAL:\nInventory is extremely low and immediate restocking attention is required.\n\nDo not invent inventory information.\n\nUse only the information provided.\n\nDo not assume supplier delivery times or future sales.\n\nReturn ONLY valid JSON.\n\nUse exactly this structure:\n\n{\n  \"inventory_summary\": \"\",\n  \"products_requiring_attention\": [],\n  \"overall_status\": \"\",\n  \"recommendations\": []\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        896,
+        -96
+      ],
+      "id": "39f40daf-84c1-481c-9844-1c1895754742",
+      "name": "AI Inventory Analyst"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        968,
+        136
+      ],
+      "id": "cea5f900-88a7-4940-b5e0-2dc94d5adb9b",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wkvPLR8iLkAneiWB",
+          "name": "Google Gemini(PaLM) Api account 32"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nlet result = data.output;\n\nif (typeof result !== \"string\") {\n  result = JSON.stringify(result);\n}\n\nresult = result\n  .replace(/```json/g, \"\")\n  .replace(/```/g, \"\")\n  .trim();\n\nlet parsed;\n\ntry {\n  parsed = JSON.parse(result);\n} catch (error) {\n  throw new Error(\"AI returned invalid JSON: \" + result);\n}\n\nreturn {\n  json: {\n    ...data,\n    ...parsed\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        -96
+      ],
+      "id": "1d7a08ba-2382-4ce8-b9ba-95712863eec0",
+      "name": "Parse AI Result"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nconst products = data.products_requiring_attention || [];\n\nreturn products.map(product => ({\n  json: {\n    alert_id: `INV-${Date.now()}-${product.product_id}`,\n\n    report_date: new Date().toISOString().split(\"T\")[0],\n\n    product_id: product.product_id,\n    product_name: product.product_name,\n\n    current_stock: product.current_stock,\n\n    stock_status: product.stock_status,\n    alert_priority: product.alert_priority,\n\n    recommended_action: product.recommended_action,\n    reason: product.reason,\n\n    overall_status: data.overall_status,\n\n    recommendations: Array.isArray(data.recommendations)\n      ? data.recommendations.join(\" | \")\n      : data.recommendations,\n\n    created_at: new Date().toISOString()\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        -96
+      ],
+      "id": "f96a394f-2f0f-4ab4-8a68-22c87a416a81",
+      "name": "Create Inventory Alert Record"
+    },
+    {
+      "parameters": {
+        "sendTo": "nachiketharroju@gmail.com",
+        "subject": "=Inventory Alert - {{ $json.product_name }} - {{ $json.alert_priority }}",
+        "message": "=Hi Team,  An inventory alert has been generated.  Product ID: {{ $json.product_id }}  Product: {{ $json.product_name }}  Current Stock: {{ $json.current_stock }}  Stock Status: {{ $json.stock_status }}  Alert Priority: {{ $json.alert_priority }}  Recommended Action: {{ $json.recommended_action }}  Reason: {{ $json.reason }}  Overall Inventory Status: {{ $json.overall_status }}  General Recommendations: {{ $json.recommendations }}  Please review the inventory and take the required action.  Best Regards, AI Inventory Alert System",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1696,
+        -96
+      ],
+      "id": "7bd934a6-a3fa-4cac-b11a-8a00247101a5",
+      "name": "Send a message",
+      "webhookId": "ec5a473d-744d-4081-b4a7-cef5923bf41a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "BhfiiIF56c1Uc6dC",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Validate Inventory Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Inventory Data": {
+      "main": [
+        [
+          {
+            "node": "Is Inventory Data Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Inventory Data Valid?": {
+      "main": [
+        [
+          {
+            "node": "AI Inventory Analyst",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Inventory Analyst",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Inventory Analyst": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Result": {
+      "main": [
+        [
+          {
+            "node": "Create Inventory Alert Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Inventory Alert Record": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "020f6210-cf95-42c6-8c25-c2889dd85468",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "edbb0d25bd7a66014faefe68083a8f89c418df33feee41a51636a861e015ce95"
+  },
+  "nodeGroups": [],
+  "id": "prYsFlhjeXVpUSGm",
+  "tags": []
+}

@@ -1,0 +1,613 @@
+{
+  "name": "Personal Finance Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Personal Finance Assistant",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name"
+            },
+            {
+              "fieldLabel": "Monthly Income",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Monthly Expenses",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Current Savings",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Total Debt",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Monthly Debt Payment",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Financial Goal"
+            },
+            {
+              "fieldLabel": "Goal Amount",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Risk Preference",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Low"
+                  },
+                  {
+                    "option": "Medium"
+                  },
+                  {
+                    "option": "HIgh"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Time Horizon",
+              "fieldType": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        448
+      ],
+      "id": "8a5c0a4b-ed90-4a28-92bc-ed1a6e2e5a60",
+      "name": "On form submission",
+      "webhookId": "30b36665-a8bb-43cf-a250-2f45fe78490e"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "203cdec5-bd20-48a7-92e2-952332aa0025",
+              "name": "Name",
+              "value": "={{ $json.Name }}",
+              "type": "string"
+            },
+            {
+              "id": "7c5fe6ab-c1ca-4e5f-b837-76e763b44f5c",
+              "name": "Monthly Income",
+              "value": "={{ $json['Monthly Income'] }}",
+              "type": "number"
+            },
+            {
+              "id": "ba0e26a6-5424-4810-a61f-a670fefaff1a",
+              "name": "Monthly Expenses",
+              "value": "={{ $json['Monthly Expenses'] }}",
+              "type": "number"
+            },
+            {
+              "id": "5ba90ace-23bb-49eb-a229-4bb67c5c5194",
+              "name": "Current Savings",
+              "value": "={{ $json['Current Savings'] }}",
+              "type": "number"
+            },
+            {
+              "id": "44425805-7c0c-4dff-93dd-17f23e6b4224",
+              "name": "Total Debt",
+              "value": "={{ $json['Total Debt'] }}",
+              "type": "number"
+            },
+            {
+              "id": "65559bdb-457f-419d-a058-a132572b2ea4",
+              "name": "Monthly Debt Payment",
+              "value": "={{ $json['Monthly Debt Payment'] }}",
+              "type": "number"
+            },
+            {
+              "id": "35e17d83-7b44-4a0e-a458-f75ac11810ba",
+              "name": "Financial Goal",
+              "value": "={{ $json['Financial Goal'] }}",
+              "type": "string"
+            },
+            {
+              "id": "bc27e500-0a9b-42ec-8c44-86046cd2d91a",
+              "name": "Goal Amount",
+              "value": "={{ $json['Goal Amount'] }}",
+              "type": "number"
+            },
+            {
+              "id": "95694914-dee9-4f38-8bdf-cfc66071e098",
+              "name": "Risk Preference",
+              "value": "={{ $json['Risk Preference'] }}",
+              "type": "string"
+            },
+            {
+              "id": "1332fe26-3da6-44c7-9598-efd9daa6cd15",
+              "name": "Time Horizon",
+              "value": "={{ $json['Time Horizon'] }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        448
+      ],
+      "id": "c38639f1-5bcf-4f72-a448-e5fc33896285",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the following personal finance request and create a structured financial analysis plan.\n\nName:\n{{ $json.Name }}\n\nMonthly Income:\n{{ $json['Monthly Income'] }}\n\nMonthly Expenses:\n{{ $json['Monthly Expenses'] }}\n\nCurrent Savings:\n{{ $json['Current Savings'] }}\n\nTotal Debt:\n{{ $json['Total Debt'] }}\n\nMonthly Debt Payment:\n{{ $json['Monthly Debt Payment'] }}\n\nFinancial Goal:\n{{ $json['Financial Goal'] }}\n\nGoal Amount:\n{{ $json['Goal Amount'] }}\n\nRisk Preference:\n{{ $json['Risk Preference'] }}\n\nTime Horizon:\n{{ $json['Time Horizon'] }}\n\nDetermine what should be analyzed by the specialist finance agents.\n\nThe specialist areas are:\n\n1. Expense Analysis\n2. Savings Planning\n3. Debt Analysis\n4. Financial Goal Planning\n\nCreate a clear analysis plan for these specialist agents.",
+        "options": {
+          "systemMessage": "You are the Finance Manager Agent in a multi-agent personal finance system.\n\nYour job is to analyze the user's financial situation and coordinate the specialist finance agents.\n\nThe specialist agents will independently analyze:\n\n- Expenses\n- Savings\n- Debt\n- Financial goals\n\nYou must provide accurate financial context to the workflow.\n\nIMPORTANT RULES:\n\n1. Never invent financial information.\n2. Use only the information provided by the user.\n3. Clearly distinguish calculations from assumptions.\n4. Do not guarantee investment returns.\n5. Do not present speculative investments as guaranteed.\n6. Consider income, expenses, savings, debt, goals, risk preference, and time horizon.\n7. The specialist agents will perform detailed analysis."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        448,
+        448
+      ],
+      "id": "fd5f0ed3-ee6b-4d3c-92e7-c0cc4aab1ee9",
+      "name": "Finance Manager"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        520,
+        664
+      ],
+      "id": "dcfa6aa9-75d9-48fe-a5ea-aad774b6e864",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the user's monthly expenses.\n\nMonthly Income:\n{{ $('Edit Fields').item.json['Monthly Income'] }}\n\nMonthly Expenses:\n{{ $('Edit Fields').item.json['Monthly Expenses'] }}\n\nAnalyze:\n\n1. Expense-to-income ratio\n2. Estimated disposable income\n3. Spending level\n4. Potential areas for expense reduction\n5. Essential vs discretionary spending assumptions\n6. Monthly savings opportunity\n7. Potential risks\n\nProvide practical recommendations.\n\nDo not invent individual expense categories that were not provided.\nClearly identify assumptions.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        800,
+        0
+      ],
+      "id": "660db5ae-e510-4822-a2d1-a0d9873abc52",
+      "name": "Expense Analysis Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        872,
+        232
+      ],
+      "id": "685dfaea-99f8-4d5e-bb6f-7c3a51d42a4f",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the user's savings position.\n\nMonthly Income:\n{{ $('Edit Fields').item.json['Monthly Income'] }}\n\nMonthly Expenses:\n{{ $('Edit Fields').item.json['Monthly Expenses'] }}\n\nCurrent Savings:\n{{ $('Edit Fields').item.json['Current Savings'] }}\n\nFinancial Goal:\n{{ $('Edit Fields').item.json['Financial Goal'] }}\n\nGoal Amount:\n{{ $('Edit Fields').item.json['Goal Amount'] }}\n\nTime Horizon:\n{{ $('Edit Fields').item.json['Time Horizon'] }}\n\nAnalyze:\n\n1. Current savings position\n2. Potential monthly savings\n3. Emergency savings considerations\n4. Goal funding requirements\n5. Monthly amount needed for the goal\n6. Savings gap\n7. Practical savings recommendations\n\nShow calculations clearly.",
+        "options": {
+          "systemMessage": "You are the Savings Planning Agent.\n\nAnalyze the user's savings position and financial goal.\n\nFocus on:\n\n- Current savings\n- Monthly savings capacity\n- Goal amount\n- Time horizon\n- Savings gap\n- Emergency fund considerations\n\nDo not guarantee investment returns.\n\nDo not assume a specific investment return unless explicitly provided.\n\nClearly distinguish mathematical calculations from assumptions."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        800,
+        816
+      ],
+      "id": "97cd7091-f614-4efb-a34b-93dfebd48f1d",
+      "name": "Savings Planning Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        872,
+        1048
+      ],
+      "id": "28de596c-4eaf-4cc4-9e2b-3f09e53a3e1a",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the user's debt situation.\n\nMonthly Income:\n{{ $('Edit Fields').item.json['Monthly Income'] }}\n\nTotal Debt:\n{{ $('Edit Fields').item.json['Total Debt'] }}\n\nMonthly Debt Payment:\n{{ $('Edit Fields').item.json['Monthly Debt Payment'] }}\n\nMonthly Expenses:\n{{ $('Edit Fields').item.json['Monthly Expenses'] }}\n\nAnalyze:\n\n1. Debt burden\n2. Monthly debt payment relative to income\n3. Remaining cash flow after debt payment\n4. Potential debt repayment strategies\n5. Risks associated with the current debt level\n6. How debt repayment could affect the financial goal\n\nDo not invent interest rates or loan terms.\nIf interest rates are unavailable, clearly state that limitation.",
+        "options": {
+          "systemMessage": "You are the Debt Analysis Agent.\n\nAnalyze the user's debt position using only the provided information.\n\nFocus on:\n\n- Debt burden\n- Monthly repayment\n- Cash flow\n- Repayment priorities\n- Goal impact\n\nNever invent interest rates, loan terms, penalties, or repayment schedules.\n\nClearly identify missing information."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1152,
+        304
+      ],
+      "id": "72b2dd04-e7ae-4a8f-a19e-678bec08e26b",
+      "name": "Debt Analysis Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1224,
+        520
+      ],
+      "id": "fdbc320d-d730-4552-8433-17ac71dfd5d7",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the user's financial goal.\n\nFinancial Goal:\n{{ $('Edit Fields').item.json['Financial Goal'] }}\n\nCurrent Savings:\n{{ $('Edit Fields').item.json['Current Savings'] }}\n\nGoal Amount:\n{{ $('Edit Fields').item.json['Goal Amount'] }}\n\nMonthly Income:\n{{ $('Edit Fields').item.json['Monthly Income'] }}\n\nMonthly Expenses:\n{{ $('Edit Fields').item.json['Monthly Expenses'] }}\n\nMonthly Debt Payment:\n{{ $('Edit Fields').item.json['Monthly Debt Payment'] }}\n\nTime Horizon:\n{{ $('Edit Fields').item.json['Time Horizon'] }}months\n\nRisk Preference:\n{{ $('Edit Fields').item.json['Risk Preference'] }}\n\nDetermine:\n\n1. Required monthly contribution\n2. Current funding gap\n3. Whether the goal appears mathematically achievable from the provided cash flow\n4. Potential adjustments\n5. Timeline considerations\n6. Priority recommendations\n\nDo not guarantee investment returns.\nDo not assume unknown income or expenses.",
+        "options": {
+          "systemMessage": "You are the Financial Goal Planning Agent.\n\nYour job is to evaluate whether the user's stated financial goal is mathematically feasible based on the provided information.\n\nFocus on:\n\n- Goal amount\n- Current savings\n- Monthly savings capacity\n- Time horizon\n- Debt obligations\n- Risk preference\n\nProvide calculations and assumptions clearly.\n\nNever guarantee investment performance."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1504,
+        576
+      ],
+      "id": "60282ec1-64dd-42f0-a3a8-a498f24525e1",
+      "name": "Financial Goal Planning Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1576,
+        792
+      ],
+      "id": "e69e3a2e-c559-4a06-a494-b3240d8926a4",
+      "name": "Google Gemini Chat Model4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1216,
+        0
+      ],
+      "id": "93e3019a-389f-44a5-a3de-39854eb6bf84",
+      "name": "Merge Finance 1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1568,
+        144
+      ],
+      "id": "5806d9e6-402a-4ed8-83d5-71252768ab67",
+      "name": "Merge Finance 2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1856,
+        304
+      ],
+      "id": "58dd4b68-c15c-4da2-8cc0-1dce99f04c69",
+      "name": "Merge All Finance Research"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create a comprehensive personal finance analysis using the specialist research provided below.\n\nUSER FINANCIAL PROFILE\n\nName:\n{{ $('Edit Fields').item.json.Name }}\n\nMonthly Income:\n{{ $('Edit Fields').item.json['Monthly Income'] }}\n\nMonthly Expenses:\n{{ $('Edit Fields').item.json['Monthly Expenses'] }}\n\nCurrent Savings:\n{{ $('Edit Fields').item.json['Current Savings'] }}\n\nTotal Debt:\n{{ $('Edit Fields').item.json['Total Debt'] }}\n\nMonthly Debt Payment:\n{{ $('Edit Fields').item.json['Monthly Debt Payment'] }}\n\nFinancial Goal:\n{{ $('Edit Fields').item.json['Financial Goal'] }}\n\nGoal Amount:\n{{ $('Edit Fields').item.json['Goal Amount'] }}\n\nRisk Preference:\n{{ $('Edit Fields').item.json['Risk Preference'] }}\n\nTime Horizon:\n{{ $('Edit Fields').item.json['Time Horizon'] }} months\n\n\nSPECIALIST RESEARCH\n\n{{ JSON.stringify($input.all()) }}\n\n\nCreate a final personal finance report containing:\n\n1. Financial Summary\n2. Income and Expense Analysis\n3. Savings Analysis\n4. Debt Analysis\n5. Financial Goal Analysis\n6. Monthly Cash Flow\n7. Recommended Monthly Allocation\n8. Goal Funding Strategy\n9. Risk Considerations\n10. Key Financial Risks\n11. Action Plan\n12. Important Assumptions\n\nIMPORTANT:\n\n- Use the specialist research as supporting analysis.\n- Resolve contradictions between agents.\n- Do not invent missing financial information.\n- Show calculations clearly.\n- Do not guarantee investment returns.\n- Do not present speculative investments as guaranteed.\n- Do not invent interest rates.\n- Clearly identify assumptions.\n- Keep recommendations aligned with the user's risk preference.\n- Prioritize practical and realistic actions.",
+        "options": {
+          "systemMessage": "You are the Finance Synthesizer Agent in a hard-level multi-agent Personal Finance Assistant.\n\nYour job is to combine the outputs from:\n\n1. Expense Analysis Agent\n2. Savings Planning Agent\n3. Debt Analysis Agent\n4. Financial Goal Planning Agent\n\ninto one coherent financial analysis.\n\nIMPORTANT RULES:\n\n1. Use the user's actual financial information.\n2. Critically evaluate specialist outputs.\n3. Resolve conflicting recommendations.\n4. Show important calculations.\n5. Clearly distinguish calculations, assumptions, and recommendations.\n6. Never invent financial information.\n7. Never guarantee investment returns.\n8. Never present speculative investments as guaranteed.\n9. Never invent interest rates or loan terms.\n10. Respect the user's risk preference.\n11. Consider debt before recommending aggressive financial strategies.\n12. Consider emergency savings.\n13. Identify whether the user's goal is mathematically feasible.\n14. Clearly identify gaps between the user's current position and goal.\n15. Provide practical next steps.\n16. This system provides educational financial analysis, not guaranteed financial outcomes.\n\nThe final output should be clear, structured, practical, and easy for the user to understand."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2080,
+        304
+      ],
+      "id": "a8e069bb-0f54-4724-a592-25818d620031",
+      "name": "Finance Synthesizer"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        2152,
+        520
+      ],
+      "id": "8633d750-6139-4f35-af11-207a03584978",
+      "name": "Google Gemini Chat Model5",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Finance Manager",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Finance Manager",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finance Manager": {
+      "main": [
+        [
+          {
+            "node": "Expense Analysis Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Savings Planning Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Debt Analysis Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Financial Goal Planning Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Expense Analysis Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Savings Planning Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Debt Analysis Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Financial Goal Planning Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Financial Goal Planning Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge All Finance Research",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Expense Analysis Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge Finance 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Savings Planning Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge Finance 1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Finance 1": {
+      "main": [
+        [
+          {
+            "node": "Merge Finance 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Debt Analysis Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge Finance 2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Finance 2": {
+      "main": [
+        [
+          {
+            "node": "Merge All Finance Research",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge All Finance Research": {
+      "main": [
+        [
+          {
+            "node": "Finance Synthesizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Finance Synthesizer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "e843478e-e26c-4d89-85dc-901ba226e87a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "juhkVXVjgd3QEMuA",
+  "tags": []
+}

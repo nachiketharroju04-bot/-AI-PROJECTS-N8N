@@ -1,0 +1,285 @@
+{
+  "name": "AI Knowledge Base Updater",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI Knowledge Base Updater",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Article Title"
+            },
+            {
+              "fieldLabel": "Article Content",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Category"
+            },
+            {
+              "fieldLabel": "Author Name"
+            },
+            {
+              "fieldLabel": "Source"
+            },
+            {
+              "fieldLabel": "Update Type",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "New Article"
+                  },
+                  {
+                    "option": "Update Article"
+                  },
+                  {
+                    "option": "Correction"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Last Updated",
+              "fieldType": "date"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        -32
+      ],
+      "id": "162215b8-c816-47bf-8bd2-4b1115ddcfa5",
+      "name": "On form submission",
+      "webhookId": "19c6e9c5-4e50-4a4d-9170-1644ec4f696d"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nconst requiredFields = [\n  \"Article Title\",\n  \"Article Content\",\n  \"Category\",\n  \"Author Name\",\n  \"Source\",\n  \"Update Type\",\n  \"Last Updated\"\n];\n\nconst missingFields = requiredFields.filter(\n  field =>\n    data[field] === undefined ||\n    data[field] === null ||\n    data[field] === \"\"\n);\n\nreturn {\n  json: {\n    ...data,\n    data_valid: missingFields.length === 0,\n    missing_fields: missingFields\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -32
+      ],
+      "id": "5ff17b79-981f-4e98-b63e-552726b4afe7",
+      "name": "Validate Article Data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2277679b-13e8-4e02-abbf-4723a7ea93f0",
+              "leftValue": "={{ $json.data_valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        -32
+      ],
+      "id": "bed995e5-b516-4685-8fe3-4c72373a22fa",
+      "name": "Is Article Data Valid?"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Update this knowledge-base article.\n\nOriginal Article Title:\n{{ $json[\"Article Title\"] }}\n\nArticle Content:\n{{ $json[\"Article Content\"] }}\n\nCategory:\n{{ $json[\"Category\"] }}\n\nAuthor:\n{{ $json[\"Author Name\"] }}\n\nSource:\n{{ $json[\"Source\"] }}\n\nUpdate Type:\n{{ $json[\"Update Type\"] }}\n\nLast Updated:\n{{ $json[\"Last Updated\"] }}\n\nImprove and structure the article while keeping the original meaning.\nReturn the required JSON structure.",
+        "options": {
+          "systemMessage": "You are an AI Knowledge Base Updater.\n\nYour task is to review and improve knowledge-base articles using only the information provided.\n\nAnalyze the article and:\n\n1. Create a clear and professional article title.\n2. Clean and improve the article content.\n3. Create a short summary.\n4. Identify the appropriate category.\n5. Generate relevant search tags.\n6. Identify the update type.\n7. Identify important keywords.\n8. Suggest a suitable article status.\n\nKeep the original meaning and do not invent facts.\n\nDo not add information that is not supported by the provided content.\n\nMake the article easy for customers or employees to understand.\n\nUse clear headings and concise instructions where appropriate.\n\nPossible article statuses:\n\n- Draft\n- Review Required\n- Published\n\nReturn ONLY valid JSON.\n\nUse exactly this structure:\n\n{\n  \"article_title\": \"\",\n  \"updated_content\": \"\",\n  \"summary\": \"\",\n  \"category\": \"\",\n  \"tags\": [],\n  \"keywords\": [],\n  \"update_type\": \"\",\n  \"status\": \"\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        672,
+        -32
+      ],
+      "id": "6cf8d100-b675-4b07-9eb9-b13dffa99771",
+      "name": "AI Knowledge Base Updater"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        744,
+        200
+      ],
+      "id": "98279fdd-abe0-4c26-a6a7-87ffdcf94441",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "yHSSNN7ASt9fdi6V",
+          "name": "Google Gemini(PaLM) Api account 11"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nlet result = data.output;\n\nif (typeof result === \"string\") {\n  result = result\n    .replace(/```json/g, \"\")\n    .replace(/```/g, \"\")\n    .trim();\n\n  result = JSON.parse(result);\n}\n\nreturn {\n  json: {\n    ...data,\n    ...result\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        -32
+      ],
+      "id": "0365e048-d5c3-4fd0-acf9-fab1fc43ca23",
+      "name": "Parse KB Result"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nreturn {\n  json: {\n    kb_id: `KB-${Date.now()}`,\n\n    article_title: data.article_title,\n    updated_content: data.updated_content,\n    summary: data.summary,\n\n    category: data.category,\n\n    tags: JSON.stringify(data.tags),\n    keywords: JSON.stringify(data.keywords),\n\n    update_type: data.update_type,\n    status: data.status,\n\n    author_name: data[\"Author Name\"],\n    source: data[\"Source\"],\n    last_updated: data[\"Last Updated\"],\n\n    kb_status: \"Updated\",\n\n    created_at: new Date().toISOString()\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        -32
+      ],
+      "id": "2dbc48de-4f99-4d8f-a742-4ec17b0b3f3e",
+      "name": "Create KB Record"
+    },
+    {
+      "parameters": {
+        "sendTo": "nachiketharroju@gmail.com",
+        "subject": "=Knowledge Base Updated - {{ $json.article_title }}",
+        "message": "=Hi Team,  A knowledge-base article has been updated.  Article ID: {{ $json.kb_id }}  Article Title: {{ $json.article_title }}  Category: {{ $json.category }}  Update Type: {{ $json.update_type }}  Status: {{ $json.status }}  Summary: {{ $json.summary }}  Tags: {{ $json.tags }}  Keywords: {{ $json.keywords }}    The updated article has been stored in the knowledge-base records.  Best Regards, AI Knowledge Base Updater",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1472,
+        -32
+      ],
+      "id": "5fda53bc-786d-45ca-a51c-1adc0eac8a8a",
+      "name": "Send KB Update Notification",
+      "webhookId": "a58af603-9821-4670-b068-30a63f6eabf6",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "BhfiiIF56c1Uc6dC",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Validate Article Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Article Data": {
+      "main": [
+        [
+          {
+            "node": "Is Article Data Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Article Data Valid?": {
+      "main": [
+        [
+          {
+            "node": "AI Knowledge Base Updater",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Knowledge Base Updater",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Knowledge Base Updater": {
+      "main": [
+        [
+          {
+            "node": "Parse KB Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse KB Result": {
+      "main": [
+        [
+          {
+            "node": "Create KB Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create KB Record": {
+      "main": [
+        [
+          {
+            "node": "Send KB Update Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "9361a163-fb52-4195-a2c2-7441fac5b399",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "edbb0d25bd7a66014faefe68083a8f89c418df33feee41a51636a861e015ce95"
+  },
+  "nodeGroups": [],
+  "id": "W6GRotv1YGf42pMt",
+  "tags": []
+}

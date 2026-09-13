@@ -1,0 +1,139 @@
+{
+  "name": "AI Expense Categorizer",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI Expense Categorizer",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Employee Name"
+            },
+            {
+              "fieldLabel": "Expense Amount",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Merchant"
+            },
+            {
+              "fieldLabel": "Expense Description",
+              "fieldType": "textarea"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "90924d4e-5389-43df-832b-cc04a1340041",
+      "name": "On form submission",
+      "webhookId": "5b5ccaad-b181-48e1-90c6-d79bddf6c1be"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Employee Name:\n{{ $json['Employee Name'] }}\n\nExpense Amount:\n{{ $json['Expense Amount'] }}\n\nMerchant:\n{{ $json['Merchant'] }}\n\nExpense Description:\n{{ $json['Expense Description'] }}\n\nCategorize this expense.\n\nAllowed categories:\nTravel\nTransportation\nFood & Dining\nAccommodation\nOffice Supplies\nSoftware & Subscriptions\nMarketing\nUtilities\nHealthcare\nEntertainment\nEducation\nProfessional Services\nEquipment\nOther\n\nReturn the category, expense type, and a short reason.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an AI Expense Categorizer.\n\nYour job is to analyze employee expense submissions and categorize them accurately.\n\nAllowed categories are:\n\nTravel\nTransportation\nFood & Dining\nAccommodation\nOffice Supplies\nSoftware & Subscriptions\nMarketing\nUtilities\nHealthcare\nEntertainment\nEducation\nProfessional Services\nEquipment\nOther\n\nIMPORTANT RULES:\n\n1. Categorize the expense based on the description and merchant.\n2. Only use categories from the allowed category list.\n3. Do not invent missing information.\n4. If the merchant is unknown, keep the merchant as provided.\n5. If the expense cannot be confidently categorized, use \"Other\".\n6. Preserve the submitted expense amount.\n7. Do not change the currency or amount.\n8. Provide a short reason for the category.\n9. Keep the response professional and concise.\n10. Return the result using the required structured output format."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "c1743e97-5c28-4cca-8a43-f6d038bdbbe2",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        240
+      ],
+      "id": "6c54706c-e893-49ef-a948-f5286c62bbec",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"employee_name\": \"John\",\n  \"amount\": 1250,\n  \"merchant\": \"Amazon\",\n  \"category\": \"Office Supplies\",\n  \"expense_type\": \"Business\",\n  \"reason\": \"The expense was for an item used for office work.\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        368,
+        240
+      ],
+      "id": "e76af1ea-86ba-4a92-96b9-e22778abcdf5",
+      "name": "Structured Output Parser"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "68e644bc-b4fe-451e-b7e3-3249251f527e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "CZjFpSkKoPgsNTsX",
+  "tags": []
+}

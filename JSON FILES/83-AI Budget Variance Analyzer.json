@@ -1,0 +1,295 @@
+{
+  "name": "AI Budget Variance Analyzer",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        -96
+      ],
+      "id": "f0d7baa5-5394-481b-8ad9-d4ad0fcc0481",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1bn_fVlZXS6-zMS0BXPNH-bCLcsfNYxXyKcaCFksPKh8",
+          "mode": "list",
+          "cachedResultName": "Untitled spreadsheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bn_fVlZXS6-zMS0BXPNH-bCLcsfNYxXyKcaCFksPKh8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bn_fVlZXS6-zMS0BXPNH-bCLcsfNYxXyKcaCFksPKh8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {}
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        -96
+      ],
+      "id": "806fb36b-fd64-4164-8fc3-094a2268ff3d",
+      "name": "Get Budget Data",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Q524jgyHLO03nlDm",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst requiredFields = [\n  \"Date\",\n  \"Department\",\n  \"Category\",\n  \"Budget_Amount\",\n  \"Actual_Amount\",\n  \"Manager\"\n];\n\nconst validItems = [];\nconst invalidItems = [];\n\nfor (const item of items) {\n  const data = item.json;\n\n  const missingFields = requiredFields.filter(\n    field =>\n      data[field] === undefined ||\n      data[field] === null ||\n      String(data[field]).trim() === \"\"\n  );\n\n  if (missingFields.length === 0) {\n    validItems.push(data);\n  } else {\n    invalidItems.push({\n      department: data.Department || \"Unknown\",\n      category: data.Category || \"Unknown\",\n      missing_fields: missingFields\n    });\n  }\n}\n\nreturn [\n  {\n    json: {\n      data_valid: invalidItems.length === 0,\n      total_records: items.length,\n      valid_records: validItems.length,\n      invalid_records: invalidItems.length,\n      invalid_details: invalidItems,\n      budget_data: validItems\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        -96
+      ],
+      "id": "f3bfc153-4070-40e0-914d-55991a050187",
+      "name": "Validate Budget Data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "956f621e-0ca7-47be-9715-c2ad17623460",
+              "leftValue": "={{ $json.data_valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "a8721ab3-a0fe-413a-a4b6-5f4005cae742",
+      "name": "Is Budget Data Valid?"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the following budget data.\n\nBudget Data:\n\n{{ JSON.stringify($json.budget_data) }}\n\nFor each department and category, provide:\n\n- Department\n- Category\n- Budget amount\n- Actual amount\n- Variance amount\n- Variance percentage\n- Variance status\n- Severity\n- Recommended action\n- Reason based only on the provided numbers\n\nAlso provide:\n\n- Overall budget performance\n- Overall status\n- General recommendations\n\nReturn ONLY the required JSON structure.",
+        "options": {
+          "systemMessage": "You are an AI Budget Variance Analyst.\n\nYour task is to analyze planned budgets against actual expenses.\n\nFor each budget record, evaluate:\n\n1. Budget amount\n2. Actual amount\n3. Variance amount\n4. Variance percentage\n5. Variance status\n6. Severity\n7. Recommended action\n\nCalculate variance as:\n\nActual Amount - Budget Amount\n\nCalculate variance percentage as:\n\n((Actual Amount - Budget Amount) / Budget Amount) × 100\n\nUse these statuses:\n\nOVER BUDGET:\nActual spending is greater than the planned budget.\n\nUNDER BUDGET:\nActual spending is lower than the planned budget.\n\nON BUDGET:\nActual spending is equal to the planned budget.\n\nUse these severity levels:\n\nLOW:\nVariance percentage is below 5%.\n\nMEDIUM:\nVariance percentage is between 5% and 10%.\n\nHIGH:\nVariance percentage is greater than 10%.\n\nDo not invent reasons for the variance.\n\nDo not assume why spending increased or decreased unless the provided data supports the conclusion.\n\nUse only the provided information.\n\nReturn ONLY valid JSON.\n\nUse exactly this structure:\n\n{\n  \"overall_summary\": \"\",\n  \"category_analysis\": [],\n  \"overall_status\": \"\",\n  \"recommendations\": []\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        896,
+        -96
+      ],
+      "id": "ea5d4227-a79b-47ed-8f96-587e5ee2a2ff",
+      "name": "AI Budget Variance Analyst"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        968,
+        136
+      ],
+      "id": "f2d8324b-d983-442a-98ca-ec070d4c199d",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wkvPLR8iLkAneiWB",
+          "name": "Google Gemini(PaLM) Api account 32"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nlet result = data.output;\n\nif (typeof result !== \"string\") {\n  result = JSON.stringify(result);\n}\n\nresult = result\n  .replace(/```json/g, \"\")\n  .replace(/```/g, \"\")\n  .trim();\n\nlet parsed;\n\ntry {\n  parsed = JSON.parse(result);\n} catch (error) {\n  throw new Error(\"AI returned invalid JSON: \" + result);\n}\n\nreturn {\n  json: {\n    ...data,\n    ...parsed\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        -96
+      ],
+      "id": "ae4e6720-36c8-4581-aa83-53056dc7b9b2",
+      "name": "Parse AI Result"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nconst records = data.category_analysis || [];\n\nreturn records.map(record => ({\n  json: {\n    report_id: `BUDGET-${Date.now()}-${record.department}`,\n\n    report_date: new Date().toISOString().split(\"T\")[0],\n\n    department: record.department,\n    category: record.category,\n\n    budget_amount: record.budget_amount,\n    actual_amount: record.actual_amount,\n\n    variance_amount: record.variance_amount,\n    variance_percentage: record.variance_percentage,\n\n    variance_status: record.variance_status,\n    severity: record.severity,\n\n    recommendation: record.recommended_action,\n    reason: record.reason,\n\n    overall_status: data.overall_status,\n\n    created_at: new Date().toISOString()\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        -96
+      ],
+      "id": "cc668848-e8e7-4c13-b33a-c002b627f9fe",
+      "name": "Create Budget Variance Record"
+    },
+    {
+      "parameters": {
+        "sendTo": "nachiketharroju@gmail.com",
+        "subject": "=Budget Variance Alert - {{ $json.category }} - {{ $json.variance_status }}",
+        "message": "=Hi Team,  A budget variance has been identified.  Department: {{ $json.department }}  Category: {{ $json.category }}  Budget Amount: ₹{{ $json.budget_amount }}  Actual Amount: ₹{{ $json.actual_amount }}  Variance Amount: ₹{{ $json.variance_amount }}  Variance Percentage: {{ $json.variance_percentage }}%  Variance Status: {{ $json.variance_status }}  Severity: {{ $json.severity }}  Reason: {{ $json.reason }}  Recommended Action: {{ $json.recommendation }}  Overall Budget Status: {{ $json.overall_status }}  Please review the budget performance and take the appropriate action.  Best Regards, AI Budget Variance Analyzer",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1696,
+        -96
+      ],
+      "id": "4f5baf4a-362e-4ebd-8f60-9633f13c1208",
+      "name": "Send a message",
+      "webhookId": "10d61499-10c8-4f89-9d28-3233c8d51964",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "BhfiiIF56c1Uc6dC",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Budget Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Budget Data": {
+      "main": [
+        [
+          {
+            "node": "Validate Budget Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Budget Data": {
+      "main": [
+        [
+          {
+            "node": "Is Budget Data Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Budget Data Valid?": {
+      "main": [
+        [
+          {
+            "node": "AI Budget Variance Analyst",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Budget Variance Analyst",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Budget Variance Analyst": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Result": {
+      "main": [
+        [
+          {
+            "node": "Create Budget Variance Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Budget Variance Record": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "1d203188-89d1-49d4-98e3-d0c20dacbc2c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "edbb0d25bd7a66014faefe68083a8f89c418df33feee41a51636a861e015ce95"
+  },
+  "nodeGroups": [],
+  "id": "gYWk9SKJCTxYyyi2",
+  "tags": []
+}

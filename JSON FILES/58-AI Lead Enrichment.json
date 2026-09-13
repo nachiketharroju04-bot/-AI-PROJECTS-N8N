@@ -1,0 +1,409 @@
+{
+  "name": "AI Lead Enrichment",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI Lead Enrichment",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "First Name"
+            },
+            {
+              "fieldLabel": "Last Name"
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email"
+            },
+            {
+              "fieldLabel": "Company Name"
+            },
+            {
+              "fieldLabel": "Company Website"
+            },
+            {
+              "fieldLabel": "LinkedIn Profile"
+            },
+            {
+              "fieldLabel": "Job Title"
+            },
+            {
+              "fieldLabel": "Country"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "601af46d-d24d-4162-ab0f-0585c9c0ab4c",
+      "name": "On form submission",
+      "webhookId": "f614b25d-05c8-4ff6-82f1-5dc15257a151"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nreturn [\n  {\n    json: {\n      lead_id: `LEAD-${Date.now()}`,\n\n      first_name: data[\"First Name\"] || \"\",\n      last_name: data[\"Last Name\"] || \"\",\n      full_name: `${data[\"First Name\"] || \"\"} ${data[\"Last Name\"] || \"\"}`.trim(),\n\n      email: data[\"Email\"] || \"\",\n      company: data[\"Company Name\"] || \"\",\n      website: data[\"Company Website\"] || \"\",\n      linkedin: data[\"LinkedIn Profile\"] || \"\",\n      job_title: data[\"Job Title\"] || \"\",\n      country: data[\"Country\"] || \"\",\n\n      source: \"n8n Lead Enrichment Form\"\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "b346ada0-ae50-4ecb-bde6-f038fe29cfeb",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze this lead:\n\nName:\n{{ $json.full_name }}\n\nJob Title:\n{{ $json.job_title }}\n\nCompany:\n{{ $json.company }}\n\nEmail:\n{{ $json.email }}\n\nLinkedIn:\n{{ $json.linkedin }}\n\nCountry:\n{{ $json.country }}\n\nProvide:\n\n- person_name\n- job_title\n- seniority\n- department\n- likely_responsibilities\n- decision_maker\n- decision_maker_confidence\n- role_relevance_score\n- potential_role_pain_points\n- reasoning\n\nDo not invent information.\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a B2B Lead Research Analyst.\n\nYour job is to analyze the person-level information provided about a business lead.\n\nAnalyze:\n\n1. Full name\n2. Job title\n3. Seniority level\n4. Department\n5. Likely responsibilities\n6. Decision-making authority\n7. Role relevance for B2B sales\n8. Possible business challenges associated with the role\n\nRules:\n\n- Use only the information provided.\n- Do not invent facts about the person.\n- Clearly distinguish facts from reasonable inferences.\n- If information is unavailable, return \"unknown\".\n- Do not assume the person is a decision maker only because of their job title.\n- Keep the analysis professional and suitable for a B2B sales team.\n\nReturn structured JSON only."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "37f2e4c2-e143-48e7-9499-188bdaac6dae",
+      "name": "Lead Research Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        240
+      ],
+      "id": "028a30a9-8440-47cc-a3b4-652ea3cd1047",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the company associated with this lead.\n\nCOMPANY:\n{{ $(\"Code in JavaScript\").first().json.company }}\n\nWEBSITE:\n{{ $(\"Code in JavaScript\").first().json.website }}\n\nCOUNTRY:\n{{ $(\"Code in JavaScript\").first().json.country }}\n\nLEAD ROLE:\n{{ $(\"Code in JavaScript\").first().json.job_title }}\n\nLEAD RESEARCH:\n{{ $(\"Lead Research Agent\").first().json.output }}\n\nProvide the following:\n\n- company_name\n- industry\n- business_model\n- company_type\n- products_services\n- target_customers\n- estimated_company_size\n- geographic_market\n- technology_characteristics\n- potential_business_challenges\n- company_fit_reasoning\n\nImportant:\n\n- Do not invent facts.\n- Do not assume information from the website URL itself.\n- If information is unavailable, return \"unknown\".\n- Clearly distinguish facts from reasonable inferences.\n- Return JSON only.",
+        "options": {
+          "systemMessage": "You are a B2B Company Intelligence Analyst.\n\nAnalyze the company information provided.\n\nDetermine:\n\n1. Industry\n2. Business model\n3. Company type\n4. Products or services\n5. Target customers\n6. Company size\n7. Geographic market\n8. Technology/business characteristics\n9. Potential business challenges\n10. Potential reasons the company may need a B2B solution\n\nRules:\n\n- Never invent company facts.\n- Use only the information provided.\n- If information is unavailable, return \"unknown\".\n- Clearly distinguish facts from reasonable inferences.\n- Do not treat assumptions as verified facts.\n\nReturn structured JSON only."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        800,
+        0
+      ],
+      "id": "9ab7b33b-5164-45a6-b1b5-cbb4736452f9",
+      "name": "Company Intelligence Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        816,
+        240
+      ],
+      "id": "1db42101-f41d-4344-8c9a-1a3c8307f1dd",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Evaluate this lead against our Ideal Customer Profile (ICP).\n\n========================\nTARGET ICP\n========================\n\nIndustries:\n- SaaS\n- FinTech\n- E-commerce\n- Technology\n\nCompany Size:\n50 to 1000 employees\n\nTarget Roles:\n- Founder\n- CEO\n- Head of Sales\n- VP Sales\n- Sales Director\n- Marketing Director\n\nTarget Geography:\n- India\n- USA\n- UK\n\nPreferred Business Model:\n- B2B\n- SaaS\n- Technology services\n\n========================\nLEAD INFORMATION\n========================\n\nName:\n{{ $(\"Code in JavaScript\").first().json.full_name }}\n\nJob Title:\n{{ $(\"Code in JavaScript\").first().json.job_title }}\n\nCountry:\n{{ $(\"Code in JavaScript\").first().json.country }}\n\nCompany:\n{{ $(\"Code in JavaScript\").first().json.company }}\n\n========================\nLEAD RESEARCH\n========================\n\n{{ $(\"Lead Research Agent\").first().json.output }}\n\n========================\nCOMPANY INTELLIGENCE\n========================\n\n{{ $(\"Company Intelligence Agent\").first().json.output }}\n\n========================\nTASK\n========================\n\nEvaluate the lead against the ICP.\n\nCalculate:\n\n1. industry_fit_score\n2. company_size_fit_score\n3. geography_fit_score\n4. role_fit_score\n5. business_model_fit_score\n6. technology_fit_score\n7. overall_fit_score\n\nAlso provide:\n\n- icp_match\n- strongest_matching_factors\n- biggest_mismatches\n- qualification_reasoning\n- confidence\n\nScoring must be evidence-based.\n\nDo not invent information.\n\nIf information is unavailable, use \"unknown\".\n\nIf the company size is unknown, do not assume that it falls within the target range.\n\nIf the industry is inferred rather than verified, clearly state that in the reasoning.\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are an expert B2B Ideal Customer Profile (ICP) qualification analyst.\n\nYour job is to determine whether a lead and company match the defined ICP.\n\nEvaluate:\n\n1. Industry fit\n2. Company size fit\n3. Geography fit\n4. Job-role fit\n5. Business-model fit\n6. Technology fit\n7. Overall ICP fit\n\nUse the ICP criteria provided in the user message.\n\nScoring:\n\n0-20 = Very Poor Fit\n21-40 = Poor Fit\n41-60 = Moderate Fit\n61-80 = Good Fit\n81-100 = Excellent Fit\n\nDo not invent information.\n\nIf a required attribute is unknown, reduce confidence rather than assuming a match.\n\nReturn JSON only."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1152,
+        0
+      ],
+      "id": "a06ca371-6ada-4a2f-a020-f3fa2b04fa91",
+      "name": "ICP Qualification Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1232,
+        240
+      ],
+      "id": "f6c31152-1688-4353-a390-3e92ff0b3cfc",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Calculate the final lead score using the following information.\n\n========================\nORIGINAL LEAD\n========================\n\nName:\n{{ $(\"Code in JavaScript\").first().json.full_name }}\n\nJob Title:\n{{ $(\"Code in JavaScript\").first().json.job_title }}\n\nCompany:\n{{ $(\"Code in JavaScript\").first().json.company }}\n\nCountry:\n{{ $(\"Code in JavaScript\").first().json.country }}\n\n========================\nLEAD RESEARCH\n========================\n\n{{ $(\"Lead Research Agent\").first().json.output }}\n\n========================\nCOMPANY INTELLIGENCE\n========================\n\n{{ $(\"Company Intelligence Agent\").first().json.output }}\n\n========================\nICP QUALIFICATION\n========================\n\n{{ $(\"ICP Qualification Agent\").first().json.output }}\n\n========================\nSCORING\n========================\n\nUse these weights:\n\nICP overall fit = 30 points\nRole relevance = 20 points\nCompany fit = 15 points\nIndustry fit = 15 points\nGeography fit = 10 points\nBusiness model fit = 10 points\n\nConvert each 0-100 category score into weighted points.\n\nExample:\n\nIf role_fit_score = 100:\n\n100 × 20 / 100 = 20 points\n\nIf geography_fit_score = 100:\n\n100 × 10 / 100 = 10 points\n\nCalculate the final score from the actual information above.\n\nDo not invent missing information.\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are an expert B2B Lead Scoring Analyst.\n\nYour task is to calculate the final lead score using the lead research, company intelligence, and ICP qualification results provided in the user message.\n\nIMPORTANT:\n\n- Use the actual scores provided by the ICP Qualification Agent.\n- Do not assume missing information is a positive match.\n- Do not invent company information.\n- Do not automatically assign a high score.\n- Explain how the final score was calculated.\n- Return valid JSON only.\n\nSCORING MODEL:\n\nICP overall fit = 30 points\nRole relevance = 20 points\nCompany fit = 15 points\nIndustry fit = 15 points\nGeography fit = 10 points\nBusiness model fit = 10 points\n\nTo convert a 0-100 input score into weighted points:\n\nweighted points = input score × weight / 100\n\nFor unknown information, use 0 for that category.\n\nPRIORITY:\n\n80-100 = HOT\n60-79 = WARM\n40-59 = NURTURE\n0-39 = DISQUALIFIED\n\nReturn exactly these fields:\n\n{\n  \"icp_score\": number,\n  \"role_score\": number,\n  \"company_score\": number,\n  \"industry_score\": number,\n  \"geography_score\": number,\n  \"business_model_score\": number,\n  \"total_score\": number,\n  \"priority\": \"HOT | WARM | NURTURE | DISQUALIFIED\",\n  \"reasoning\": \"string\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1504,
+        0
+      ],
+      "id": "ce125d27-c57c-4c9b-aecd-dbadd3ffc91c",
+      "name": "Lead Scoring Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1584,
+        240
+      ],
+      "id": "234471f4-d57c-4f28-a4ec-d9c82882e598",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create a personalized sales strategy for this lead.\n\n========================\nLEAD\n========================\n\nName:\n{{ $(\"Code in JavaScript\").first().json.full_name }}\n\nJob Title:\n{{ $(\"Code in JavaScript\").first().json.job_title }}\n\nCompany:\n{{ $(\"Code in JavaScript\").first().json.company }}\n\nCountry:\n{{ $(\"Code in JavaScript\").first().json.country }}\n\n========================\nPERSON RESEARCH\n========================\n\n{{ $(\"Lead Research Agent\").first().json.output }}\n\n========================\nCOMPANY INTELLIGENCE\n========================\n\n{{ $(\"Company Intelligence Agent\").first().json.output }}\n\n========================\nICP QUALIFICATION\n========================\n\n{{ $(\"ICP Qualification Agent\").first().json.output }}\n\n========================\nLEAD SCORE\n========================\n\n{{ $(\"Lead Scoring Agent\").first().json.output }}\n\n========================\nTASK\n========================\n\nCreate:\n\n1. personalization_hook\n2. likely_business_problem\n3. value_proposition\n4. outreach_angle\n5. recommended_cta\n6. recommended_sales_channel\n7. recommended_follow_up\n\nUse the Head of Sales role as an important context.\n\nDo not invent company facts.\n\nIf company-specific information is unavailable, create a role-based recommendation and clearly indicate that it is an inference.\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a B2B Sales Personalization Strategist.\n\nYour task is to create a personalized sales strategy using ONLY information explicitly provided in the lead intelligence.\n\nSTRICT EVIDENCE RULES:\n\n1. Never invent company facts.\n2. Never invent industry information.\n3. Never invent company size.\n4. Never invent revenue, funding, customers, locations, technologies, achievements, or business events.\n5. Never infer a specific industry unless the provided company analysis supports it.\n6. Never claim the lead is facing a specific problem as a verified fact.\n7. Role-based business problems may be suggested only as hypotheses.\n8. When a statement is an inference, clearly treat it as an inference.\n9. Do not use geographic or industry-specific assumptions unless they are explicitly provided.\n10. If there is insufficient company information, create a role-based personalization strategy instead of fabricating company-specific details.\n\nPERSONALIZATION PRIORITY:\n\n1. Use verified company information.\n2. Use verified lead information.\n3. Use the person's job title and responsibilities.\n4. Use ICP qualification.\n5. Use lead score.\n6. Use reasonable role-based hypotheses only when necessary.\n\nThe personalization should help a sales representative decide:\n- what problem to discuss,\n- what value proposition to present,\n- how to approach the lead,\n- what CTA to use.\n\nReturn valid JSON only with:\n\n{\n  \"personalization_hook\": \"\",\n  \"likely_business_problem\": \"\",\n  \"value_proposition\": \"\",\n  \"outreach_angle\": \"\",\n  \"recommended_cta\": \"\",\n  \"recommended_sales_channel\": \"\",\n  \"recommended_follow_up\": \"\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1856,
+        0
+      ],
+      "id": "d4b5b790-3cea-4c93-8e31-4db0ddab0e21",
+      "name": "Lead Personalization Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1936,
+        240
+      ],
+      "id": "1e76c285-7f69-405e-bee7-5bac50637168",
+      "name": "Google Gemini Chat Model4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function parseAIOutput(nodeName) {\n  const raw = $(nodeName).first().json.output;\n\n  if (!raw) {\n    return {};\n  }\n\n  try {\n    // Remove markdown code fences if the AI added them\n    const cleaned = raw\n      .replace(/```json/gi, \"\")\n      .replace(/```/g, \"\")\n      .trim();\n\n    return JSON.parse(cleaned);\n  } catch (error) {\n    return {\n      parsing_error: true,\n      raw_output: raw\n    };\n  }\n}\n\n\n// ------------------------------------\n// 1. ORIGINAL LEAD DATA\n// ------------------------------------\n\nconst lead = $(\"Code in JavaScript\").first().json;\n\n\n// ------------------------------------\n// 2. AI AGENT OUTPUTS\n// ------------------------------------\n\nconst leadResearch = parseAIOutput(\"Lead Research Agent\");\n\nconst companyAnalysis = parseAIOutput(\n  \"Company Intelligence Agent\"\n);\n\nconst icpAnalysis = parseAIOutput(\n  \"ICP Qualification Agent\"\n);\n\nconst scoring = parseAIOutput(\n  \"Lead Scoring Agent\"\n);\n\nconst personalization = parseAIOutput(\n  \"Lead Personalization Agent\"\n);\n\n\n// ------------------------------------\n// 3. FINAL STRUCTURED OUTPUT\n// ------------------------------------\n\nreturn [\n  {\n    json: {\n\n      lead_id: lead.lead_id || \"\",\n\n      lead: {\n        name: lead.full_name || \"\",\n        first_name: lead.first_name || \"\",\n        last_name: lead.last_name || \"\",\n        email: lead.email || \"\",\n        job_title: lead.job_title || \"\",\n        company: lead.company || \"\",\n        country: lead.country || \"\",\n        website: lead.website || \"\",\n        linkedin: lead.linkedin || \"\"\n      },\n\n\n      // --------------------------------\n      // PERSON ANALYSIS\n      // --------------------------------\n\n      person_analysis: {\n\n        seniority:\n          leadResearch.seniority || \"unknown\",\n\n        department:\n          leadResearch.department || \"unknown\",\n\n        likely_responsibilities:\n          leadResearch.likely_responsibilities || [],\n\n        decision_maker:\n          leadResearch.decision_maker ?? false,\n\n        decision_maker_confidence:\n          leadResearch.decision_maker_confidence ?? 0,\n\n        role_relevance_score:\n          leadResearch.role_relevance_score ?? 0,\n\n        potential_role_pain_points:\n          leadResearch.potential_role_pain_points || []\n      },\n\n\n      // --------------------------------\n      // COMPANY ANALYSIS\n      // --------------------------------\n\n      company_analysis: {\n\n        company_name:\n          companyAnalysis.company_name || lead.company || \"\",\n\n        industry:\n          companyAnalysis.industry || \"unknown\",\n\n        business_model:\n          companyAnalysis.business_model || \"unknown\",\n\n        company_type:\n          companyAnalysis.company_type || \"unknown\",\n\n        products_services:\n          companyAnalysis.products_services || [],\n\n        target_customers:\n          companyAnalysis.target_customers || [],\n\n        company_size:\n          companyAnalysis.estimated_company_size || \"unknown\",\n\n        geographic_market:\n          companyAnalysis.geographic_market || \"unknown\",\n\n        technology_characteristics:\n          companyAnalysis.technology_characteristics || [],\n\n        potential_business_challenges:\n          companyAnalysis.potential_business_challenges || []\n      },\n\n\n      // --------------------------------\n      // ICP ANALYSIS\n      // --------------------------------\n\n      qualification: {\n\n        icp_match:\n          icpAnalysis.icp_match ?? false,\n\n        industry_fit_score:\n          icpAnalysis.industry_fit_score ?? 0,\n\n        company_size_fit_score:\n          icpAnalysis.company_size_fit_score ?? 0,\n\n        geography_fit_score:\n          icpAnalysis.geography_fit_score ?? 0,\n\n        role_fit_score:\n          icpAnalysis.role_fit_score ?? 0,\n\n        business_model_fit_score:\n          icpAnalysis.business_model_fit_score ?? 0,\n\n        technology_fit_score:\n          icpAnalysis.technology_fit_score ?? 0,\n\n        overall_fit_score:\n          icpAnalysis.overall_fit_score ?? 0,\n\n        strongest_matching_factors:\n          icpAnalysis.strongest_matching_factors || [],\n\n        biggest_mismatches:\n          icpAnalysis.biggest_mismatches || [],\n\n        qualification_reasoning:\n          icpAnalysis.qualification_reasoning || \"\",\n\n        confidence:\n          icpAnalysis.confidence ?? 0\n      },\n\n\n      // --------------------------------\n      // LEAD SCORING\n      // --------------------------------\n\n      scoring: {\n\n        icp_score:\n          scoring.icp_score ?? 0,\n\n        role_score:\n          scoring.role_score ?? 0,\n\n        company_score:\n          scoring.company_score ?? 0,\n\n        industry_score:\n          scoring.industry_score ?? 0,\n\n        geography_score:\n          scoring.geography_score ?? 0,\n\n        business_model_score:\n          scoring.business_model_score ?? 0,\n\n        total_score:\n          scoring.total_score ?? 0,\n\n        priority:\n          scoring.priority || \"UNKNOWN\",\n\n        reasoning:\n          scoring.reasoning || \"\"\n      },\n\n\n      // --------------------------------\n      // PERSONALIZATION\n      // --------------------------------\n\n      personalization: {\n\n        hook:\n          personalization.personalization_hook || \"\",\n\n        business_problem:\n          personalization.likely_business_problem || \"\",\n\n        value_proposition:\n          personalization.value_proposition || \"\",\n\n        outreach_angle:\n          personalization.outreach_angle || \"\",\n\n        cta:\n          personalization.recommended_cta || \"\",\n\n        sales_channel:\n          personalization.recommended_sales_channel || \"\",\n\n        follow_up:\n          personalization.recommended_follow_up || \"\"\n      },\n\n\n      processed_at:\n        new Date().toISOString()\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2208,
+        0
+      ],
+      "id": "fc2cf2e7-186a-43e8-a73f-28bce88637f2",
+      "name": "Final Lead Report"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Lead Research Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Lead Research Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Research Agent": {
+      "main": [
+        [
+          {
+            "node": "Company Intelligence Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Company Intelligence Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Company Intelligence Agent": {
+      "main": [
+        [
+          {
+            "node": "ICP Qualification Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "ICP Qualification Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ICP Qualification Agent": {
+      "main": [
+        [
+          {
+            "node": "Lead Scoring Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Lead Scoring Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Scoring Agent": {
+      "main": [
+        [
+          {
+            "node": "Lead Personalization Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Lead Personalization Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Personalization Agent": {
+      "main": [
+        [
+          {
+            "node": "Final Lead Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "a8bcf3ce-4e07-461e-b119-7e48651946ee",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "bqjcTE9P8z7LCNvC",
+  "tags": []
+}

@@ -1,0 +1,172 @@
+{
+  "name": "Meething schedueler",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "fdaee1ff-12ad-4317-b68d-bc609c2da8d0",
+      "name": "When chat message received",
+      "webhookId": "cff71928-2f29-4a75-ba5a-6a97f55dc2f7"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "You are an AI Meeting Scheduler.\n\nYour job is to:\n\n- Schedule meetings\n- Create Google Calendar events\n- Send meeting invitation emails\n\nIf information is missing, ask the user before using the tools.",
+        "options": {
+          "systemMessage": "You are an AI Meeting Scheduler.\n\nYour responsibilities are:\n\n- Schedule meetings\n- Create Google Calendar events\n- Send meeting invitation emails\n\nWhen a user requests a meeting:\n\n1. Collect:\n   - Meeting title\n   - Date\n   - Time\n   - Duration\n   - Recipient email\n\n2. If any information is missing, ask the user.\n\n3. Once all information is available:\n   - Use the Google Calendar tool to create the event.\n   - Use the Gmail tool to send the invitation.\n\nDo not answer that the meeting is scheduled unless the tools have been used successfully."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "2ab25bf1-b6c8-4f1d-ac6b-6c4799e39dac",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        232,
+        232
+      ],
+      "id": "e0543d13-21f1-449e-8458-ccc1e566ac43",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "zoogaadi@gmail.com",
+          "mode": "list",
+          "cachedResultName": "zoogaadi@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "summary": "Meeting Title"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        360,
+        232
+      ],
+      "id": "78b0b66c-399f-4c9c-b524-d07eab78d38e",
+      "name": "Create an event in Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "pB4D38lwpHQ1mf2w",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "nachiketharroju04@gmail.com",
+        "subject": "Meeting Invitation",
+        "message": "hello",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        0
+      ],
+      "id": "c2b09ba8-bd8d-4d88-b2c5-dd20f2314dbd",
+      "name": "Send a message",
+      "webhookId": "cbfa2925-d888-413b-88c4-57b7feeb71fd",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7iRyEUu9T9cVwtRv",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event in Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "7d57ce9d-5296-43d2-baa2-7226250740bd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "hvsXTI8QcITfCAhx",
+  "tags": []
+}

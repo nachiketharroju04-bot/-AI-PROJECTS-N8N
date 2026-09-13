@@ -1,0 +1,140 @@
+{
+  "name": "AI SEO Optimizer",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI SEO Optimizer",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Page Title"
+            },
+            {
+              "fieldLabel": "Target Keyword"
+            },
+            {
+              "fieldLabel": "Secondary Keywords"
+            },
+            {
+              "fieldLabel": "Target Audience"
+            },
+            {
+              "fieldLabel": "Existing Content",
+              "fieldType": "textarea"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "dc167c62-3a95-494c-8b88-95f8e00e1dc5",
+      "name": "On form submission",
+      "webhookId": "40b6b3cb-0392-4783-af6c-36c29e1c2db0"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze and optimize the following webpage content for SEO.\n\nPage Title:\n{{ $json['Page Title'] }}\n\nTarget Keyword:\n{{ $json['Target Keyword'] }}\n\nSecondary Keywords:\n{{ $json['Secondary Keywords'] }}\n\nTarget Audience:\n{{ $json['Target Audience'] }}\n\nExisting Content:\n{{ $json['Existing Content'] }}\n\nPerform a complete SEO analysis.\n\nAnalyze:\n1. Current content quality\n2. Keyword usage\n3. Search intent\n4. Title optimization\n5. Meta description\n6. Heading structure\n7. Content readability\n8. Keyword opportunities\n9. Internal linking opportunities\n10. Image/alt-text opportunities\n\nThen provide an optimized SEO version and actionable recommendations.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an AI SEO Optimization Specialist.\n\nYour job is to analyze webpage content and provide practical SEO improvements.\n\nIMPORTANT RULES:\n\n1. Analyze the provided content carefully.\n2. Use the provided target keyword as the primary keyword.\n3. Use secondary keywords naturally.\n4. Do not keyword-stuff the content.\n5. Keep the content natural and readable.\n6. Do not invent facts that are not supported by the provided content.\n7. Optimize the title for search engines and users.\n8. Create a concise and relevant meta description.\n9. Suggest a clean SEO-friendly URL slug.\n10. Analyze heading structure.\n11. Identify content gaps.\n12. Suggest internal linking opportunities.\n13. Suggest relevant image alt text.\n14. Consider search intent.\n15. Provide actionable recommendations.\n16. Give an SEO score from 0 to 100.\n17. Return the result using the required structured output format."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "2c9b1c56-4cea-414a-a64c-31ba92e11885",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        232,
+        232
+      ],
+      "id": "3b9384c3-d71e-4c94-96d9-fa295be9dd0e",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"seo_score\": 78,\n  \"primary_keyword\": \"digital marketing strategies\",\n  \"secondary_keywords\": [\n    \"SEO\",\n    \"social media marketing\",\n    \"content marketing\"\n  ],\n  \"optimized_title\": \"10 Effective Digital Marketing Strategies for Small Businesses\",\n  \"meta_description\": \"Discover effective digital marketing strategies that help small businesses improve online visibility, attract customers, and grow their business.\",\n  \"url_slug\": \"digital-marketing-strategies-small-business\",\n  \"search_intent\": \"Informational\",\n  \"content_summary\": \"The article explains digital marketing strategies that small businesses can use to improve their online presence.\",\n  \"heading_suggestions\": [\n    \"What Are Digital Marketing Strategies?\",\n    \"10 Digital Marketing Strategies for Small Businesses\",\n    \"How to Choose the Right Digital Marketing Strategy\"\n  ],\n  \"keyword_recommendations\": [\n    \"online marketing\",\n    \"digital marketing for small business\",\n    \"online advertising\"\n  ],\n  \"content_gaps\": [\n    \"Add practical examples\",\n    \"Include recent statistics\",\n    \"Add a section explaining how to measure results\"\n  ],\n  \"internal_link_suggestions\": [\n    \"Link to the SEO services page\",\n    \"Link to the content marketing guide\"\n  ],\n  \"image_alt_text_suggestions\": [\n    \"Small business digital marketing strategy\",\n    \"Digital marketing analytics dashboard\"\n  ],\n  \"readability\": \"Good\",\n  \"recommendations\": [\n    \"Improve the introduction\",\n    \"Add keyword variations naturally\",\n    \"Use more descriptive headings\",\n    \"Add internal links\"\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        360,
+        232
+      ],
+      "id": "35039a91-f0f6-4f8e-9d66-88bbc50b855b",
+      "name": "Structured Output Parser"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "4bf607c0-e381-4c7d-8ffd-1e4c79f94570",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "rAbcAVt2c15fzgjl",
+  "tags": []
+}

@@ -1,0 +1,335 @@
+{
+  "name": "AI HR Assistant",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        320
+      ],
+      "id": "6e9910cb-a414-4990-9ee2-aeee429f4eab",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "656cd11f-bb3a-4a3e-86ac-1175b8c4ac9b",
+              "name": "hr_policy",
+              "value": "COMPANY HR POLICY  LEAVE POLICY  Employees are eligible for 12 casual leave days per calendar year.  Employees are eligible for 10 sick leave days per calendar year.  Leave requests should be submitted to the reporting manager for approval.  WORK FROM HOME POLICY  Employees may request up to 2 work-from-home days per week, subject to manager approval.  Working from home does not remove the requirement to attend scheduled meetings.  WORKING HOURS  Normal working hours are Monday to Friday, 9:00 AM to 6:00 PM.  Employees are expected to follow their assigned shift timings.  ATTENDANCE POLICY  Employees must record their attendance using the company's attendance system.  Employees should inform their manager if they expect to be late or absent.  ONBOARDING  New employees must complete the HR onboarding process and submit all required documents.  PAYROLL  Salary is processed according to the company's payroll schedule.  Employees with questions about their individual salary or deductions should contact HR or Payroll.  BENEFITS  Employees may be eligible for company benefits according to their employment terms and applicable company policies.  For questions about individual eligibility, employees should contact HR.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -448,
+        320
+      ],
+      "id": "b6bac70c-cb5d-4796-ad61-aceb6089d4f3",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "memoryKey": {
+          "__rl": true,
+          "mode": "list",
+          "value": "vector_store_key"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.3,
+      "position": [
+        -192,
+        112
+      ],
+      "id": "4441c497-89b8-46e4-8da9-123203de4e8b",
+      "name": "Simple Vector Store"
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.hr_policy }}",
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -88,
+        344
+      ],
+      "id": "187f25fc-e396-4422-8d1f-10141c5bb61e",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 200,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        -8,
+        552
+      ],
+      "id": "758dd98e-32e5-4b52-a36e-7410edd7e8ab",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -216,
+        344
+      ],
+      "id": "c938bb9d-1138-4153-a96d-0a819ca2f0a7",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YFHLEvn4On3mmsU9",
+          "name": "Google Gemini(PaLM) Api account 15"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "HR ASSISTANT",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Employee Name",
+              "fieldName": "Employee Name"
+            },
+            {
+              "fieldLabel": "Employee ID",
+              "fieldName": "Employee ID"
+            },
+            {
+              "fieldLabel": "Department",
+              "fieldName": "Department"
+            },
+            {
+              "fieldLabel": "HR Question",
+              "fieldType": "textarea",
+              "fieldName": "HR Question",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -672,
+        960
+      ],
+      "id": "919f019b-f7ad-4f0b-b9f1-51d7e78e9abb",
+      "name": "On form submission",
+      "webhookId": "14e33437-ce77-44d1-947f-2b4f5d512f74"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Employee Name:\n{{ $json['Employee Name'] }}\n\nEmployee ID:\n{{ $json['Employee ID'] }}\n\nDepartment:\n{{ $json.Department }}\n\nEmployee Question:\n{{ $json['HR Question'] }}\n\nAnswer the employee's question.\n\nFor company-policy questions, use the HR Policy Search tool.\n\nIf the HR policy contains the answer, explain it clearly.\n\nIf the information cannot be found in the HR policy, say:\n\n\"I couldn't find this information in the available HR policy. Please contact HR for confirmation.\"\n\nDo not invent an answer.",
+        "options": {
+          "systemMessage": "You are an AI HR Assistant.\n\nYour job is to answer employee HR questions using the company's HR policy.\n\nIMPORTANT RULES:\n\n1. Use the HR Policy Search tool for questions about company policies.\n2. Do not invent HR policies.\n3. Use retrieved HR policy information as the primary source.\n4. If the policy does not contain the answer, say that the information is not available and recommend contacting HR.\n5. Answer in simple, professional language.\n6. Do not expose confidential employee information.\n7. Do not make decisions about hiring, firing, promotion, compensation or disciplinary action.\n8. Do not make decisions based on protected personal characteristics.\n9. For individual employee records such as personal leave balance or salary, explain that HR/Payroll may need to verify the employee's records."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -416,
+        960
+      ],
+      "id": "9f48995e-2e42-462d-87ab-21ec60af272d",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -440,
+        1192
+      ],
+      "id": "9cce853f-4e24-4f91-804b-aa27567456a2",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YFHLEvn4On3mmsU9",
+          "name": "Google Gemini(PaLM) Api account 15"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Search the company's HR policies for information about leave, attendance, working hours, work from home, onboarding, payroll, benefits, and other HR policies. Use this tool whenever an employee asks a company-policy question.",
+        "memoryKey": {
+          "__rl": true,
+          "mode": "list",
+          "value": "vector_store_key"
+        },
+        "topK": 5
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.3,
+      "position": [
+        -312,
+        1192
+      ],
+      "id": "69986f35-0a1e-48af-9e56-d527a3dd284a",
+      "name": "Simple Vector Store2"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -232,
+        1400
+      ],
+      "id": "fae71a50-43c8-4579-bab2-b9a2910d1238",
+      "name": "Embeddings Google Gemini1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YFHLEvn4On3mmsU9",
+          "name": "Google Gemini(PaLM) Api account 15"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Simple Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Simple Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Simple Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "Embeddings Google Gemini1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Simple Vector Store2",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Vector Store2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "52a8ac9e-7f19-41bf-894d-39c1198a21c5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "QNsYI8Waxx2y3GWp",
+  "tags": []
+}

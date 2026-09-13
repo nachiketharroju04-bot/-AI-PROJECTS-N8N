@@ -1,0 +1,294 @@
+{
+  "name": "AI Competitor Price Monitor",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI Competitor Price Monitor",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Product Name"
+            },
+            {
+              "fieldLabel": "Product ID"
+            },
+            {
+              "fieldLabel": "Our Price"
+            },
+            {
+              "fieldLabel": "Competitor Name"
+            },
+            {
+              "fieldLabel": "Competitor Price"
+            },
+            {
+              "fieldLabel": "Product URL"
+            },
+            {
+              "fieldLabel": "Check Date",
+              "fieldType": "date"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        -96
+      ],
+      "id": "08228079-1766-4b10-8d79-168b3205267a",
+      "name": "On form submission",
+      "webhookId": "ee19598c-84f6-43d5-b771-9ad89f34567b"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nconst requiredFields = [\n  \"Product Name\",\n  \"Product ID\",\n  \"Our Price\",\n  \"Competitor Name\",\n  \"Competitor Price\",\n  \"Check Date\"\n];\n\nconst missingFields = requiredFields.filter(\n  field =>\n    data[field] === undefined ||\n    data[field] === null ||\n    data[field] === \"\"\n);\n\nconst pricesValid =\n  Number(data[\"Our Price\"]) >= 0 &&\n  Number(data[\"Competitor Price\"]) >= 0;\n\nreturn {\n  json: {\n    ...data,\n    data_valid: missingFields.length === 0 && pricesValid,\n    missing_fields: missingFields\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -96
+      ],
+      "id": "cbc2d754-99c9-4cd6-a667-e68a15609f8d",
+      "name": "Validate Price Data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d629e3f5-573f-474b-a2d4-79f13694fd58",
+              "leftValue": "={{ $json.data_valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        -96
+      ],
+      "id": "05e90294-c167-4b74-a639-2d29afdd96ac",
+      "name": "Is Price Data Valid?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nconst ourPrice = Number(data[\"Our Price\"]);\nconst competitorPrice = Number(data[\"Competitor Price\"]);\n\nconst difference = ourPrice - competitorPrice;\n\nconst percentageDifference =\n  competitorPrice !== 0\n    ? (difference / competitorPrice) * 100\n    : 0;\n\nlet pricePosition;\n\nif (ourPrice < competitorPrice) {\n  pricePosition = \"Cheaper Than Competitor\";\n} else if (ourPrice > competitorPrice) {\n  pricePosition = \"More Expensive Than Competitor\";\n} else {\n  pricePosition = \"Same Price\";\n}\n\nreturn {\n  json: {\n    ...data,\n    price_difference: Number(difference.toFixed(2)),\n    percentage_difference: Number(percentageDifference.toFixed(2)),\n    price_position: pricePosition\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "1d198aa3-7584-4d8b-b2e7-fc0918c25ca7",
+      "name": "Calculate Price Difference"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze this competitor pricing information.\n\nProduct:\n{{ $json[\"Product Name\"] }}\n\nProduct ID:\n{{ $json[\"Product ID\"] }}\n\nOur Price:\n{{ $json[\"Our Price\"] }}\n\nCompetitor:\n{{ $json[\"Competitor Name\"] }}\n\nCompetitor Price:\n{{ $json[\"Competitor Price\"] }}\n\nPrice Difference:\n{{ $json.price_difference }}\n\nPercentage Difference:\n{{ $json.percentage_difference }}%\n\nCurrent Price Position:\n{{ $json.price_position }}\n\nProvide a pricing analysis and recommendation.",
+        "options": {
+          "systemMessage": "You are an AI Competitor Price Analyst.\n\nYour job is to analyze our product price against a competitor's price.\n\nUse only the pricing information provided.\n\nAnalyze:\n\n1. Our price\n2. Competitor price\n3. Price difference\n4. Percentage difference\n5. Whether our price is cheaper, more expensive, or equal\n6. Competitive pricing position\n7. Recommended pricing action\n\nUse these recommendations:\n\nIf our price is significantly higher than the competitor:\nrecommend reviewing the price.\n\nIf our price is slightly higher:\nrecommend monitoring the competitor.\n\nIf our price is lower:\nrecommend maintaining the current price while monitoring the competitor.\n\nIf prices are equal:\nrecommend maintaining the current price.\n\nDo not invent market information.\n\nReturn ONLY valid JSON.\n\nUse exactly this structure:\n\n{\n  \"price_position\": \"\",\n  \"competitive_level\": \"\",\n  \"recommendation\": \"\",\n  \"reason\": \"\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        896,
+        -96
+      ],
+      "id": "ecaf74f0-c5ce-4e3e-9f0c-16cf6d3d2084",
+      "name": "AI Price Analyst"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        968,
+        136
+      ],
+      "id": "b57983f8-f23a-4c40-820a-7ec05d6f5fc3",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "64YXTNLpwme70zgC",
+          "name": "Google Gemini(PaLM) Api account 14"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nlet result = data.output;\n\nif (typeof result === \"string\") {\n  result = result\n    .replace(/```json/g, \"\")\n    .replace(/```/g, \"\")\n    .trim();\n\n  result = JSON.parse(result);\n}\n\nreturn {\n  json: {\n    ...data,\n    ...result\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        -96
+      ],
+      "id": "a19d8311-735c-4a94-bcf0-69fc57d0434d",
+      "name": "Parse AI Result"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nreturn {\n  json: {\n    price_record_id: `PRICE-${Date.now()}`,\n\n    product_name: data[\"Product Name\"],\n    product_id: data[\"Product ID\"],\n\n    our_price: Number(data[\"Our Price\"]),\n\n    competitor_name: data[\"Competitor Name\"],\n    competitor_price: Number(data[\"Competitor Price\"]),\n\n    product_url: data[\"Product URL\"],\n\n    price_difference: data.price_difference,\n    percentage_difference: data.percentage_difference,\n\n    price_position: data.price_position,\n    competitive_level: data.competitive_level,\n\n    recommendation: data.recommendation,\n    reason: data.reason,\n\n    check_date: data[\"Check Date\"],\n\n    monitoring_status: \"Checked\",\n\n    created_at: new Date().toISOString()\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        -96
+      ],
+      "id": "de88c85b-a446-4e91-b406-227d40168dda",
+      "name": "Create Price Record"
+    },
+    {
+      "parameters": {
+        "sendTo": "nachiketharroju@gmail.com",
+        "subject": "=Competitor Price Alert ",
+        "message": "=Hi,  A competitor price check has been completed.    Our Price: ₹{{ $json.our_price }}    Competitor Price: ₹{{ $json.competitor_price }}  %  Price Position: {{ $json.price_position }}  Competitive Level: {{ $json.competitive_level }}  Recommendation: {{ $json.recommendation }}  Reason: {{ $json.reason }}   Best Regards, AI Competitor Price Monitor",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1696,
+        -96
+      ],
+      "id": "aef5647c-cd63-407b-bf0f-12b2e0d1f4f2",
+      "name": "Send Price Alert",
+      "webhookId": "459b748a-1b4b-4a27-a858-c5e6111d80af",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "BhfiiIF56c1Uc6dC",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Validate Price Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Price Data": {
+      "main": [
+        [
+          {
+            "node": "Is Price Data Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Price Data Valid?": {
+      "main": [
+        [
+          {
+            "node": "Calculate Price Difference",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Price Difference": {
+      "main": [
+        [
+          {
+            "node": "AI Price Analyst",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Price Analyst",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Price Analyst": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Result": {
+      "main": [
+        [
+          {
+            "node": "Create Price Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Price Record": {
+      "main": [
+        [
+          {
+            "node": "Send Price Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "78c8def0-6bdb-4ff6-bf00-09fcebb53024",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "edbb0d25bd7a66014faefe68083a8f89c418df33feee41a51636a861e015ce95"
+  },
+  "nodeGroups": [],
+  "id": "8IveN9n1omog9bWs",
+  "tags": []
+}

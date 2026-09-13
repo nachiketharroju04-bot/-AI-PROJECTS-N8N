@@ -1,0 +1,137 @@
+{
+  "name": "PDF Chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "PDF FILE",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Upload Pdf",
+              "fieldType": "file",
+              "fieldName": "pdf",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Askk question ",
+              "fieldName": "chat input",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "5c287e09-ad36-4e13-8468-84e83af4a61d",
+      "name": "On form submission",
+      "webhookId": "fdb411a8-5acf-4973-a851-a5c9de6c307f"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "83567cf1-18b7-43eb-ba92-b1288a02b1d3",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('On form submission').item.json['chat input'] }}",
+        "options": {
+          "systemMessage": "You are a helpfYou are an AI PDF Assistant.\n\nUse ONLY the information from the PDF content below to answer the user's question.\n\nPDF Content:\n{{ $node[\"Extract from File\"].json.text }}\n\nIf the answer is not found in the PDF, reply exactly:\n\n\"I couldn't find that information in the uploaded PDF.\"\n\nBe clear, concise, and accurate.ul assistant"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "97a77432-9f14-4871-8eba-922598433fe5",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        520,
+        232
+      ],
+      "id": "79c2b31a-1649-4858-9064-8a455def5a9f",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "22a39c25-8596-4d4c-b735-dc85445d210c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b28a4da04862ed1b28813dfa7d109ede5e4b43f647c025c4fb5a7e0fa9dd8584"
+  },
+  "nodeGroups": [],
+  "id": "c8tLiVPJ2lcunw21",
+  "tags": []
+}

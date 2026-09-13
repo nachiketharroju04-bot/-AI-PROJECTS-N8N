@@ -1,0 +1,475 @@
+{
+  "name": "AI Test Case Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI PRD Generator",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Project Name"
+            },
+            {
+              "fieldLabel": "Product Name"
+            },
+            {
+              "fieldLabel": "Product Type"
+            },
+            {
+              "fieldLabel": "PRD / Requirements",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "User Roles",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Features",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Platform"
+            },
+            {
+              "fieldLabel": "Priority",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Hard"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Environment"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f6ce560f-0bec-4b6e-bb1e-e7c74800e13b",
+      "name": "On form submission",
+      "webhookId": "0785b353-b18d-4cb3-a7f0-9404d45930f5"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        520,
+        232
+      ],
+      "id": "257c6e65-601f-4169-beaf-61924e40d089",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "gQWOyqIFllnkFyVS",
+          "name": "Google Gemini(PaLM) Api account 16"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        872,
+        232
+      ],
+      "id": "390edc20-07a1-4900-8aae-5f3f1a34a99b",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ZVYY2gTsLsp8dHUW",
+          "name": "Google Gemini(PaLM) Api account 17"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1224,
+        232
+      ],
+      "id": "018c7414-df48-4134-9465-3fccb2219b21",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "rVblI62Z7BhJcU4Z",
+          "name": "Google Gemini(PaLM) Api account 18"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1576,
+        232
+      ],
+      "id": "ffb177cd-fd07-477d-a0ae-9a461e3e5b02",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "xEHLZsC4tubbxhas",
+          "name": "Google Gemini(PaLM) Api account 19"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1928,
+        232
+      ],
+      "id": "8b30d60a-770a-48bc-bef1-3375dcaea91e",
+      "name": "Google Gemini Chat Model4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "lbg1DSLnVuyPdrls",
+          "name": "Google Gemini(PaLM) Api account 20"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        2280,
+        232
+      ],
+      "id": "4a44dfb2-9209-4666-a51f-403cbaf54eaa",
+      "name": "Google Gemini Chat Model5",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "vv4O5cXQs7ya7rUr",
+          "name": "Google Gemini(PaLM) Api account 25"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      project_name: $json[\"Project Name\"] || \"\",\n      product_name: $json[\"Product Name\"] || \"\",\n      product_type: $json[\"Product Type\"] || \"\",\n      requirements: $json[\"PRD / Requirements\"] || \"\",\n      user_roles: $json[\"User Roles\"] || \"\",\n      features: $json[\"Features\"] || \"\",\n      platform: $json[\"Platform\"] || \"\",\n      priority: $json[\"Priority\"] || \"\",\n      environment: $json[\"Environment\"] || \"\",\n      submitted_at: new Date().toISOString()\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "fb4d82ab-c2de-415e-ada8-afb34fce7c0f",
+      "name": "Normalize Test Input"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the following product requirements and prepare them for QA testing.\n\nPROJECT:\n{{ $(\"Normalize Test Input\").first().json.project_name }}\n\nPRODUCT:\n{{ $(\"Normalize Test Input\").first().json.product_name }}\n\nPRODUCT TYPE:\n{{ $(\"Normalize Test Input\").first().json.product_type }}\n\nUSER ROLES:\n{{ $(\"Normalize Test Input\").first().json.user_roles }}\n\nFEATURES:\n{{ $(\"Normalize Test Input\").first().json.features }}\n\nPRD / REQUIREMENTS:\n{{ $(\"Normalize Test Input\").first().json.requirements }}\n\nPLATFORM:\n{{ $(\"Normalize Test Input\").first().json.platform }}\n\nENVIRONMENT:\n{{ $(\"Normalize Test Input\").first().json.environment }}\n\nExtract:\n\n- requirements\n- business_rules\n- user_workflows\n- validation_rules\n- dependencies\n- integrations\n- acceptance_criteria\n- security_requirements\n- performance_requirements\n\nDo not invent information.\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Senior QA Analyst and Requirements Engineering Specialist.\n\nYour responsibility is to analyze product requirements and convert them\ninto structured, testable requirements.\n\nIdentify:\n\n- Functional requirements\n- Non-functional requirements\n- Business rules\n- User roles\n- User workflows\n- Inputs\n- Outputs\n- Validation rules\n- Error conditions\n- Dependencies\n- Integrations\n- Acceptance criteria\n- Security-sensitive operations\n- Performance-sensitive operations\n\nDo not invent requirements.\n\nOnly extract information that is explicitly provided or strongly supported\nby the supplied requirements.\n\nIf information is missing, mark it as \"TBD\".\n\nEvery extracted requirement must be testable.\n\nAssign each requirement a unique requirement_id.\n\nReturn valid JSON only.\n\nDo not return Markdown.\nDo not return code fences.\nDo not add explanations outside JSON."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "48028497-d778-4875-8575-1cf1c92dc9ab",
+      "name": "Requirement Extraction Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Generate comprehensive software testing scenarios from the requirements below.\n\nREQUIREMENTS:\n\n{{ $(\"Requirement Extraction Agent\").first().json.output }}\n\nCreate scenarios covering:\n\n1. Functional testing\n2. Positive scenarios\n3. Negative scenarios\n4. Boundary-value scenarios\n5. Validation scenarios\n6. Error-handling scenarios\n7. User workflow scenarios\n8. Integration scenarios\n9. Platform compatibility\n10. Environment compatibility\n11. Security scenarios\n12. Regression scenarios\n13. Data validation scenarios\n14. Dependency-related scenarios\n15. Acceptance-criteria scenarios\n16. Edge cases\n\nFor every scenario provide:\n\n- scenario_id\n- requirement_id\n- scenario_title\n- scenario_type\n- priority\n- objective\n- preconditions\n- test_data\n- expected_result\n- related_acceptance_criteria\n\nDo not invent requirements that are not present in the input.\n\nIf information is unavailable, use \"TBD\".\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "=You are a Senior QA Test Strategy Architect.\n\nYour responsibility is to convert extracted product requirements into comprehensive and traceable software testing scenarios.\n\nAnalyze the supplied requirements carefully.\n\nRules:\n\n1. Never invent product functionality.\n2. Every test scenario must trace back to a requirement, workflow, validation rule, dependency, security requirement, integration, or acceptance criterion.\n3. Cover positive, negative, boundary, validation, error-handling, security, integration, compatibility, regression, and edge-case scenarios where applicable.\n4. Identify missing testing information as \"TBD\".\n5. Do not assume undocumented business rules.\n6. Prioritize scenarios based on business and functional risk.\n7. Avoid duplicate scenarios.\n8. Ensure every scenario is specific enough for a QA engineer to implement as a test case.\n9. Maintain requirement traceability.\n10. Return valid JSON only.\n\nYour output must be structured and machine-readable."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        800,
+        0
+      ],
+      "id": "bee549c2-f271-44f6-be57-eceb58555375",
+      "name": "Test Scenario Generator"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Generate detailed software test cases from the test scenarios and requirements below.\n\nREQUIREMENTS:\n\n{{ $(\"Requirement Extraction Agent\").first().json.output }}\n\nTEST SCENARIOS:\n\n{{ $(\"Test Scenario Generator\").first().json.output }}\n\nFor every test scenario, create an executable test case.\n\nEach test case must contain:\n\n- test_case_id\n- scenario_id\n- requirement_id\n- title\n- test_type\n- priority\n- preconditions\n- test_data\n- test_steps\n- expected_result\n- postconditions\n- acceptance_criteria\n- traceability\n\nTEST CASE DESIGN RULES:\n\n1. Convert every relevant test scenario into one or more concrete test cases.\n2. Include positive and negative test cases where applicable.\n3. Include boundary and edge cases where applicable.\n4. Make test steps sequential and executable by a QA engineer.\n5. Expected results must be specific and measurable.\n6. Maintain traceability between test cases, scenarios, and requirements.\n7. Do not invent functionality that is not present in the requirements.\n8. If required information is unavailable, use \"TBD\".\n9. Avoid duplicate test cases.\n10. Use realistic test data only when it is supported by the requirements.\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Senior QA Test Case Engineer and Test Automation Specialist.\n\nYour responsibility is to transform software requirements and test scenarios into detailed, executable, traceable test cases.\n\nFollow these rules strictly:\n\n1. Never invent undocumented functionality.\n2. Every test case must trace to a test scenario and requirement whenever applicable.\n3. Convert high-level scenarios into concrete QA execution steps.\n4. Include positive, negative, boundary, validation, error-handling, compatibility, security, integration, and edge cases when applicable.\n5. Test steps must be sequential and unambiguous.\n6. Expected results must clearly describe the expected system behavior.\n7. Use \"TBD\" when required information is unavailable.\n8. Do not create duplicate test cases.\n9. Preserve requirement IDs and scenario IDs exactly.\n10. Prioritize high-risk and high-priority scenarios.\n11. Ensure the generated test cases are suitable for manual testing and can later be converted into automated tests.\n12. Return valid JSON only."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1152,
+        0
+      ],
+      "id": "6b423775-644d-4c58-a6cd-7ece3283038b",
+      "name": "Test Case Generator"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Review the generated test cases and identify missing negative, boundary, validation, error-handling, and edge-case tests.\n\nREQUIREMENTS:\n\n{{ $(\"Requirement Extraction Agent\").first().json.output }}\n\nTEST SCENARIOS:\n\n{{ $(\"Test Scenario Generator\").first().json.output }}\n\nGENERATED TEST CASES:\n\n{{ $(\"Test Case Generator\").first().json.output }}\n\nTASK:\n\nAnalyze the generated test cases and identify important cases that are missing.\n\nSpecifically check for:\n\n1. Negative test cases\n2. Invalid input cases\n3. Missing input cases\n4. Null and empty values\n5. Boundary-value cases\n6. Minimum and maximum values\n7. Invalid formats\n8. Authentication and authorization failures\n9. Permission-related cases\n10. Error handling\n11. Duplicate submissions\n12. Unexpected user behavior\n13. Invalid workflow sequences\n14. Dependency failures\n15. Integration failures\n16. Platform compatibility failures\n17. Environment failures\n18. Data consistency problems\n19. Security-related edge cases\n20. Recovery and retry scenarios\n\nFor every missing test case provide:\n\n- missing_test_case_id\n- related_test_case_id\n- scenario_id\n- requirement_id\n- category\n- title\n- reason_missing\n- priority\n- test_steps\n- test_data\n- expected_result\n\nDo not invent functionality that is not supported by the requirements.\n\nIf information is unavailable, use \"TBD\".\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Senior QA Edge Case and Negative Testing Specialist.\n\nYour responsibility is to review generated software test cases and identify important missing negative, boundary, validation, error-handling, security, compatibility, integration, and edge-case scenarios.\n\nFollow these rules strictly:\n\n1. Review the supplied requirements, scenarios, and generated test cases before making recommendations.\n2. Do not invent undocumented product functionality.\n3. Do not simply duplicate existing test cases.\n4. Every identified missing case must have traceability to a requirement or test scenario whenever possible.\n5. Focus on realistic failure conditions and unusual user/system behavior.\n6. Identify missing boundary-value tests.\n7. Identify invalid-input and missing-input tests.\n8. Identify authentication and authorization failures where applicable.\n9. Identify dependency and integration failures where applicable.\n10. Identify recovery, retry, timeout, and error-handling cases where applicable.\n11. Identify security-related edge cases when supported by the requirements.\n12. Identify platform and environment failures where applicable.\n13. Prioritize missing cases according to risk.\n14. If information is unavailable, use \"TBD\".\n15. Do not claim that a missing case is required if the supplied requirements do not support it.\n16. Return valid JSON only."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1504,
+        0
+      ],
+      "id": "e41af311-5dd1-4827-b763-c66003613f2e",
+      "name": "Negative & Edge Case Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Review the overall test coverage for this product.\n\nREQUIREMENTS:\n\n{{ $(\"Requirement Extraction Agent\").first().json.output }}\n\nTEST SCENARIOS:\n\n{{ $(\"Test Scenario Generator\").first().json.output }}\n\nGENERATED TEST CASES:\n\n{{ $(\"Test Case Generator\").first().json.output }}\n\nMISSING NEGATIVE AND EDGE CASES:\n\n{{ $(\"Negative & Edge Case Agent\").first().json.output }}\n\nTASK:\n\nPerform a comprehensive QA coverage review.\n\nEvaluate:\n\n1. Requirement coverage\n2. Functional coverage\n3. Positive test coverage\n4. Negative test coverage\n5. Boundary-value coverage\n6. Validation coverage\n7. Error-handling coverage\n8. Security coverage\n9. Authentication coverage\n10. Authorization coverage\n11. Integration coverage\n12. Platform compatibility coverage\n13. Environment coverage\n14. User workflow coverage\n15. Acceptance-criteria coverage\n16. Regression coverage\n17. Edge-case coverage\n18. Data validation coverage\n\nCalculate:\n\n- total_requirements\n- total_test_scenarios\n- total_test_cases\n- total_missing_edge_cases\n- covered_requirements\n- uncovered_requirements\n- coverage_percentage\n- high_risk_gaps\n\nIdentify:\n\n- requirements with no test coverage\n- scenarios without test cases\n- important missing tests\n- duplicate or redundant tests\n- high-risk coverage gaps\n- areas requiring additional testing\n\nProvide an overall coverage assessment.\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Senior QA Test Coverage Architect.\n\nYour responsibility is to evaluate whether a software product has sufficient and traceable test coverage.\n\nAnalyze the supplied requirements, test scenarios, generated test cases, and identified missing edge cases.\n\nRules:\n\n1. Do not invent requirements.\n2. Every coverage calculation must be based on the supplied data.\n3. Maintain traceability between requirements, scenarios, and test cases.\n4. Identify requirements that have no corresponding test coverage.\n5. Identify test scenarios that have no corresponding test cases.\n6. Identify high-risk functional and security gaps.\n7. Evaluate positive, negative, boundary, validation, error-handling, security, integration, compatibility, workflow, regression, and edge-case coverage.\n8. Detect duplicate or redundant test cases.\n9. Do not treat a requirement as covered merely because a loosely related test exists.\n10. Clearly distinguish complete, partial, and missing coverage.\n11. If an exact percentage cannot be calculated reliably, explain why and use \"TBD\".\n12. Prioritize gaps based on risk.\n13. Provide actionable recommendations.\n14. Return valid JSON only."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1856,
+        0
+      ],
+      "id": "f94dc7c5-fd34-4039-86c4-05d55cbd307f",
+      "name": "Test Coverage Reviewer"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create the final professional QA test case report.\n\nPROJECT REQUIREMENTS:\n\n{{ $(\"Requirement Extraction Agent\").first().json.output }}\n\nTEST SCENARIOS:\n\n{{ $(\"Test Scenario Generator\").first().json.output }}\n\nGENERATED TEST CASES:\n\n{{ $(\"Test Case Generator\").first().json.output }}\n\nNEGATIVE AND EDGE CASE ANALYSIS:\n\n{{ $(\"Negative & Edge Case Agent\").first().json.output }}\n\nTEST COVERAGE REVIEW:\n\n{{ $(\"Test Coverage Reviewer\").first().json.output }}\n\nTASK:\n\nSynthesize all testing information into one final professional QA report.\n\nDo not simply concatenate the inputs.\n\nAnalyze and organize the information.\n\nThe final report must contain:\n\n1. project_summary\n2. testing_scope\n3. requirements_summary\n4. test_scenario_summary\n5. test_case_summary\n6. positive_test_cases\n7. negative_test_cases\n8. edge_cases\n9. security_test_cases\n10. integration_test_cases\n11. compatibility_test_cases\n12. coverage_assessment\n13. uncovered_requirements\n14. partially_covered_requirements\n15. high_risk_gaps\n16. recommendations\n17. traceability_summary\n18. qa_readiness\n19. final_assessment\n\nFor coverage_assessment include:\n\n- total_requirements\n- total_test_scenarios\n- total_test_cases\n- total_missing_edge_cases\n- covered_requirements\n- partially_covered_requirements\n- uncovered_requirements\n- coverage_percentage\n- coverage_status\n\nFor every important coverage gap include:\n\n- requirement_id\n- gap\n- risk\n- recommended_test\n- priority\n\nQA readiness must be one of:\n\n- READY\n- CONDITIONALLY_READY\n- NOT_READY\n\nDo not invent requirements or functionality.\n\nPreserve the original requirement IDs, scenario IDs, and test case IDs.\n\nIf information is unavailable, use \"TBD\".\n\nReturn JSON only.",
+        "options": {
+          "systemMessage": "You are a Principal QA Architect responsible for producing the final software testing assessment.\n\nYou must synthesize requirements, test scenarios, test cases, negative and edge-case analysis, and coverage analysis into one accurate professional QA report.\n\nRules:\n\n1. Never invent requirements or product functionality.\n2. Preserve all existing requirement, scenario, and test-case IDs.\n3. Maintain traceability throughout the report.\n4. Distinguish completely covered, partially covered, and uncovered requirements.\n5. Do not claim full coverage when the supplied coverage analysis identifies gaps.\n6. Prioritize security, functional, business-critical, integration, and performance risks.\n7. Clearly identify missing test coverage.\n8. Include actionable recommendations for every significant gap.\n9. Do not duplicate test cases unnecessarily.\n10. Use \"TBD\" when required information is unavailable.\n11. QA readiness must reflect the actual evidence in the supplied analysis.\n12. Base all conclusions only on the supplied inputs.\n13. Return valid JSON only."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2208,
+        0
+      ],
+      "id": "45180164-c64b-458c-b214-0cbdfac76f26",
+      "name": "Final Test Case Generator"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.output;\n\nlet report;\n\ntry {\n  // Remove markdown code fences if the AI added them\n  let cleaned = String(raw)\n    .replace(/```json/gi, \"\")\n    .replace(/```/g, \"\")\n    .trim();\n\n  // Extract the JSON object if extra text exists\n  const start = cleaned.indexOf(\"{\");\n  const end = cleaned.lastIndexOf(\"}\");\n\n  if (start === -1 || end === -1) {\n    throw new Error(\"No valid JSON object found in AI output\");\n  }\n\n  cleaned = cleaned.substring(start, end + 1);\n\n  report = JSON.parse(cleaned);\n\n} catch (error) {\n  return [\n    {\n      json: {\n        report_type: \"AI QA Test Report\",\n        parse_status: \"failed\",\n        error: error.message,\n        raw_output: raw\n      }\n    }\n  ];\n}\n\n// Return clean structured fields\nreturn [\n  {\n    json: {\n      report_type: \"AI QA Test Report\",\n\n      project_summary:\n        report.project_summary ?? \"TBD\",\n\n      testing_scope:\n        report.testing_scope ?? \"TBD\",\n\n      requirements_summary:\n        report.requirements_summary ?? \"TBD\",\n\n      test_scenario_summary:\n        report.test_scenario_summary ?? \"TBD\",\n\n      test_case_summary:\n        report.test_case_summary ?? \"TBD\",\n\n      positive_test_cases:\n        report.positive_test_cases ?? [],\n\n      negative_test_cases:\n        report.negative_test_cases ?? [],\n\n      edge_cases:\n        report.edge_cases ?? [],\n\n      security_test_cases:\n        report.security_test_cases ?? [],\n\n      integration_test_cases:\n        report.integration_test_cases ?? [],\n\n      compatibility_test_cases:\n        report.compatibility_test_cases ?? [],\n\n      coverage_assessment:\n        report.coverage_assessment ?? {},\n\n      uncovered_requirements:\n        report.uncovered_requirements ?? [],\n\n      partially_covered_requirements:\n        report.partially_covered_requirements ?? [],\n\n      high_risk_gaps:\n        report.high_risk_gaps ?? [],\n\n      recommendations:\n        report.recommendations ?? [],\n\n      traceability_summary:\n        report.traceability_summary ?? {},\n\n      qa_readiness:\n        report.qa_readiness ?? \"TBD\",\n\n      final_assessment:\n        report.final_assessment ?? \"TBD\",\n\n      parse_status: \"success\"\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2560,
+        0
+      ],
+      "id": "51a2377d-40ec-491a-b1a5-0daff8b9d7b4",
+      "name": "Parse Final QA Report"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Normalize Test Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Requirement Extraction Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Test Scenario Generator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Test Case Generator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Negative & Edge Case Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Test Coverage Reviewer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Final Test Case Generator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Test Input": {
+      "main": [
+        [
+          {
+            "node": "Requirement Extraction Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Requirement Extraction Agent": {
+      "main": [
+        [
+          {
+            "node": "Test Scenario Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Scenario Generator": {
+      "main": [
+        [
+          {
+            "node": "Test Case Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Case Generator": {
+      "main": [
+        [
+          {
+            "node": "Negative & Edge Case Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Negative & Edge Case Agent": {
+      "main": [
+        [
+          {
+            "node": "Test Coverage Reviewer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Coverage Reviewer": {
+      "main": [
+        [
+          {
+            "node": "Final Test Case Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Test Case Generator": {
+      "main": [
+        [
+          {
+            "node": "Parse Final QA Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "be135bd8-7d8d-4505-bc07-1d5ccc85465c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "edbb0d25bd7a66014faefe68083a8f89c418df33feee41a51636a861e015ce95"
+  },
+  "nodeGroups": [],
+  "id": "UAUTVZhhgvMh54nd",
+  "tags": []
+}
